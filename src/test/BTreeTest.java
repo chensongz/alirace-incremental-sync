@@ -41,7 +41,7 @@ public class BTreeTest {
             if (field[2] == "1") {
                 isPrimaryKey = true;
             }
-            binlog.addField(new Field(field[0], ));
+//            binlog.addField(new Field(field[0], ));
 
         }
     }
