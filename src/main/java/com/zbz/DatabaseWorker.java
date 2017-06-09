@@ -3,7 +3,7 @@ package com.zbz;
 /**
  * Created by zwy on 17-6-9.
  */
-public class DatabaseWorker implements Runnable{
+public class DatabaseWorker implements Runnable {
 
     private BinlogPool binlogPool;
 

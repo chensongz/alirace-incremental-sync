@@ -1,8 +1,6 @@
 package com.zbz;
 
-/**
- * Created by bgk on 6/9/17.
- */
+
 public class Database {
 
     private static Database database = new Database();
@@ -15,18 +13,19 @@ public class Database {
     private BTree tree;
 
     public void init(Binlog binlog) {
-
+        long pk = binlog.getPrimaryKey();
+        tree = new BTree();
     }
 
     public void insert(Binlog binlog) {
-
+        long pk = binlog.getPrimaryKey();
     }
 
     public void update(Binlog binlog) {
-
+        long pk = binlog.getPrimaryKey();
     }
 
     public void delete(Binlog binlog) {
-
+        long pk = binlog.getPrimaryKey();
     }
 }

@@ -1,7 +1,12 @@
 package com.zbz;
 
-/**
- * Created by bgk on 6/9/17.
- */
+import com.zbz.btree.BPlusTree;
+
 public class BTree {
+
+    private BPlusTree tree;
+
+    public BTree(long initPk) {
+        tree = new BPlusTree(initPk);
+    }
 }

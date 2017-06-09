@@ -4,16 +4,23 @@ package com.zbz;
  * Created by bgk on 6/7/17.
  */
 public class Binlog {
+
+    public static byte INSERT = 1;
+    public static byte UPDATE = 2;
+    public static byte DELETE = 3;
+
     private String schema;
     private String table;
-    private String operation;
+    private byte operation;
+    private long primaryKey;
+
 
     private KeyValue keyValue = new KeyValue();
 
     public Binlog(String schema, String table, String operation) {
         this.schema = schema;
         this.table = table;
-        this.operation = operation;
+        setOperation(operation);
     }
 
     public Binlog putKeyValue(String key, long value) {
@@ -26,12 +33,23 @@ public class Binlog {
         return this;
     }
 
-    public Binlog setOperation(String operation) {
-        this.operation = operation;
-        return this;
+    public void setOperation(String operation) {
+        switch (operation) {
+            case "I":
+                this.operation = Binlog.INSERT;
+                break;
+            case "U":
+                this.operation = Binlog.UPDATE;
+                break;
+            case "D":
+                this.operation = Binlog.DELETE;
+                break;
+            default:
+                break;
+        }
     }
 
-    public String getOperation() {
+    public byte getOperation() {
         return this.operation;
     }
 
@@ -47,14 +65,7 @@ public class Binlog {
         keyValue.put(field.getFieldname(), field);
     }
 
-    public Field getPrimaryKey() {
-        for (Object field : keyValue.values()) {
-            if (((Field)field).isPrimaryKey()) {
-                return (Field)field;
-            }
-        }
-        return null;
+    public long getPrimaryKey() {
+        return this.primaryKey;
     }
-
-
 }
