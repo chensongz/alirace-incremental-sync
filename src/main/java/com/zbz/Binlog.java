@@ -11,14 +11,11 @@ public class Binlog {
 
     private String primaryKey;
 
-    private long primaryOldValue = 0;
+    private long primaryOldValue;
 
     private long primaryValue;
 
     private HashMap<String, Field> fields = new HashMap<>();
-
-    public Binlog() {
-    }
 
     public void setOperation(byte operation) {
         this.operation = operation;
