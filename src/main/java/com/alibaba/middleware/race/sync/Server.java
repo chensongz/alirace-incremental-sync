@@ -3,6 +3,9 @@ package com.alibaba.middleware.race.sync;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.zbz.DatabaseWorker;
+import com.zbz.ReadDataWorker;
+import com.zbz.BinlogPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +45,13 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-        //启动Worker线程
-        new Thread(new Worker()).run();
+        BinlogPool binlogPool = BinlogPool.getInstance();
+
+        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, args[0], args[1]));
+        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool));
+
+        readDataWorker.run();
+        databaseWorker.run();
 
         server.startServer(5527);
     }
