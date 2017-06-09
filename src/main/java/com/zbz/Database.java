@@ -5,7 +5,7 @@ package com.zbz;
  */
 public class Database {
 
-    private static Database database = new Database();
+    private static final Database database = new Database();
 
     public Database getInstance() {
         return database;

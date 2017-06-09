@@ -4,47 +4,40 @@ package com.zbz;
  * Created by bgk on 6/7/17.
  */
 public class Field {
-    private String fieldname;
-    private boolean isPrimaryKey;
-    private Object beforeUpdateValue;
-    private Object afterUpdateValue;
+    private String name;
+    // 1 represent long , 2 represent String
+    private byte type;
+    private String value;
 
-    public Field(String fieldname, boolean isPrimaryKey, Object beforeUpdateValue, Object afterUpdateValue) {
-        this.fieldname = fieldname;
-        this.isPrimaryKey = isPrimaryKey;
-        this.beforeUpdateValue = beforeUpdateValue;
-        this.afterUpdateValue = afterUpdateValue;
+    public Field(String name, byte type, String value) {
+        this.name = name;
+        this.type = type;
+        this.value = value;
     }
 
-    public void setFieldname(String fieldname) {
-        this.fieldname = fieldname;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setPrimaryKey(boolean isPrimaryKey) {
-        this.isPrimaryKey = isPrimaryKey;
+    public void setType(byte type) {
+        this.type = type;
     }
 
-    public void setBeforeUpdateValue(String beforeUpdateValue) {
-        this.beforeUpdateValue = beforeUpdateValue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setBeforeUpdateValue(long beforeUpdateValue) {
-        this.beforeUpdateValue = beforeUpdateValue;
+    public String getName() {
+        return name;
     }
 
-    public void setAfterUpdateValue(String afterUpdateValue) {
-        this.afterUpdateValue = afterUpdateValue;
+    public byte getType() {
+        return type;
     }
 
-    public void setAfterUpdateValue(long afterUpdateValue) {
-        this.afterUpdateValue = afterUpdateValue;
+    public String getValue() {
+        return value;
     }
 
-    public String getFieldname() {
-        return fieldname;
-    }
 
-    public boolean isPrimaryKey() {
-        return isPrimaryKey;
-    }
 }

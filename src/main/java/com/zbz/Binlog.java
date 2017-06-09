@@ -1,60 +1,58 @@
 package com.zbz;
 
+import java.util.HashMap;
+
 /**
  * Created by bgk on 6/7/17.
  */
 public class Binlog {
-    private String schema;
-    private String table;
-    private String operation;
+    // 1 represent I, 2 represent U, 3 represent D
+    private byte operation;
 
-    private KeyValue keyValue = new KeyValue();
+    private String primaryKey;
 
-    public Binlog(String schema, String table, String operation) {
-        this.schema = schema;
-        this.table = table;
+    private long primaryOldValue = 0;
+
+    private long primaryValue;
+
+    private HashMap<String, Field> fields = new HashMap<>();
+
+    public Binlog() {
+    }
+
+    public void setOperation(byte operation) {
         this.operation = operation;
     }
 
-    public Binlog putKeyValue(String key, long value) {
-        keyValue.put(key, value);
-        return this;
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
-    public Binlog putKeyValue(String key, String value) {
-        keyValue.put(key, value);
-        return this;
+    public void setPrimaryOldValue(long primaryOldValue) {
+        this.primaryOldValue = primaryOldValue;
     }
 
-    public Binlog setOperation(String operation) {
-        this.operation = operation;
-        return this;
+    public void setPrimaryValue(long primaryValue) {
+        this.primaryValue = primaryValue;
     }
 
-    public String getOperation() {
-        return this.operation;
+    public byte getOperation() {
+        return operation;
     }
 
-    public String getSchema() {
-        return this.schema;
+    public String getPrimaryKey() {
+        return primaryKey;
     }
 
-    public String getTable() {
-        return this.table;
+    public long getPrimaryValue() {
+        return primaryValue;
     }
 
     public void addField(Field field) {
-        keyValue.put(field.getFieldname(), field);
+        fields.put(field.getName(), field);
     }
 
-    public Field getPrimaryKey() {
-        for (Object field : keyValue.values()) {
-            if (((Field)field).isPrimaryKey()) {
-                return (Field)field;
-            }
-        }
-        return null;
+    public HashMap<String, Field> getFields() {
+        return fields;
     }
-
-
 }
