@@ -5,7 +5,7 @@ package com.zbz;
  */
 public class BinlogFactory {
     public static Binlog createBinlog(String line) {
-        String[] strings = line.split("|");
+        String[] strings = line.split("\\|");
         Binlog binlog = new Binlog();
         switch (strings[5]) {
             case "I":

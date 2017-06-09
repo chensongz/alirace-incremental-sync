@@ -65,4 +65,14 @@ public class Binlog {
     public HashMap<String, Field> getFields() {
         return fields;
     }
+
+    @Override
+    public String toString() {
+        String s = "";
+        s = s + "operation:" + operation + " primaryvalue: " + primaryValue;
+        for (Field field: fields.values()) {
+            s += " " + field.getName() + "-" + field.getValue() + "\t";
+        }
+        return s;
+    }
 }
