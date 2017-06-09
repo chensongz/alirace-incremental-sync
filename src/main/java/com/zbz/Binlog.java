@@ -41,6 +41,10 @@ public class Binlog {
         return primaryKey;
     }
 
+    public long getPrimaryOldValue() {
+        return primaryOldValue;
+    }
+
     public long getPrimaryValue() {
         return primaryValue;
     }
