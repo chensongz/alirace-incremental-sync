@@ -25,12 +25,21 @@ public class Binlog {
         this.primaryKey = primaryKey;
     }
 
-    public void setPrimaryOldValue(long primaryOldValue) {
-        this.primaryOldValue = primaryOldValue;
+    public void setPrimaryOldValue(String primaryOldValue) {
+        if (primaryOldValue.equals("NULL")) {
+            this.primaryOldValue = -1;
+        } else {
+            this.primaryOldValue = Long.parseLong(primaryOldValue);
+        }
+
     }
 
-    public void setPrimaryValue(long primaryValue) {
-        this.primaryValue = primaryValue;
+    public void setPrimaryValue(String primaryValue) {
+        if (primaryValue.equals("NULL")) {
+            this.primaryValue = -1;
+        } else {
+            this.primaryValue = Long.parseLong(primaryValue);
+        }
     }
 
     public byte getOperation() {

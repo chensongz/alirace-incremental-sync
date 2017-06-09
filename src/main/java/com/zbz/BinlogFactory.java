@@ -34,8 +34,8 @@ public class BinlogFactory {
             if (fieldStrings[2].equals("1")) {
                 // if field is primary key
                 binlog.setPrimaryKey(fieldStrings[0]);
-                binlog.setPrimaryOldValue(oldValue.equals("NULL") ? -1 : Long.parseLong(oldValue));
-                binlog.setPrimaryValue(Long.parseLong(newValue));
+                binlog.setPrimaryOldValue(oldValue);
+                binlog.setPrimaryValue(newValue);
             } else {
                 // if field is not primary key
                 Field field = new Field(fieldname, Byte.parseByte(fieldType), newValue);
