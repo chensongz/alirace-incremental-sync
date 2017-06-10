@@ -29,7 +29,6 @@ public class Database {
             for (Field field : fields.values()) {
                 if (i++ == pkIdx) {
                     table.put(binlog.getPrimaryKey(), Field.NUMERIC);
-                    table.setPkIdx(pkIdx);
                 }
                 table.put(field.getName(), field.getType());
             }
@@ -43,6 +42,8 @@ public class Database {
         if(index == null) {
             index = new HashIndex();
         }
+
+        insert(binlog);
     }
 
     public void insert(Binlog binlog) {
@@ -52,10 +53,19 @@ public class Database {
     }
 
     public void update(Binlog binlog) {
-        long offset = index.getOffset(binlog.getPrimaryValue());
+        long offset;
+        if (binlog.getPrimaryValue() != binlog.getPrimaryOldValue()) {
+            // if update primary key
+            offset = index.getOffset(binlog.getPrimaryOldValue());
+            index.delete(binlog.getPrimaryOldValue());
+            index.insert(binlog.getPrimaryValue(), offset);
+        } else {
+            offset = index.getOffset(binlog.getPrimaryValue());
+        }
+//        System.out.println("offset:" + offset);
+
         Record record = persistence.query(offset);
         Record newRecord = Record.parseFromBinlog(binlog, table, record);
-
         persistence.update(newRecord, offset);
     }
 

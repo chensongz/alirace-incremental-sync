@@ -1,9 +1,10 @@
 package com.zbz.bgk;
 
-import com.zbz.*;
+import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.BinlogPool;
+import com.zbz.DatabaseWorker;
+import com.zbz.ReadDataWorker;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 
 /**
@@ -13,8 +14,7 @@ public class ParseTest {
     public static void main(String[] args) throws IOException {
         BinlogPool binlogPool = BinlogPool.getInstance();
 
-        String filename = "/home/zwy/work/test/canal.txt";
-        Thread t1 = new Thread(new ReadDataWorker(binlogPool, filename, "", "student"));
+        Thread t1 = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, "", "student"));
         t1.start();
 
         Thread t2 = new Thread(new DatabaseWorker(binlogPool));

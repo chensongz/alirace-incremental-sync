@@ -12,6 +12,8 @@ import java.nio.ByteBuffer;
  */
 public class Record {
 
+    private static final String SEPARATOR = "\t";
+
     private LinkedHashMap<String, String> fieldHashMap = new LinkedHashMap<>();
 
     public Record() {
@@ -19,10 +21,12 @@ public class Record {
 
     public ByteBuffer toBytes() {
         ByteBuffer byteBuffer = ByteBuffer.wrap(toString().getBytes());
+        byteBuffer.put((byte)0);
         return byteBuffer;
     }
 
     public static Record parseFromBytes(ByteBuffer recordBytes, Table table) {
+        recordBytes.flip();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         while(recordBytes.remaining() > 0) {
             byte curr = recordBytes.get();
@@ -38,8 +42,12 @@ public class Record {
         Record record = new Record();
         HashMap<String, Field> fields = binlog.getFields();
         for(String field: table.getFields().keySet()) {
-            Field val = fields.get(field);
-            record.put(field, val == null ? "" : val.getValue());
+            if (field.equals(binlog.getPrimaryKey())) {
+                record.put(field, String.valueOf(binlog.getPrimaryValue()));
+            } else {
+                Field val = fields.get(field);
+                record.put(field, val == null ? "NULL" : val.getValue());
+            }
         }
         return record;
     }
@@ -62,7 +70,10 @@ public class Record {
             retRecord.put(fieldname, oldFields.get(fieldname));
         }
         for (String fieldname : newFields.keySet()) {
-            retRecord.put(fieldname, newFields.get(fieldname));
+            if (!newFields.get(fieldname).equals("NULL")) {
+                // if update binlog not includes all fields
+                retRecord.put(fieldname, newFields.get(fieldname));
+            }
         }
         return record;
     }
@@ -71,17 +82,15 @@ public class Record {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         LinkedHashMap<String, String> fields = getFields();
-        int i = 0;
         for (String value : fields.values()) {
-            sb.append(value).append("\t");
-            if(i++ == 0) sb.append(";");
+            sb.append(value).append(SEPARATOR);
         }
-//        System.out.println(sb.toString());
         return sb.toString();
     }
 
     public static Record parse(String str, Table table) {
-        String[] vals = str.split("\t");
+        System.out.println("parse str:" + str);
+        String[] vals = str.split(SEPARATOR);
         LinkedHashMap<String, Byte> fields = table.getFields();
         Record ret = new Record();
         int i = 0;

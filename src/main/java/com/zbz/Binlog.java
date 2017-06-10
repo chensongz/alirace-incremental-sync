@@ -1,6 +1,7 @@
 package com.zbz;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by bgk on 6/7/17.
@@ -21,7 +22,7 @@ public class Binlog {
 
     private int primaryKeyIndex = 0;
 
-    private HashMap<String, Field> fields = new HashMap<>();
+    private LinkedHashMap<String, Field> fields = new LinkedHashMap<>();
 
     public void setOperation(byte operation) {
         this.operation = operation;

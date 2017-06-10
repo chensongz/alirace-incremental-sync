@@ -26,20 +26,28 @@ public class ReadDataWorker implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(dataHome));
             String line;
+            int i = 0;
             while ((line = reader.readLine()) != null) {
                 binlogReducer.reduce(line);
+                if (i++ >= 1000002) break;
                 if (binlogReducer.isFull()) {
-                    for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
-                        binlogPool.put(binlog);
-                    }
-                    binlogReducer.clearBinlogHashMap();
+                    clearBinlogReducer();
                 }
+                System.out.println(line);
             }
+            clearBinlogReducer();
             binlogPool.put(new Binlog());
             reader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void clearBinlogReducer() {
+        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
+            binlogPool.put(binlog);
+        }
+        binlogReducer.clearBinlogHashMap();
     }
 
 }
