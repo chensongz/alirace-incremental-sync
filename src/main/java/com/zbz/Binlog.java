@@ -1,71 +1,59 @@
 package com.zbz;
 
+import java.util.HashMap;
+
 /**
  * Created by bgk on 6/7/17.
  */
 public class Binlog {
-
-    public static byte INSERT = 1;
-    public static byte UPDATE = 2;
-    public static byte DELETE = 3;
-
-    private String schema;
-    private String table;
+    // 1 represent I, 2 represent U, 3 represent D
     private byte operation;
-    private long primaryKey;
 
+    private String primaryKey;
 
-    private KeyValue keyValue = new KeyValue();
+    private long primaryOldValue;
 
-    public Binlog(String schema, String table, String operation) {
-        this.schema = schema;
-        this.table = table;
-        setOperation(operation);
+    private long primaryValue;
+
+    private HashMap<String, Field> fields = new HashMap<>();
+
+    public void setOperation(byte operation) {
+        this.operation = operation;
     }
 
-    public Binlog putKeyValue(String key, long value) {
-        keyValue.put(key, value);
-        return this;
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
-    public Binlog putKeyValue(String key, String value) {
-        keyValue.put(key, value);
-        return this;
+    public void setPrimaryOldValue(long primaryOldValue) {
+        this.primaryOldValue = primaryOldValue;
     }
 
-    public void setOperation(String operation) {
-        switch (operation) {
-            case "I":
-                this.operation = Binlog.INSERT;
-                break;
-            case "U":
-                this.operation = Binlog.UPDATE;
-                break;
-            case "D":
-                this.operation = Binlog.DELETE;
-                break;
-            default:
-                break;
-        }
+    public void setPrimaryValue(long primaryValue) {
+        this.primaryValue = primaryValue;
     }
 
     public byte getOperation() {
-        return this.operation;
+        return operation;
     }
 
-    public String getSchema() {
-        return this.schema;
+    public String getPrimaryKey() {
+        return primaryKey;
     }
 
-    public String getTable() {
-        return this.table;
+    public long getPrimaryOldValue() {
+        return primaryOldValue;
+    }
+
+    public long getPrimaryValue() {
+        return primaryValue;
     }
 
     public void addField(Field field) {
-        keyValue.put(field.getFieldname(), field);
+        fields.put(field.getName(), field);
     }
 
-    public long getPrimaryKey() {
-        return this.primaryKey;
+    public HashMap<String, Field> getFields() {
+        return fields;
     }
 }
