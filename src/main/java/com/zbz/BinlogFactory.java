@@ -5,7 +5,7 @@ package com.zbz;
  */
 public class BinlogFactory {
     public static Binlog createBinlog(String line) {
-        String[] strings = line.split("|");
+        String[] strings = line.split("\\|");
         Binlog binlog = new Binlog();
         switch (strings[5]) {
             case "I":
@@ -34,8 +34,14 @@ public class BinlogFactory {
             if (fieldStrings[2].equals("1")) {
                 // if field is primary key
                 binlog.setPrimaryKey(fieldStrings[0]);
-                binlog.setPrimaryOldValue(oldValue.equals("NULL") ? -1 : Long.parseLong(oldValue));
-                binlog.setPrimaryValue(Long.parseLong(newValue));
+                if (binlog.getOperation() == 3) {
+                    // if delete operation
+                    binlog.setPrimaryOldValue(newValue);
+                    binlog.setPrimaryValue(oldValue);
+                } else {
+                    binlog.setPrimaryOldValue(oldValue);
+                    binlog.setPrimaryValue(newValue);
+                }
             } else {
                 // if field is not primary key
                 Field field = new Field(fieldname, Byte.parseByte(fieldType), newValue);
@@ -47,7 +53,7 @@ public class BinlogFactory {
     }
 
     public static Binlog createBinlog(String line, String table) {
-        String[] strings = line.split("|");
+        String[] strings = line.split("\\|");
         if (strings[4].equals(table)) {
             return createBinlog(line);
         }
