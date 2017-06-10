@@ -9,11 +9,13 @@ import java.io.FileReader;
 public class ReadDataWorker implements Runnable {
 
     private BinlogPool binlogPool;
+    private BinlogReducer binlogReducer;
     private String dataHome;
     private String schema;
     private String table;
 
     public ReadDataWorker(BinlogPool binlogPool, String dataHome, String schema, String table) {
+        this.binlogReducer = new BinlogReducer(table);
         this.binlogPool = binlogPool;
         this.dataHome = dataHome;
         this.schema = schema;
@@ -24,22 +26,20 @@ public class ReadDataWorker implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(dataHome));
             String line;
-            int i = 0;
             while ((line = reader.readLine()) != null) {
-//                System.out.println(line);
-                Binlog log = parse(line);
-                binlogPool.put(log);
-                if (i++ >= 500) break;
+                binlogReducer.reduce(line);
+                if (binlogReducer.isFull()) {
+                    for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
+                        binlogPool.put(binlog);
+                    }
+                    binlogReducer.clearBinlogHashMap();
+                }
             }
-
+            binlogPool.put(new Binlog());
             reader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private Binlog parse(String line) {
-        //filter by `schema` and `table` to avoid newing extra `Binlog`
-        return null;
-    }
 }

@@ -16,6 +16,9 @@ public class DatabaseWorker implements Runnable {
         boolean init = false;
         while (!Thread.currentThread().isInterrupted()) {
             Binlog binlog =  binlogPool.poll();
+            if (binlog.getFields() == null) {
+                break;
+            }
             byte op = binlog.getOperation();
             switch(op) {
                 case Binlog.I:
