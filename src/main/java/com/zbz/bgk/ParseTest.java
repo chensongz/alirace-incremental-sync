@@ -14,7 +14,7 @@ public class ParseTest {
         BinlogReducer binlogReducer = new BinlogReducer("student");
         BinlogPool binlogPool = BinlogPool.getInstance();
 
-        Thread t = new Thread(new PersistenceThread(binlogPool));
+        Thread t = new Thread(new DatabaseWorker(binlogPool));
         t.start();
 
         String filename = "/home/zwy/work/test/canal.txt";
