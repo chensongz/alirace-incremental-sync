@@ -36,21 +36,11 @@ public class Record {
 
     public static Record parseFromBinlog(Binlog binlog, Table table) {
         Record record = new Record();
-
-        int pkIdx = table.getPkIdx();
-        int i = 0;
         HashMap<String, Field> fields = binlog.getFields();
         for(String field: table.getFields().keySet()) {
-
-//                System.out.println("put pk:" + binlog.getPrimaryKey() + " :" + binlog.getPrimaryValue());
-                String pkVal = String.valueOf(binlog.getPrimaryValue());
-                System.out.println(pkVal);
-                record.put(binlog.getPrimaryKey(), pkVal);
-            // TODO 主键被覆盖
             Field val = fields.get(field);
             record.put(field, val == null ? "" : val.getValue());
         }
-        System.out.println(record);
         return record;
     }
 
@@ -72,7 +62,7 @@ public class Record {
             retRecord.put(fieldname, oldFields.get(fieldname));
         }
         for (String fieldname : newFields.keySet()) {
-            retRecord.put(fieldname, oldFields.get(fieldname));
+            retRecord.put(fieldname, newFields.get(fieldname));
         }
         return record;
     }
