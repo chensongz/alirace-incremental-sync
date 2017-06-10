@@ -1,9 +1,6 @@
 package com.zbz.bgk;
 
-import com.zbz.Binlog;
-import com.zbz.BinlogFactory;
-import com.zbz.BinlogPool;
-import com.zbz.Field;
+import com.zbz.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,7 +13,7 @@ import java.util.HashMap;
 public class ParseTest {
     public static void main(String[] args) throws IOException {
         HashMap<Long, Binlog> binlogHashMap = new HashMap<>();
-        String filename = "../test-data/canal.txt";
+        String filename = "/home/zwy/work/test/canal.txt";
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         int i = 0;
@@ -27,14 +24,14 @@ public class ParseTest {
                 // maybe insert record or update fields or delete record
                 Binlog oldBinlog = binlogHashMap.get(newBinlog.getPrimaryValue());
                 switch (oldBinlog.getOperation()) {
-                    case 1:
+                    case Binlog.I:
                         // from I to others
                         switch (newBinlog.getOperation()) {
-                            case 2:
+                            case Binlog.U:
                                 // update fields I -> U => I
-                                updateOldBinlog(oldBinlog, newBinlog, (byte)1, binlogHashMap);
+                                updateOldBinlog(oldBinlog, newBinlog, Binlog.I, binlogHashMap);
                                 break;
-                            case 3:
+                            case Binlog.D:
                                 // delete record I -> D => null
                                 binlogHashMap.remove(oldBinlog.getPrimaryValue());
                                 break;
@@ -42,28 +39,28 @@ public class ParseTest {
                                 break;
                         }
                         break;
-                    case 2:
+                    case Binlog.U:
                         // from U to others
                         switch (newBinlog.getOperation()) {
-                            case 2:
+                            case Binlog.U:
                                 // U -> U => U
-                                updateOldBinlog(oldBinlog, newBinlog, (byte)2, binlogHashMap);
+                                updateOldBinlog(oldBinlog, newBinlog, Binlog.U, binlogHashMap);
                                 break;
-                            case 3:
+                            case Binlog.D:
                                 // U -> D => D
-                                oldBinlog.setOperation((byte)3);
+                                oldBinlog.setOperation(Binlog.D);
                                 binlogHashMap.put(oldBinlog.getPrimaryValue(), newBinlog);
                                 break;
                             default:
                                 break;
                         }
                         break;
-                    case 3:
+                    case Binlog.D:
                         // from D to others
                         switch (newBinlog.getOperation()) {
-                            case 1:
+                            case Binlog.I:
                                 // D -> I => U
-                                oldBinlog.setOperation((byte)2);
+                                oldBinlog.setOperation(Binlog.U);
                                 binlogHashMap.put(oldBinlog.getPrimaryValue(), newBinlog);
                                 break;
                             default:
@@ -75,13 +72,13 @@ public class ParseTest {
                 // maybe update primary key
                 Binlog oldBinlog = binlogHashMap.get(newBinlog.getPrimaryOldValue());
                 switch (oldBinlog.getOperation()) {
-                    case 1:
+                    case Binlog.I:
                         // I -> U => I
-                        updateOldBinlog(oldBinlog, newBinlog, (byte)1, binlogHashMap);
+                        updateOldBinlog(oldBinlog, newBinlog, Binlog.I, binlogHashMap);
                         break;
-                    case 2:
+                    case Binlog.U:
                         // U -> U => U
-                        updateOldBinlog(oldBinlog, newBinlog, (byte)2, binlogHashMap);
+                        updateOldBinlog(oldBinlog, newBinlog, Binlog.U, binlogHashMap);
                         break;
                     default:
                         break;
@@ -103,8 +100,31 @@ public class ParseTest {
 //            System.out.println("operation:" + binlogHashMap.get(pk).getOperation());
 //        }
 
+        //add to database
+        Database database = Database.getInstance();
+        boolean init = false;
         for (Binlog binlog : binlogHashMap.values()) {
             System.out.println(binlog.toString());
+            byte op = binlog.getOperation();
+            switch(op) {
+                case Binlog.I:
+                    if (!init) {
+                        database.init(binlog);
+                        init = true;
+                    } else {
+                        database.insert(binlog);
+                    }
+                    break;
+                case Binlog.U:
+                    database.update(binlog);
+                    break;
+                case Binlog.D:
+                    database.delete(binlog);
+                    break;
+                default:
+                    break;
+
+            }
         }
         System.out.println("total lines: " + j);
 

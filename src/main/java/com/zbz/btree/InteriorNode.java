@@ -1,23 +1,30 @@
 package com.zbz.btree;
 
+import java.util.LinkedList;
+
 /**
  * Created by zwy on 17-6-9.
  */
 public class InteriorNode extends Node {
-    private long[] keys;
-    private Node[] pointers;
 
     public InteriorNode() {
-        keys = new long[BPlusTree.N];
-        pointers = new Node[BPlusTree.N + 1];
+        super(new InteriorElement());
     }
 
-    public int keyIdx(long key) {
-        for(int i = 0; i < BPlusTree.N; i++) {
-            if(keys[i] ==  key) {
-                return i;
+    public InteriorElement insert(long key) {
+        InteriorElement newElem = new InteriorElement();
+        newElem.key = key;
+        super.insert(newElem);
+        return newElem;
+    }
+
+    public InteriorElement getElement(long key) {
+        InteriorElement curr = (InteriorElement) tail;
+        while (curr != head) {
+            if (key >= curr.key) {
+                break;
             }
         }
-        return -1;
+        return curr;
     }
 }

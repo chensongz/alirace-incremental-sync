@@ -7,6 +7,10 @@ import java.util.HashMap;
  */
 public class Binlog {
     // 1 represent I, 2 represent U, 3 represent D
+    public static final byte I = 1;
+    public static final byte U = 2;
+    public static final byte D = 3;
+
     private byte operation;
 
     private String primaryKey;

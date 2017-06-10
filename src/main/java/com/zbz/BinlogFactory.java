@@ -9,13 +9,13 @@ public class BinlogFactory {
         Binlog binlog = new Binlog();
         switch (strings[5]) {
             case "I":
-                binlog.setOperation((byte)1);
+                binlog.setOperation(Binlog.I);
                 break;
             case "U":
-                binlog.setOperation((byte)2);
+                binlog.setOperation(Binlog.U);
                 break;
             case "D":
-                binlog.setOperation((byte)3);
+                binlog.setOperation(Binlog.D);
                 break;
 
         }
