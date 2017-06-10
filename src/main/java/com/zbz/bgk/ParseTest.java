@@ -89,7 +89,7 @@ public class ParseTest {
 
             //****
             i++;
-            if(i >= 1000000) break;
+            if(i >= 1000) break;
         }
 
         reader.close();
@@ -104,7 +104,7 @@ public class ParseTest {
         Database database = Database.getInstance();
         boolean init = false;
         for (Binlog binlog : binlogHashMap.values()) {
-            System.out.println(binlog.toString());
+//            System.out.println(binlog.toString());
             byte op = binlog.getOperation();
             switch(op) {
                 case Binlog.I:

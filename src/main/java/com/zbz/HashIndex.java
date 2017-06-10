@@ -7,16 +7,17 @@ import java.util.Map;
  * Created by Victor on 2017/6/10.
  */
 public class HashIndex extends Index {
-    Map<Long, Long> indexHashMap = new HashMap<>();
-    public void insert() {
+    private Map<Long, Long> indexHashMap = new HashMap<>();
 
+    public void insert(long key, long offset) {
+        indexHashMap.put(key, offset);
     }
 
-    public void delete() {
-
+    public void delete(long key) {
+        indexHashMap.remove(key);
     }
 
-    public long getOffset(Binlog binlog) {
-        return indexHashMap.get(binlog.getPrimaryValue());
+    public long getOffset(long key) {
+        return indexHashMap.get(key);
     }
 }

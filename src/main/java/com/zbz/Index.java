@@ -3,10 +3,10 @@ package com.zbz;
 /**
  * Created by Victor on 2017/6/10.
  */
-public abstract class Index {
-    abstract void insert();
+abstract public class Index {
+    abstract void insert(long key, long offset);
 
-    abstract void delete();
+    abstract void delete(long key);
 
-    abstract long getOffset(Binlog binlog);
+    abstract long getOffset(long key);
 }

@@ -35,6 +35,10 @@ public class Binlog {
         this.primaryKeyIndex = primaryKeyIndex;
     }
 
+    public int getPrimaryKeyIndex() {
+        return this.primaryKeyIndex;
+    }
+
     public void setPrimaryOldValue(String primaryOldValue) {
         if (primaryOldValue.equals("NULL")) {
             this.primaryOldValue = -1;
