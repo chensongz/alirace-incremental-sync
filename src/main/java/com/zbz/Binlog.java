@@ -19,6 +19,8 @@ public class Binlog {
 
     private long primaryValue;
 
+    private int primaryKeyIndex = 0;
+
     private HashMap<String, Field> fields = new HashMap<>();
 
     public void setOperation(byte operation) {
@@ -27,6 +29,10 @@ public class Binlog {
 
     public void setPrimaryKey(String primaryKey) {
         this.primaryKey = primaryKey;
+    }
+
+    public void setPrimaryKeyIndex(int primaryKeyIndex) {
+        this.primaryKeyIndex = primaryKeyIndex;
     }
 
     public void setPrimaryOldValue(String primaryOldValue) {

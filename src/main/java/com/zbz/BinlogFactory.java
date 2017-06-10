@@ -25,6 +25,7 @@ public class BinlogFactory {
         String oldValue;
         String newValue;
         int i = 6;
+        int j = 0;
         while (i < strings.length) {
             fieldStrings = strings[i++].split(":");
             fieldname = fieldStrings[0];
@@ -34,7 +35,8 @@ public class BinlogFactory {
             if (fieldStrings[2].equals("1")) {
                 // if field is primary key
                 binlog.setPrimaryKey(fieldStrings[0]);
-                if (binlog.getOperation() == 3) {
+                binlog.setPrimaryKeyIndex(j);
+                if (binlog.getOperation() == Binlog.D) {
                     // if delete operation
                     binlog.setPrimaryOldValue(newValue);
                     binlog.setPrimaryValue(oldValue);
@@ -47,6 +49,7 @@ public class BinlogFactory {
                 Field field = new Field(fieldname, Byte.parseByte(fieldType), newValue);
                 binlog.addField(field);
             }
+            j++;
 
         }
         return binlog;
