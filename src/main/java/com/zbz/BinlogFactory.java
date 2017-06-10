@@ -53,7 +53,7 @@ public class BinlogFactory {
     }
 
     public static Binlog createBinlog(String line, String table) {
-        String[] strings = line.split("|");
+        String[] strings = line.split("\\|");
         if (strings[4].equals(table)) {
             return createBinlog(line);
         }
