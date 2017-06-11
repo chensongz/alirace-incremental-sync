@@ -31,6 +31,10 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         fc.write(ByteBuffer.wrap(result1));
         System.out.println("receive: " + new String(result1));
         result.release();
+        if (result1[result1.length - 1] == '\r') {
+            logger.info("client receive all message success!!");
+            ctx.close();
+        }
         ctx.writeAndFlush("I have received your messages and wait for next messages");
     }
 
