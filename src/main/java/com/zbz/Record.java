@@ -34,7 +34,7 @@ public class Record {
             }
         }
         String recordString = bao.toString();
-        System.out.println("record string:" + recordString);
+//        System.out.println("record string:" + recordString);
         return parse(recordString, table);
     }
 
@@ -73,10 +73,11 @@ public class Record {
         for (String fieldname : newFields.keySet()) {
             if (!newFields.get(fieldname).equals("NULL")) {
                 // if update binlog not includes all fields
+//                System.out.println("new record put " + fieldname + ":" + newFields.get(fieldname));
                 retRecord.put(fieldname, newFields.get(fieldname));
             }
         }
-        return record;
+        return retRecord;
     }
 
     @Override
