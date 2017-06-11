@@ -56,6 +56,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         logger.info("receive client:" + resultStr);
         Channel channel = Server.getMap().get(ipString);
 
+        long t1 = System.currentTimeMillis();
         while (true) {
             // 向客户端发送消息
             String message = (String) getMessage();
@@ -78,6 +79,10 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
                 break;
             }
         }
+        long t2 = System.currentTimeMillis();
+        String p = "Server sender: " + (t2 - t1) + "ms";
+        System.out.println(p);
+        logger.info(p);
     }
 
     @Override
@@ -89,6 +94,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         // 模拟下数据生成，每隔5秒产生一条消息
 //        Thread.sleep(5000);
         Record record = sendPool.poll();
+        logger.warn("server polled record: " + record.toString());
         if (record.getTable() != null) {
             return record.toString();
         } else {

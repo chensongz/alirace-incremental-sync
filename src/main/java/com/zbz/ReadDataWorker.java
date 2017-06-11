@@ -1,5 +1,8 @@
 package com.zbz;
 
+import com.alibaba.middleware.race.sync.Server;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -8,7 +11,7 @@ import java.io.FileReader;
  */
 public class ReadDataWorker implements Runnable {
 
-    public static final int FILE_CNT = 3;
+    public static final int FILE_CNT = 10;
 
     private BinlogPool binlogPool;
     private BinlogReducer binlogReducer;
@@ -25,12 +28,12 @@ public class ReadDataWorker implements Runnable {
     }
 
     private String getFilename(int i) {
-        return dataHome + "/canal_0" + i;
+        return dataHome + "/" + (1 + i) + ".txt";
     }
 
     public void run() {
         try {
-
+            long t1 = System.currentTimeMillis();
             for(int i = 0; i < FILE_CNT; i++) {
                 String filename = getFilename(i);
                 BufferedReader reader = new BufferedReader(new FileReader(filename));
@@ -46,6 +49,10 @@ public class ReadDataWorker implements Runnable {
                 binlogPool.put(new Binlog());
                 reader.close();
             }
+            long t2 = System.currentTimeMillis();
+            String p = "Server readDataWorker: " + (t2 - t1) + "ms";
+            System.out.println(p);
+            LoggerFactory.getLogger(Server.class).info(p);
         } catch (Exception e) {
             e.printStackTrace();
         }
