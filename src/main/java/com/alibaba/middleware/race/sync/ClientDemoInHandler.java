@@ -7,9 +7,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by wanshao on 2017/5/25.
@@ -37,6 +41,8 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
             logger.warn("result size: " + fc.size());
             fc.close();
             ctx.close();
+            //watch
+            listDir();
         }
         ctx.writeAndFlush("I have received your messages and wait for next messages");
     }
@@ -52,5 +58,12 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         encoded.writeBytes(msg.getBytes());
         ctx.write(encoded);
         ctx.flush();
+    }
+
+    private void listDir() {
+        File dir = new File(Constants.RESULT_HOME);
+        List<String> list = Arrays.asList(dir.list());
+        logger.info(list.toString());
+        System.out.println(list.toString());
     }
 }
