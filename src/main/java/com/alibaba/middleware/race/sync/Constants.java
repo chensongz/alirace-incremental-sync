@@ -11,7 +11,7 @@ public class Constants {
     public static final String TESTER_HOME = "/home/zwy/work/middlewareTester";
     // 赛题数据
 //    String DATA_HOME = "/home/zwy/work/canal_data";
-    public static final String DATA_HOME = "/home/zwy/work/test/canal.txt";
+    public static final String DATA_HOME = "/home/zwy/work/test/";
     // 结果文件目录
     public static final String RESULT_HOME = "/home/zwy/work/middlewareTester/user_result";
     // teamCode

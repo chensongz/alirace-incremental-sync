@@ -8,6 +8,8 @@ import java.io.FileReader;
  */
 public class ReadDataWorker implements Runnable {
 
+    public static final int FILE_CNT = 3;
+
     private BinlogPool binlogPool;
     private BinlogReducer binlogReducer;
     private String dataHome;
@@ -22,20 +24,28 @@ public class ReadDataWorker implements Runnable {
         this.table = table;
     }
 
+    private String getFilename(int i) {
+        return dataHome + "/canal_0" + i;
+    }
+
     public void run() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(dataHome));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                binlogReducer.reduce(line);
-                if (binlogReducer.isFull()) {
-                    clearBinlogReducer();
-                }
+
+            for(int i = 0; i < FILE_CNT; i++) {
+                String filename = getFilename(i);
+                BufferedReader reader = new BufferedReader(new FileReader(filename));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    binlogReducer.reduce(line);
+                    if (binlogReducer.isFull()) {
+                        clearBinlogReducer();
+                    }
 //                System.out.println(line);
+                }
+                clearBinlogReducer();
+                binlogPool.put(new Binlog());
+                reader.close();
             }
-            clearBinlogReducer();
-            binlogPool.put(new Binlog());
-            reader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
