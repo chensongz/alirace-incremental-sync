@@ -89,6 +89,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         // 模拟下数据生成，每隔5秒产生一条消息
 //        Thread.sleep(5000);
         Record record = sendPool.poll();
+        logger.warn("server polled record: " + record.toString());
         if (record.getTable() != null) {
             return record.toString();
         } else {
