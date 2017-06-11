@@ -25,9 +25,10 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
     public ServerDemoInHandler() {
         sendPool = SendPool.getInstance();
     }
+
     /**
      * 根据channel
-     * 
+     *
      * @param ctx
      * @return
      */
@@ -53,22 +54,27 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         String resultStr = new String(result1);
         // 接收并打印客户端的信息
         logger.info("receive client:" + resultStr);
+        Channel channel = Server.getMap().get("127.0.0.1");
 
         while (true) {
             // 向客户端发送消息
             String message = (String) getMessage();
             if (message != null) {
-                Channel channel = Server.getMap().get("127.0.0.1");
                 ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        logger.info("Server send a message.");
+//                        logger.info("Server send a message.");
                     }
                 });
             } else {
-                logger.info("Server send all message success!!");
-                ctx.close();
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(new byte[]{'\r'});
+                channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        logger.info("Server send all message success!!");
+                    }
+                });
                 break;
             }
         }
