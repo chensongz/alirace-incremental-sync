@@ -7,6 +7,14 @@ import java.util.LinkedHashMap;
  */
 public class Table {
     private LinkedHashMap<String, Byte> fields = new LinkedHashMap<>();
+    private String primaryKey = null;
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
+    public String getPrimaryKey() {
+        return primaryKey;
+    }
 
     public void put(String fieldname, byte type) {
         fields.put(fieldname, type);

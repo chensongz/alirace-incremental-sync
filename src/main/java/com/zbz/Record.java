@@ -13,10 +13,10 @@ import java.nio.ByteBuffer;
 public class Record implements Comparable<Record>{
 
     private static final String SEPARATOR = "\t";
-    private String primaryKey = null;
     private LinkedHashMap<String, String> fieldHashMap = new LinkedHashMap<>();
-
-    public Record() {
+    private Table table;
+    public Record(Table table) {
+        this.table = table;
     }
 
     public ByteBuffer toBytes() {
@@ -39,11 +39,10 @@ public class Record implements Comparable<Record>{
     }
 
     public static Record parseFromBinlog(Binlog binlog, Table table) {
-        Record record = new Record();
+        Record record = new Record(table);
         HashMap<String, Field> fields = binlog.getFields();
         for(String field: table.getFields().keySet()) {
             if (field.equals(binlog.getPrimaryKey())) {
-                record.setPrimaryKey(field);
                 record.put(field, String.valueOf(binlog.getPrimaryValue()));
             } else {
                 Field val = fields.get(field);
@@ -57,16 +56,8 @@ public class Record implements Comparable<Record>{
         fieldHashMap.put(fieldname, value);
     }
 
-    public void setPrimaryKey(String primaryKey) {
-        this.primaryKey = primaryKey;
-    }
-
-    public String getPrimaryKey() {
-        return primaryKey;
-    }
-
     public long getPrimaryKeyValue() {
-        return Long.parseLong(fieldHashMap.get(primaryKey));
+        return Long.parseLong(fieldHashMap.get(table.getPrimaryKey()));
     }
 
     public LinkedHashMap<String, String> getFields() {
@@ -75,8 +66,7 @@ public class Record implements Comparable<Record>{
 
     public static Record parseFromBinlog(Binlog binlog, Table table, Record record) {
         Record newRecord = parseFromBinlog(binlog, table);
-        Record retRecord = new Record();
-        retRecord.setPrimaryKey(record.getPrimaryKey());
+        Record retRecord = new Record(table);
         LinkedHashMap<String, String> oldFields = record.getFields();
         LinkedHashMap<String, String> newFields = newRecord.getFields();
 //        System.out.println("old record:" + record);
@@ -108,7 +98,7 @@ public class Record implements Comparable<Record>{
 //        System.out.println("parse str:" + str);
         String[] vals = str.split(SEPARATOR);
         LinkedHashMap<String, Byte> fields = table.getFields();
-        Record ret = new Record();
+        Record ret = new Record(table);
         int i = 0;
         for(String field: fields.keySet()) {
             ret.put(field, vals[i++]);

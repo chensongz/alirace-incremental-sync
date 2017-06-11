@@ -31,6 +31,7 @@ public class Database {
             int i = 0;
             for (Field field : fields.values()) {
                 if (i++ == pkIdx) {
+                    table.setPrimaryKey(binlog.getPrimaryKey());
                     table.put(binlog.getPrimaryKey(), Field.NUMERIC);
                 }
                 table.put(field.getName(), field.getType());
