@@ -2,6 +2,7 @@ package com.zbz;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -54,6 +55,9 @@ public class DatabaseWorker implements Runnable {
         //database created, execute query
         System.out.println("Query result: ");
         List<Record> queryList = database.query(start, end);
+
+        Collections.sort(queryList);
+
         for(Record record: queryList) {
             System.out.println(record);
             sendPool.put(record);

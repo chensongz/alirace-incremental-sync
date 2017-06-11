@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by zwy on 17-6-10.
  */
-public class Record {
+public class Record implements Comparable<Record>{
 
     private static final String SEPARATOR = "\t";
     private String primaryKey = null;
@@ -65,6 +65,10 @@ public class Record {
         return primaryKey;
     }
 
+    public long getPrimaryKeyValue() {
+        return Long.parseLong(fieldHashMap.get(primaryKey));
+    }
+
     public LinkedHashMap<String, String> getFields() {
         return fieldHashMap;
     }
@@ -110,5 +114,12 @@ public class Record {
             ret.put(field, vals[i++]);
         }
         return ret;
+    }
+
+    @Override
+    public int compareTo(Record o) {
+        long k1 = this.getPrimaryKeyValue();
+        long k2 = o.getPrimaryKeyValue();
+        return k1 >= k2 ? 1 : -1;
     }
 }
