@@ -17,7 +17,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(ServerDemoInHandler.class);
-
+//    private
     /**
      * 根据channel
      * 

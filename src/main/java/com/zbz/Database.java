@@ -53,9 +53,9 @@ public class Database {
         Record record = Record.parseFromBinlog(binlog, table);
         long offset = persistence.insert(record);
         index.insert(binlog.getPrimaryValue(), offset);
-        if(binlog.getPrimaryValue() > 600 && binlog.getPrimaryValue() < 700) {
-            System.out.println("pk: " + binlog.getPrimaryValue() + " offset: " + offset);
-        }
+//        if(binlog.getPrimaryValue() > 600 && binlog.getPrimaryValue() < 700) {
+//            System.out.println("pk: " + binlog.getPrimaryValue() + " offset: " + offset);
+//        }
     }
 
     public void update(Binlog binlog) {
@@ -84,7 +84,7 @@ public class Database {
         List<Long> offsets = new ArrayList<>((int)(end - start));
         for (long i = start + 1; i < end; i++) {
             long offset = index.getOffset(i);
-            System.out.println("current query: " + i + " offset: " + offset);
+//            System.out.println("current query: " + i + " offset: " + offset);
             offsets.add(offset);
         }
         Collections.sort(offsets);

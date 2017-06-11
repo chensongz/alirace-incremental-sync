@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.zbz.DatabaseWorker;
 import com.zbz.ReadDataWorker;
 import com.zbz.BinlogPool;
+import com.zbz.SendPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +47,17 @@ public class Server {
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
         BinlogPool binlogPool = BinlogPool.getInstance();
+        SendPool sendPool = SendPool.getInstance();
+        String schema = args[0];
+        String table = args[1];
+        long start = Long.parseLong(args[2]);
+        long end = Long.parseLong(args[3]);
 
-        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, args[0], args[1]));
-        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool));
+        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, schema, table));
+        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
 
-        readDataWorker.run();
-        databaseWorker.run();
+        readDataWorker.start();
+        databaseWorker.start();
 
         server.startServer(5527);
     }

@@ -7,11 +7,13 @@ import java.util.List;
  */
 public class DatabaseWorker implements Runnable {
     private BinlogPool binlogPool;
+    private SendPool sendPool;
     private long start;
     private long end;
 
-    public DatabaseWorker(BinlogPool binlogPool, long start, long end) {
+    public DatabaseWorker(BinlogPool binlogPool, SendPool sendPool, long start, long end) {
         this.binlogPool = binlogPool;
+        this.sendPool = sendPool;
         this.start = start;
         this.end = end;
     }
