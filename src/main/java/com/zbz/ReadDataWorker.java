@@ -8,7 +8,7 @@ import java.io.FileReader;
  */
 public class ReadDataWorker implements Runnable {
 
-    public static final int FILE_CNT = 3;
+    public static final int FILE_CNT = 10;
 
     private BinlogPool binlogPool;
     private BinlogReducer binlogReducer;
@@ -25,7 +25,7 @@ public class ReadDataWorker implements Runnable {
     }
 
     private String getFilename(int i) {
-        return dataHome + "/canal_0" + i;
+        return dataHome + "/" + (1 + i) + ".txt";
     }
 
     public void run() {
