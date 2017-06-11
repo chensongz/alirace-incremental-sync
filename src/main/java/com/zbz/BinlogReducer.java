@@ -9,14 +9,16 @@ public class BinlogReducer {
     private static final int CAPACITY = 500;
 
     private HashMap<Long, Binlog> binlogHashMap = new HashMap<>();
+    private String schema;
     private String table;
 
-    public BinlogReducer(String table) {
+    public BinlogReducer(String schema, String table) {
+        this.schema = schema;
         this.table = table;
     }
 
     public void reduce(String line) {
-        Binlog newBinlog = BinlogFactory.createBinlog(line, table);
+        Binlog newBinlog = BinlogFactory.createBinlog(line, schema, table);
         if (newBinlog != null) {
             if (binlogHashMap.containsKey(newBinlog.getPrimaryValue())) {
                 // maybe insert record or update fields or delete record

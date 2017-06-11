@@ -59,9 +59,10 @@ public class DatabaseWorker implements Runnable {
         Collections.sort(queryList);
 
         for(Record record: queryList) {
-            System.out.println(record);
+//            System.out.println(record);
             sendPool.put(record);
         }
+        sendPool.put(new Record(null));
 
         long t2 = System.currentTimeMillis();
         System.out.println("time: " + (t2 - t1) / 1000 + " s");
