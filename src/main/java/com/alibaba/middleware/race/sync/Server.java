@@ -44,9 +44,7 @@ public class Server {
         printInput(args);
         Logger logger = LoggerFactory.getLogger(Server.class);
         Server server = new Server();
-        for (int i = 0; i < 100; i++) {
-            logger.info("com.alibaba.middleware.race.sync.Server is running....");
-        }
+        logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
         BinlogPool binlogPool = BinlogPool.getInstance();
         SendPool sendPool = SendPool.getInstance();
