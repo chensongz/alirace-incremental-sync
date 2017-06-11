@@ -14,7 +14,7 @@ public class Binlog {
 
     private byte operation;
 
-    private String primaryKey;
+    private String primaryKey = null;
 
     private long primaryOldValue;
 
