@@ -42,9 +42,9 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
+        String ipString = getIPString(ctx);
         // 保存channel
-        Server.getMap().put(getIPString(ctx), ctx.channel());
+        Server.getMap().put(ipString, ctx.channel());
 
         logger.info("com.alibaba.middleware.race.sync.ServerDemoInHandler.channelRead");
         ByteBuf result = (ByteBuf) msg;
@@ -54,7 +54,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         String resultStr = new String(result1);
         // 接收并打印客户端的信息
         logger.info("receive client:" + resultStr);
-        Channel channel = Server.getMap().get("127.0.0.1");
+        Channel channel = Server.getMap().get(ipString);
 
         while (true) {
             // 向客户端发送消息
