@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 public class Record {
 
     private static final String SEPARATOR = "\t";
-
+    private String primaryKey = null;
     private LinkedHashMap<String, String> fieldHashMap = new LinkedHashMap<>();
 
     public Record() {
@@ -43,6 +43,7 @@ public class Record {
         HashMap<String, Field> fields = binlog.getFields();
         for(String field: table.getFields().keySet()) {
             if (field.equals(binlog.getPrimaryKey())) {
+                record.setPrimaryKey(field);
                 record.put(field, String.valueOf(binlog.getPrimaryValue()));
             } else {
                 Field val = fields.get(field);
@@ -56,6 +57,14 @@ public class Record {
         fieldHashMap.put(fieldname, value);
     }
 
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
+    public String getPrimaryKey() {
+        return primaryKey;
+    }
+
     public LinkedHashMap<String, String> getFields() {
         return fieldHashMap;
     }
@@ -63,6 +72,7 @@ public class Record {
     public static Record parseFromBinlog(Binlog binlog, Table table, Record record) {
         Record newRecord = parseFromBinlog(binlog, table);
         Record retRecord = new Record();
+        retRecord.setPrimaryKey(record.getPrimaryKey());
         LinkedHashMap<String, String> oldFields = record.getFields();
         LinkedHashMap<String, String> newFields = newRecord.getFields();
         System.out.println("old record:" + record);
