@@ -4,8 +4,9 @@
 3. 外部赛复赛旺旺群：1251809708
 4. 该文档根据实际情况会进行更新，选手每次写代码前建议pull下该样例工程，查看README文件的变化
 
-[server](http://middle2017.oss-cn-shanghai.aliyuncs.com/76934cqcw0/server.log.tar.gz)
-[client](http://middle2017.oss-cn-shanghai.aliyuncs.com/76934cqcw0/client.log.tar.gz)
+[server.log](http://middle2017.oss-cn-shanghai.aliyuncs.com/76934cqcw0/server.log.tar.gz)
+
+[client.log](http://middle2017.oss-cn-shanghai.aliyuncs.com/76934cqcw0/client.log.tar.gz)
 
 # ================================================== 赛题规则 ============================================================
 
