@@ -33,7 +33,7 @@ public class ReadDataWorker implements Runnable {
                 if (binlogReducer.isFull()) {
                     clearBinlogReducer();
                 }
-                System.out.println(line);
+//                System.out.println(line);
             }
             clearBinlogReducer();
             binlogPool.put(new Binlog());

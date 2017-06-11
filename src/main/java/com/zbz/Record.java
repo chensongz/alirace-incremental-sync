@@ -89,7 +89,7 @@ public class Record {
     }
 
     public static Record parse(String str, Table table) {
-        System.out.println("parse str:" + str);
+//        System.out.println("parse str:" + str);
         String[] vals = str.split(SEPARATOR);
         LinkedHashMap<String, Byte> fields = table.getFields();
         Record ret = new Record();

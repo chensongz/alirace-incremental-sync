@@ -1,13 +1,19 @@
 package com.zbz;
 
+import java.util.List;
+
 /**
  * Created by Victor on 2017/6/10.
  */
 public class DatabaseWorker implements Runnable {
     private BinlogPool binlogPool;
+    private long start;
+    private long end;
 
-    public DatabaseWorker(BinlogPool binlogPool) {
+    public DatabaseWorker(BinlogPool binlogPool, long start, long end) {
         this.binlogPool = binlogPool;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -38,6 +44,12 @@ public class DatabaseWorker implements Runnable {
                 default:
                     break;
             }
+        }
+        //database created, execute query
+        System.out.println("Query result: ");
+        List<Record> queryList = database.query(start, end);
+        for(Record record: queryList) {
+            System.out.println(record);
         }
     }
 }

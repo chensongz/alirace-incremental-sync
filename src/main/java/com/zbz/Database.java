@@ -3,6 +3,9 @@ package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class Database {
@@ -50,6 +53,9 @@ public class Database {
         Record record = Record.parseFromBinlog(binlog, table);
         long offset = persistence.insert(record);
         index.insert(binlog.getPrimaryValue(), offset);
+        if(binlog.getPrimaryValue() > 600 && binlog.getPrimaryValue() < 700) {
+            System.out.println("pk: " + binlog.getPrimaryValue() + " offset: " + offset);
+        }
     }
 
     public void update(Binlog binlog) {
@@ -71,5 +77,22 @@ public class Database {
 
     public void delete(Binlog binlog) {
         index.delete(binlog.getPrimaryValue());
+    }
+
+    public List<Record> query(long start, long end) {
+        System.out.println("query range: "  + start + "-" + end);
+        List<Long> offsets = new ArrayList<>((int)(end - start));
+        for (long i = start + 1; i < end; i++) {
+            long offset = index.getOffset(i);
+            System.out.println("current query: " + i + " offset: " + offset);
+            offsets.add(offset);
+        }
+        Collections.sort(offsets);
+
+        List<Record> queryList = new ArrayList<>((int)(end - start));
+        for(long offset: offsets) {
+            queryList.add(persistence.query(offset));
+        }
+        return queryList;
     }
 }
