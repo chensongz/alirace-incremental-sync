@@ -7,12 +7,18 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
 /**
  * Created by wanshao on 2017/5/25.
  */
 public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(ClientDemoInHandler.class);
+
+    private FileChannel fc;
 
     // 接收server端的消息，并打印出来
     @Override
@@ -22,7 +28,8 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         ByteBuf result = (ByteBuf) msg;
         byte[] result1 = new byte[result.readableBytes()];
         result.readBytes(result1);
-        System.out.println("com.alibaba.middleware.race.sync.Server said:" + new String(result1));
+        fc.write(ByteBuffer.wrap(result1));
+        System.out.println("receive: " + new String(result1));
         result.release();
         ctx.writeAndFlush("I have received your messages and wait for next messages");
     }
@@ -31,6 +38,8 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         logger.info("com.alibaba.middleware.race.sync.ClientDemoInHandler.channelActive");
+        fc = new RandomAccessFile(Constants.RESULT_HOME + "/"
+                + Constants.RESULT_FILE_NAME, "rw").getChannel();
         String msg = "I am prepared to receive messages";
         ByteBuf encoded = ctx.alloc().buffer(4 * msg.length());
         encoded.writeBytes(msg.getBytes());

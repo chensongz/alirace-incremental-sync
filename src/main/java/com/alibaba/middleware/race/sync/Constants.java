@@ -13,7 +13,7 @@ public class Constants {
 //    String DATA_HOME = "/home/zwy/work/canal_data";
     public static final String DATA_HOME = "/home/zwy/work/test/canal.txt";
     // 结果文件目录
-    public static final String RESULT_HOME = "/home/zwy/work/middlewareTester/user_result";
+    public static final String RESULT_HOME = "/home/zwy/work/middlewareTester";
     // teamCode
     public static final String TEAMCODE = "zwy_test";
     // 日志级别
@@ -34,6 +34,6 @@ public class Constants {
     // public static final String MIDDLE_HOME = "/home/admin/middle/${teamcode}";
 
     // 结果文件的命名
-    // public static final String RESULT_FILE_NAME = "Result.rs";
+     public static final String RESULT_FILE_NAME = "Result.rs";
 
 }

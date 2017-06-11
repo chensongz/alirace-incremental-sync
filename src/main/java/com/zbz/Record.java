@@ -15,8 +15,13 @@ public class Record implements Comparable<Record>{
     private static final String SEPARATOR = "\t";
     private LinkedHashMap<String, String> fieldHashMap = new LinkedHashMap<>();
     private Table table;
+
     public Record(Table table) {
         this.table = table;
+    }
+
+    public Table getTable() {
+        return table;
     }
 
     public ByteBuffer toBytes() {

@@ -52,26 +52,26 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         result.readBytes(result1);
         String resultStr = new String(result1);
         // 接收并打印客户端的信息
-        System.out.println("com.alibaba.middleware.race.sync.Client said:" + resultStr);
+        logger.info("receive client:" + resultStr);
 
         while (true) {
             // 向客户端发送消息
-            String message = (String) getMessage() + "\n";
-//            System.out.println("prepared to send: " + message);
+            String message = (String) getMessage();
             if (message != null) {
                 Channel channel = Server.getMap().get("127.0.0.1");
-                ByteBuf byteBuf = Unpooled.wrappedBuffer(message.getBytes());
+                ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
-
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        logger.info("Server发送消息成功！");
+                        logger.info("Server send a message.");
                     }
                 });
-
+            } else {
+                logger.info("Server send all message success!!");
+                ctx.close();
+                break;
             }
         }
-
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         // 模拟下数据生成，每隔5秒产生一条消息
 //        Thread.sleep(5000);
         Record record = sendPool.poll();
-        if (record != null) {
+        if (record.getTable() != null) {
             return record.toString();
         } else {
             return null;
