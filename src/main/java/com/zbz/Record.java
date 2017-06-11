@@ -96,6 +96,7 @@ public class Record implements Comparable<Record>{
         for (String value : fields.values()) {
             sb.append(value).append(SEPARATOR);
         }
+        sb.setLength(sb.length() - 1);
         return sb.toString();
     }
 
