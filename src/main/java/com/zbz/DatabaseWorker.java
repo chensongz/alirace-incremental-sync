@@ -52,6 +52,7 @@ public class DatabaseWorker implements Runnable {
         List<Record> queryList = database.query(start, end);
         for(Record record: queryList) {
             System.out.println(record);
+            sendPool.put(record);
         }
     }
 }

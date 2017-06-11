@@ -14,6 +14,7 @@ public class SendPool {
 
     public void put(Record record) {
         //synchronize
+//        System.out.println("put record: " + record);
         try {
             records.put(record);
         } catch (InterruptedException e) {
@@ -24,7 +25,9 @@ public class SendPool {
     public Record poll() {
         //synchronize
         try {
-            return records.take();
+            Record record = records.take();
+//            System.out.println("poll record: " + record);
+            return record;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
