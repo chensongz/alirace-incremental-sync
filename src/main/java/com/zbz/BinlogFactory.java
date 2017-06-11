@@ -55,9 +55,9 @@ public class BinlogFactory {
         return binlog;
     }
 
-    public static Binlog createBinlog(String line, String table) {
+    public static Binlog createBinlog(String line, String schema, String table) {
         String[] strings = line.split("\\|");
-        if (strings[4].equals(table)) {
+        if (strings[3].equals(schema) && strings[4].equals(table)) {
             return createBinlog(line);
         }
         return null;

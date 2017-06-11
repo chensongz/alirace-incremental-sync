@@ -15,7 +15,7 @@ public class ReadDataWorker implements Runnable {
     private String table;
 
     public ReadDataWorker(BinlogPool binlogPool, String dataHome, String schema, String table) {
-        this.binlogReducer = new BinlogReducer(table);
+        this.binlogReducer = new BinlogReducer(schema, table);
         this.binlogPool = binlogPool;
         this.dataHome = dataHome;
         this.schema = schema;
