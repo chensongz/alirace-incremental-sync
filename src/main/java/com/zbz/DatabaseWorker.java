@@ -1,5 +1,7 @@
 package com.zbz;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,6 +22,8 @@ public class DatabaseWorker implements Runnable {
 
     @Override
     public void run() {
+        long t1 = System.currentTimeMillis();
+
         Database database = Database.getInstance();
         boolean init = false;
         while (!Thread.currentThread().isInterrupted()) {
@@ -54,5 +58,9 @@ public class DatabaseWorker implements Runnable {
             System.out.println(record);
             sendPool.put(record);
         }
+
+        long t2 = System.currentTimeMillis();
+        System.out.println("time: " + (t2 - t1) / 1000 + " s");
+
     }
 }

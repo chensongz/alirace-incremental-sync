@@ -59,7 +59,7 @@ public class Server {
         readDataWorker.start();
         databaseWorker.start();
 
-        server.startServer(5527);
+//        server.startServer(5527);
     }
 
     /**

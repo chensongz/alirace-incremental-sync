@@ -18,6 +18,7 @@ public class HashIndex extends Index {
     }
 
     public long getOffset(long key) {
-        return indexHashMap.get(key);
+        Long offset = indexHashMap.get(key);
+        return offset == null ? Long.MIN_VALUE : offset;
     }
 }

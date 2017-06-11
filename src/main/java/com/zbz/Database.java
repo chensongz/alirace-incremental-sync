@@ -85,7 +85,9 @@ public class Database {
         for (long i = start + 1; i < end; i++) {
             long offset = index.getOffset(i);
 //            System.out.println("current query: " + i + " offset: " + offset);
-            offsets.add(offset);
+            if(offset >= 0) {
+                offsets.add(offset);
+            }
         }
         Collections.sort(offsets);
 
