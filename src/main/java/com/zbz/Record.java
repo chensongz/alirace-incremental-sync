@@ -21,7 +21,6 @@ public class Record {
 
     public ByteBuffer toBytes() {
         ByteBuffer byteBuffer = ByteBuffer.wrap(toString().getBytes());
-        byteBuffer.put((byte)0);
         return byteBuffer;
     }
 
@@ -35,6 +34,7 @@ public class Record {
             }
         }
         String recordString = bao.toString();
+        System.out.println("record string:" + recordString);
         return parse(recordString, table);
     }
 
@@ -65,7 +65,8 @@ public class Record {
         Record retRecord = new Record();
         LinkedHashMap<String, String> oldFields = record.getFields();
         LinkedHashMap<String, String> newFields = newRecord.getFields();
-
+        System.out.println("old record:" + record);
+        System.out.println("new record:" + newRecord);
         for (String fieldname : oldFields.keySet()) {
             retRecord.put(fieldname, oldFields.get(fieldname));
         }
