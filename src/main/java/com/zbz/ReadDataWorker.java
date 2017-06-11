@@ -26,10 +26,8 @@ public class ReadDataWorker implements Runnable {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(dataHome));
             String line;
-            int i = 0;
             while ((line = reader.readLine()) != null) {
                 binlogReducer.reduce(line);
-                if (i++ >= 1000002) break;
                 if (binlogReducer.isFull()) {
                     clearBinlogReducer();
                 }
