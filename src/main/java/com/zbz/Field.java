@@ -4,6 +4,9 @@ package com.zbz;
  * Created by bgk on 6/7/17.
  */
 public class Field {
+    public static final byte NUMERIC = 1;
+    public static final byte STRING = 2;
+
     private String name;
     // 1 represent long , 2 represent String
     private byte type;

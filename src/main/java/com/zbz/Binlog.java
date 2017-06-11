@@ -1,21 +1,28 @@
 package com.zbz;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by bgk on 6/7/17.
  */
 public class Binlog {
     // 1 represent I, 2 represent U, 3 represent D
+    public static final byte I = 1;
+    public static final byte U = 2;
+    public static final byte D = 3;
+
     private byte operation;
 
-    private String primaryKey;
+    private String primaryKey = null;
 
     private long primaryOldValue;
 
     private long primaryValue;
 
-    private HashMap<String, Field> fields = new HashMap<>();
+    private int primaryKeyIndex = 0;
+
+    private LinkedHashMap<String, Field> fields = new LinkedHashMap<>();
 
     public void setOperation(byte operation) {
         this.operation = operation;
@@ -23,6 +30,14 @@ public class Binlog {
 
     public void setPrimaryKey(String primaryKey) {
         this.primaryKey = primaryKey;
+    }
+
+    public void setPrimaryKeyIndex(int primaryKeyIndex) {
+        this.primaryKeyIndex = primaryKeyIndex;
+    }
+
+    public int getPrimaryKeyIndex() {
+        return this.primaryKeyIndex;
     }
 
     public void setPrimaryOldValue(String primaryOldValue) {

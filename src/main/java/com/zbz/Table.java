@@ -1,19 +1,26 @@
 package com.zbz;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 /**
  * Created by bgk on 6/9/17.
  */
 public class Table {
-    private List<String> fields = new LinkedList<>();
-
-    public void put(String fieldname) {
-        fields.add(fieldname);
+    private LinkedHashMap<String, Byte> fields = new LinkedHashMap<>();
+    private String primaryKey = null;
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
     }
 
-    public List<String> getFields() {
+    public String getPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void put(String fieldname, byte type) {
+        fields.put(fieldname, type);
+    }
+
+    public LinkedHashMap<String, Byte> getFields() {
         return fields;
     }
 }
