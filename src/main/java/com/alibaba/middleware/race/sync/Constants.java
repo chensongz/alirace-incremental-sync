@@ -31,8 +31,8 @@ public class Constants {
     //// 结果文件目录(client端会用到)
      public static final String RESULT_HOME = "/home/admin/sync_results/" + TEAMCODE;
     //// 中间结果目录（client和server都会用到）
-//     public static final String MIDDLE_HOME = "/home/admin/middle/" + TEAMCODE;
-     public static final String MIDDLE_HOME = "/home/admin/logs/" + TEAMCODE;
+     public static final String MIDDLE_HOME = "/home/admin/middle/" + TEAMCODE;
+//     public static final String MIDDLE_HOME = "/home/admin/logs/" + TEAMCODE;
 
     // 结果文件的命名
      public static final String RESULT_FILE_NAME = "Result.rs";
