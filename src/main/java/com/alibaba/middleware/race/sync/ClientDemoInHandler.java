@@ -33,17 +33,21 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         byte[] result1 = new byte[result.readableBytes()];
         result.readBytes(result1);
 
-        fc.write(ByteBuffer.wrap(result1));
+
         logger.warn("client receive: " + new String(result1));
         result.release();
         if (result1[result1.length - 1] == '\r') {
+            fc.write(ByteBuffer.wrap(result1, 0, result1.length - 1));
             logger.info("client receive all message success!!");
             logger.warn("result size: " + fc.size());
             fc.close();
             ctx.close();
             //watch
             listDir();
+        } else {
+            fc.write(ByteBuffer.wrap(result1));
         }
+
         ctx.writeAndFlush("I have received your messages and wait for next messages");
     }
 
