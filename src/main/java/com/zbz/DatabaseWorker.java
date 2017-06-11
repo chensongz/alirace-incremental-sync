@@ -1,5 +1,8 @@
 package com.zbz;
 
+import com.alibaba.middleware.race.sync.Server;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,7 +68,8 @@ public class DatabaseWorker implements Runnable {
         sendPool.put(new Record(null));
 
         long t2 = System.currentTimeMillis();
-        System.out.println("time: " + (t2 - t1) / 1000 + " s");
-
+        String p = "Server databaseWorker: " + (t2 - t1) + "ms";
+        System.out.println(p);
+        LoggerFactory.getLogger(Server.class).info(p);
     }
 }
