@@ -1,7 +1,7 @@
 package com.alibaba.middleware.race.sync;
 
+import com.zbz.Pool;
 import com.zbz.Record;
-import com.zbz.SendPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +20,16 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(ServerDemoInHandler.class);
 
-    private SendPool sendPool;
+    private Pool<Record> sendPool;
 
     public ServerDemoInHandler() {
-        sendPool = SendPool.getInstance();
+        try {
+            sendPool = Pool.getPoolInstance(Record.class, 5000);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -76,6 +82,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
                         logger.info("Server send all message success!!");
                     }
                 });
+
                 break;
             }
         }
@@ -91,16 +98,13 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
     }
 
     private Object getMessage() throws InterruptedException {
-        // 模拟下数据生成，每隔5秒产生一条消息
-//        Thread.sleep(5000);
+
         Record record = sendPool.poll();
         logger.warn("server polled record: " + record.toString());
-        if (record.getTable() != null) {
+        if (record.getPrimaryKeyValue() > 0) {
             return record.toString();
         } else {
             return null;
         }
-//        return "message generated in ServerDemoInHandler";
-
     }
 }

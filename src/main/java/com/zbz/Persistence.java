@@ -1,10 +1,12 @@
 package com.zbz;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.LinkedHashMap;
 
 /**
  * Created by zwy on 17-6-10.
@@ -12,12 +14,12 @@ import java.nio.channels.FileChannel;
 public class Persistence {
     public static int NUM = 10;
     public static int CHAR = 10;
+    public static String SEPARATOR = "\t";
 
     private FileChannel fc;
     private Table table;
     private long recordOffset;
     private int RECORD_WIDTH;
-
 
     public Persistence(String filename) {
         try {
@@ -43,7 +45,7 @@ public class Persistence {
 
     private void writeRecord(Record record, long offset) {
         try {
-            ByteBuffer recordBytes = record.toBytes();
+            byte[] recordBytes = record.toBytes();
             ByteBuffer byteBuffer = ByteBuffer.allocate(RECORD_WIDTH);
             byteBuffer.put(recordBytes);
             byteBuffer.flip();
@@ -68,7 +70,7 @@ public class Persistence {
         ByteBuffer recordBytes = ByteBuffer.allocate(RECORD_WIDTH);
         try {
             fc.read(recordBytes, offset);
-            return Record.parseFromBytes(recordBytes, table);
+            return recordFromBytes(recordBytes);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,5 +83,33 @@ public class Persistence {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Record recordFromString(String str) {
+        String[] vals = str.split(SEPARATOR);
+        LinkedHashMap<String, Byte> fields = table.getFields();
+        Record ret = new Record();
+
+        int i = 0;
+        for(String field: fields.keySet()) {
+            ret.put(field, vals[i++]);
+        }
+        return ret;
+    }
+
+    private Record recordFromBytes(ByteBuffer recordBytes) {
+        recordBytes.flip();
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+
+        while(recordBytes.remaining() > 0) {
+            byte curr = recordBytes.get();
+            if(curr != (byte)0) {
+                bao.write(curr);
+            } else {
+                break;
+            }
+        }
+        String recordString = bao.toString();
+        return recordFromString(recordString);
     }
 }

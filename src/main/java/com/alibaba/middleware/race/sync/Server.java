@@ -3,10 +3,7 @@ package com.alibaba.middleware.race.sync;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.zbz.DatabaseWorker;
-import com.zbz.ReadDataWorker;
-import com.zbz.BinlogPool;
-import com.zbz.SendPool;
+import com.zbz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,20 +37,30 @@ public class Server {
     }
 
     public static void main(String[] args) throws InterruptedException {
+
+        String schema = args[0];
+        String table = args[1];
+        long start = Long.parseLong(args[2]);
+        long end = Long.parseLong(args[3]);
+
         initProperties();
         printInput(args);
         Logger logger = LoggerFactory.getLogger(Server.class);
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-        BinlogPool binlogPool = BinlogPool.getInstance();
-        SendPool sendPool = SendPool.getInstance();
-        String schema = args[0];
-        String table = args[1];
-        long start = Long.parseLong(args[2]);
-        long end = Long.parseLong(args[3]);
+        Pool<Binlog> binlogPool = null;
+        Pool<Record> sendPool = null;
+        try {
+            binlogPool = Pool.getPoolInstance(Binlog.class, 5000);
+            sendPool = Pool.getPoolInstance(Record.class, 5000);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
 
-        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, schema, table));
+        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, schema, table));
         Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
 
         readDataWorker.start();

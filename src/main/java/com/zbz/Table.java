@@ -1,6 +1,7 @@
 package com.zbz;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by bgk on 6/9/17.
@@ -8,16 +9,23 @@ import java.util.LinkedHashMap;
 public class Table {
     private LinkedHashMap<String, Byte> fields = new LinkedHashMap<>();
     private String primaryKey = null;
-    public void setPrimaryKey(String primaryKey) {
-        this.primaryKey = primaryKey;
+
+    public void init(Binlog binlog) {
+        int pkIdx = binlog.getPrimaryKeyIndex();
+        Map<String, Field> fields = binlog.getFields();
+
+        int i = 0;
+        for (Field field : fields.values()) {
+            if (i++ == pkIdx) {
+                primaryKey = binlog.getPrimaryKey();
+                this.fields.put(primaryKey, Field.NUMERIC);
+            }
+            this.fields.put(field.getName(), field.getType());
+        }
     }
 
-    public String getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void put(String fieldname, byte type) {
-        fields.put(fieldname, type);
+    public boolean isPrimaryKey(String field) {
+        return primaryKey.equals(field);
     }
 
     public LinkedHashMap<String, Byte> getFields() {

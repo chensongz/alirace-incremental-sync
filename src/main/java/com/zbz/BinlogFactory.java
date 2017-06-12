@@ -7,6 +7,7 @@ public class BinlogFactory {
     public static Binlog createBinlog(String line) {
         String[] strings = line.split("\\|");
         Binlog binlog = new Binlog();
+
         switch (strings[5]) {
             case "I":
                 binlog.setOperation(Binlog.I);
@@ -19,13 +20,14 @@ public class BinlogFactory {
                 break;
 
         }
+
         String[] fieldStrings;
         String fieldname;
         String fieldType;
         String oldValue;
         String newValue;
         int i = 6;
-        int j = 0;
+        int j = 0; //get primary key position
         while (i < strings.length) {
             fieldStrings = strings[i++].split(":");
             fieldname = fieldStrings[0];
@@ -50,7 +52,6 @@ public class BinlogFactory {
                 binlog.addField(field);
             }
             j++;
-
         }
         return binlog;
     }

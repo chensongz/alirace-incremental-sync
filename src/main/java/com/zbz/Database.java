@@ -3,13 +3,9 @@ package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Database {
-
 
     private static final Database database = new Database();
     public static Database getInstance() {
@@ -17,25 +13,15 @@ public class Database {
     }
 
     private Table table = null;
-    private Persistence persistence = null;
     private Index index = null;
+    private Persistence persistence = null;
 
     public void init(Binlog binlog) {
         if (binlog.getOperation() != Binlog.I) return;
-        //create table
-        if (table == null) {
-            int pkIdx = binlog.getPrimaryKeyIndex();
-            table = new Table();
-            Map<String, Field> fields = binlog.getFields();
 
-            int i = 0;
-            for (Field field : fields.values()) {
-                if (i++ == pkIdx) {
-                    table.setPrimaryKey(binlog.getPrimaryKey());
-                    table.put(binlog.getPrimaryKey(), Field.NUMERIC);
-                }
-                table.put(field.getName(), field.getType());
-            }
+        if (table == null) {
+            table = new Table();
+            table.init(binlog);
         }
 
         if(persistence == null) {
@@ -51,12 +37,9 @@ public class Database {
     }
 
     public void insert(Binlog binlog) {
-        Record record = Record.parseFromBinlog(binlog, table);
+        Record record = parseFromBinlog(binlog);
         long offset = persistence.insert(record);
         index.insert(binlog.getPrimaryValue(), offset);
-//        if(binlog.getPrimaryValue() > 600 && binlog.getPrimaryValue() < 700) {
-//            System.out.println("pk: " + binlog.getPrimaryValue() + " offset: " + offset);
-//        }
     }
 
     public void update(Binlog binlog) {
@@ -69,10 +52,10 @@ public class Database {
         } else {
             offset = index.getOffset(binlog.getPrimaryValue());
         }
-//        System.out.println("offset:" + offset);
 
         Record record = persistence.query(offset);
-        Record newRecord = Record.parseFromBinlog(binlog, table, record);
+        Record newRecord = parseFromBinlog(binlog, record);
+
         persistence.update(newRecord, offset);
     }
 
@@ -81,11 +64,9 @@ public class Database {
     }
 
     public List<Record> query(long start, long end) {
-        System.out.println("query range: "  + start + "-" + end);
         List<Long> offsets = new ArrayList<>((int)(end - start));
         for (long i = start + 1; i < end; i++) {
             long offset = index.getOffset(i);
-//            System.out.println("current query: " + i + " offset: " + offset);
             if(offset >= 0) {
                 offsets.add(offset);
             }
@@ -97,5 +78,47 @@ public class Database {
             queryList.add(persistence.query(offset));
         }
         return queryList;
+    }
+
+    private Record parseFromBinlog(Binlog binlog) {
+
+        Record record = new Record();
+        HashMap<String, Field> fields = binlog.getFields();
+        for(String field: table.getFields().keySet()) {
+            if (field.equals(binlog.getPrimaryKey())) {
+                record.put(field, String.valueOf(binlog.getPrimaryValue()));
+            } else {
+                Field val = fields.get(field);
+                record.put(field, val == null ? "NULL" : val.getValue());
+            }
+        }
+        return record;
+    }
+
+    public Record parseFromBinlog(Binlog binlog, Record oldRecord) {
+        Record newRecord = parseFromBinlog(binlog);
+        Record retRecord = new Record();
+
+        LinkedHashMap<String, String> oldFields = oldRecord.getFields();
+        LinkedHashMap<String, String> newFields = newRecord.getFields();
+
+        for (String field : oldFields.keySet()) {
+            retRecord.put(field, oldFields.get(field));
+        }
+        for (String field : newFields.keySet()) {
+            if (!newFields.get(field).equals("NULL")) {
+
+                if(table.isPrimaryKey(field)) {
+                    //update the primary key
+                    retRecord.setPrimaryKeyValue(Long.parseLong(newFields.get(field)));
+                }
+                retRecord.put(field, newFields.get(field));
+            }
+        }
+        return retRecord;
+    }
+
+    public void close() {
+        persistence.close();
     }
 }

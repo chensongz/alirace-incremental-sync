@@ -3,21 +3,19 @@ package com.zbz;
 import com.alibaba.middleware.race.sync.Server;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by Victor on 2017/6/10.
  */
 public class DatabaseWorker implements Runnable {
-    private BinlogPool binlogPool;
-    private SendPool sendPool;
+    private Pool<Binlog> binlogPool;
+    private Pool<Record> sendPool;
     private long start;
     private long end;
 
-    public DatabaseWorker(BinlogPool binlogPool, SendPool sendPool, long start, long end) {
+    public DatabaseWorker(Pool<Binlog> binlogPool, Pool<Record> sendPool, long start, long end) {
         this.binlogPool = binlogPool;
         this.sendPool = sendPool;
         this.start = start;
@@ -65,7 +63,7 @@ public class DatabaseWorker implements Runnable {
             System.out.println("sendPool put: " + record);
             sendPool.put(record);
         }
-        sendPool.put(new Record(null));
+        sendPool.put(new Record());
 
         long t2 = System.currentTimeMillis();
         String p = "Server databaseWorker: " + (t2 - t1) + "ms";
