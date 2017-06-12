@@ -4,7 +4,7 @@ package com.alibaba.middleware.race.sync;
  * 外部赛示例代码需要的常量 Created by zwy on 2017/5/25.
  */
 public class MyConstants {
-    public static final int DATA_FILE_NUM = 3;
+    public static final int DATA_FILE_NUM = 10;
     // 工作主目录
     public static final String TESTER_HOME = "/home/zwy/work/middlewareTester";
     // 赛题数据
@@ -23,6 +23,6 @@ public class MyConstants {
     public static final String RESULT_FILE_NAME = "Result.rs";
     // 拼接数据文件名
     public static String getDataFile(int i) {
-        return DATA_HOME + "/canal_0" + i;
+        return DATA_HOME + "/x0" + i;
     }
 }

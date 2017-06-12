@@ -12,10 +12,10 @@ public class Pool<T> {
 
     public synchronized static <E> Pool<E> getPoolInstance(Class<E> type, int capacity) throws IllegalAccessException, InstantiationException {
         if (! map.containsKey(type)) {
-            Pool<E> pool = new Pool(capacity);
+            Pool<E> pool = new Pool<>(capacity);
             map.put(type, pool);
         }
-        return map.get(type);
+        return (Pool<E>) map.get(type);
     }
 
     private BlockingQueue<T> queue;

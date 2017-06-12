@@ -17,7 +17,7 @@ public class ForkJoinTester {
         }
 
         ForkJoinPool forkJoinPool = new ForkJoinPool(10);
-        CombineTask combineTask = new CombineTask(fileList);
+        InFileReduce combineTask = new InFileReduce(fileList);
         long startTime = System.currentTimeMillis();
         Future result = forkJoinPool.submit(combineTask);
         try {
