@@ -1,6 +1,7 @@
 package com.zbz;
 
 import com.alibaba.middleware.race.sync.Server;
+import com.zbz.zwy.TimeTester;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
@@ -62,14 +63,17 @@ public class DatabaseWorker implements Runnable {
         Collections.sort(queryList);
 
         for(Record record: queryList) {
-            System.out.println("Query result: " + record.toString());
+//            System.out.println("Query result: " + record.toString());
             sendPool.put(record);
         }
         sendPool.put(new Record());
 
         long t2 = System.currentTimeMillis();
+        TimeTester timer = TimeTester.getInstance();
+        timer.setT2(System.currentTimeMillis());
         String p = "Server databaseWorker: " + (t2 - t1) + "ms";
         System.out.println(p);
         LoggerFactory.getLogger(Server.class).info(p);
+        System.out.println("Two worker: " + (timer.getT2() - timer.getT1()) + "ms");
     }
 }
