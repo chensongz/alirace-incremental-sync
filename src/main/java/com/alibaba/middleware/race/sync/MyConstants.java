@@ -8,7 +8,7 @@ public class MyConstants {
     // 工作主目录
     public static final String TESTER_HOME = "/home/zwy/work/middlewareTester";
     // 赛题数据
-    public static final String DATA_HOME = "/home/zwy/work/test/";
+    public static final String DATA_HOME = "/home/zwy/work/test";
     // 结果文件目录
     public static final String RESULT_HOME = "/home/zwy/work/middlewareTester";
     // teamCode

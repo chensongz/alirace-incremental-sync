@@ -27,8 +27,10 @@ public class ReadDataWorker implements Runnable {
             try {
                 for(int i = 0; i < Constants.DATA_FILE_NUM; i++) {
                     String filename = Constants.getDataFile(i);
+                    System.out.println("reading data file: " + filename + " ......");
                     reduceDataFile(filename);
                 }
+                binlogPool.put(new Binlog());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -51,9 +53,8 @@ public class ReadDataWorker implements Runnable {
         }
         clearBinlogReducer();
 
-        binlogPool.put(new Binlog());
-
         reader.close();
+        System.out.println(filename + " reduced...");
     }
 
     private void clearBinlogReducer() {

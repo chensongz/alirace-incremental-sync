@@ -47,7 +47,9 @@ public class Persistence {
         try {
             byte[] recordBytes = record.toBytes();
             ByteBuffer byteBuffer = ByteBuffer.allocate(RECORD_WIDTH);
+//            System.out.println("RRR " + record.toString() + ":" + recordBytes.length + ":" + RECORD_WIDTH);
             byteBuffer.put(recordBytes);
+            byteBuffer.put((byte)'\r');
             byteBuffer.flip();
             fc.write(byteBuffer, offset);
         } catch (IOException e) {
@@ -92,7 +94,7 @@ public class Persistence {
 
         int i = 0;
         for(String field: fields.keySet()) {
-            ret.put(field, vals[i++]);
+            ret.put(field, vals[i++], table.isPrimaryKey(field));
         }
         return ret;
     }
@@ -103,13 +105,14 @@ public class Persistence {
 
         while(recordBytes.remaining() > 0) {
             byte curr = recordBytes.get();
-            if(curr != (byte)0) {
+            if(curr != (byte)'\r') {
                 bao.write(curr);
             } else {
                 break;
             }
         }
         String recordString = bao.toString();
+//        System.out.println("RecordFromBytes: " + recordString);
         return recordFromString(recordString);
     }
 }

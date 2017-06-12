@@ -100,7 +100,6 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
     private Object getMessage() throws InterruptedException {
 
         Record record = sendPool.poll();
-        logger.warn("server polled record: " + record.toString());
         if (record.getPrimaryKeyValue() > 0) {
             return record.toString();
         } else {

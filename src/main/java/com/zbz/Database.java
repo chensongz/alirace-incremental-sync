@@ -85,11 +85,11 @@ public class Database {
         Record record = new Record();
         HashMap<String, Field> fields = binlog.getFields();
         for(String field: table.getFields().keySet()) {
-            if (field.equals(binlog.getPrimaryKey())) {
-                record.put(field, String.valueOf(binlog.getPrimaryValue()));
+            if (table.isPrimaryKey(field)) {
+                record.put(field, String.valueOf(binlog.getPrimaryValue()), true);
             } else {
                 Field val = fields.get(field);
-                record.put(field, val == null ? "NULL" : val.getValue());
+                record.put(field, val == null ? "NULL" : val.getValue(), false);
             }
         }
         return record;
@@ -103,16 +103,11 @@ public class Database {
         LinkedHashMap<String, String> newFields = newRecord.getFields();
 
         for (String field : oldFields.keySet()) {
-            retRecord.put(field, oldFields.get(field));
+            retRecord.put(field, oldFields.get(field), table.isPrimaryKey(field));
         }
         for (String field : newFields.keySet()) {
             if (!newFields.get(field).equals("NULL")) {
-
-                if(table.isPrimaryKey(field)) {
-                    //update the primary key
-                    retRecord.setPrimaryKeyValue(Long.parseLong(newFields.get(field)));
-                }
-                retRecord.put(field, newFields.get(field));
+                retRecord.put(field, newFields.get(field), table.isPrimaryKey(field));
             }
         }
         return retRecord;

@@ -16,6 +16,7 @@ public class Record implements Comparable<Record>{
     private static final String SEPARATOR = "\t";
 
     private LinkedHashMap<String, String> fieldHashMap = new LinkedHashMap<>();
+    private LinkedHashMap<String, Boolean> fieldTypeHashMap = new LinkedHashMap<>();
     private long primaryKeyVal;
 
     public Record() {
@@ -26,16 +27,15 @@ public class Record implements Comparable<Record>{
         return toString().getBytes();
     }
 
-    public void put(String fieldname, String value) {
+    public void put(String fieldname, String value, boolean isPrimaryKey) {
+        if(isPrimaryKey) {
+            primaryKeyVal = Long.parseLong(value);
+        }
         fieldHashMap.put(fieldname, value);
     }
 
     public long getPrimaryKeyValue() {
         return primaryKeyVal;
-    }
-
-    public void setPrimaryKeyValue(long val) {
-        primaryKeyVal = val;
     }
 
     public LinkedHashMap<String, String> getFields() {

@@ -53,14 +53,16 @@ public class DatabaseWorker implements Runnable {
                     break;
             }
         }
+
         //database created, execute query
-        System.out.println("Query result: ");
+        System.out.println("Start quering: " + start + "-" + end + " ......");
         List<Record> queryList = database.query(start, end);
+        database.close();
 
         Collections.sort(queryList);
 
         for(Record record: queryList) {
-            System.out.println("sendPool put: " + record);
+            System.out.println("Query result: " + record.toString());
             sendPool.put(record);
         }
         sendPool.put(new Record());
