@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +23,6 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(ClientDemoInHandler.class);
 
     private FileChannel fc;
-//    private FileChannel fc2;
 
     // 接收server端的消息，并打印出来
     @Override
@@ -33,23 +33,17 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         byte[] result1 = new byte[result.readableBytes()];
         result.readBytes(result1);
 
-
+        fc.write(ByteBuffer.wrap(result1));
         logger.warn("client receive: " + new String(result1));
         result.release();
         if (result1[result1.length - 1] == '\r') {
-            fc.write(ByteBuffer.wrap(result1, 0, result1.length - 1));
-//            fc2.write(ByteBuffer.wrap(result1, 0, result1.length - 1));
             logger.info("client receive all message success!!");
             logger.warn("result size: " + fc.size());
             fc.close();
             ctx.close();
             //watch
             listDir();
-        } else {
-            fc.write(ByteBuffer.wrap(result1));
-//            fc2.write(ByteBuffer.wrap(result1));
         }
-
         ctx.writeAndFlush("I have received your messages and wait for next messages");
     }
 
@@ -59,8 +53,6 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         logger.info("com.alibaba.middleware.race.sync.ClientDemoInHandler.channelActive");
         fc = new RandomAccessFile(Constants.RESULT_HOME + "/"
                 + Constants.RESULT_FILE_NAME, "rw").getChannel();
-//        fc2 = new RandomAccessFile("/home/admin/logs/" + Constants.TEAMCODE + "/"
-//                + Constants.RESULT_FILE_NAME, "rw").getChannel();
         String msg = "I am prepared to receive messages";
         ByteBuf encoded = ctx.alloc().buffer(4 * msg.length());
         encoded.writeBytes(msg.getBytes());

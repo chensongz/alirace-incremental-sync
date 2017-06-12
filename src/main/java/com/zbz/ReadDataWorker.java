@@ -29,6 +29,7 @@ public class ReadDataWorker implements Runnable {
 
     private String getFilename(int i) {
         return dataHome + "/" + (1 + i) + ".txt";
+//        return dataHome + "/canal_0" + i;
     }
 
     public void run() {

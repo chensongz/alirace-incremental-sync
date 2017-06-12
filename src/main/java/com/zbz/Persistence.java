@@ -46,6 +46,7 @@ public class Persistence {
             ByteBuffer recordBytes = record.toBytes();
             ByteBuffer byteBuffer = ByteBuffer.allocate(RECORD_WIDTH);
             byteBuffer.put(recordBytes);
+            byteBuffer.flip();
             fc.write(byteBuffer, offset);
         } catch (IOException e) {
             e.printStackTrace();

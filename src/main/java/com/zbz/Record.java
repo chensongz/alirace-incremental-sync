@@ -36,6 +36,8 @@ public class Record implements Comparable<Record>{
             byte curr = recordBytes.get();
             if(curr != (byte)0) {
                 bao.write(curr);
+            } else {
+                break;
             }
         }
         String recordString = bao.toString();
