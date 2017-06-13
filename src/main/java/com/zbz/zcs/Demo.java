@@ -4,6 +4,7 @@ import com.alibaba.middleware.race.sync.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
@@ -12,16 +13,38 @@ import java.util.concurrent.Future;
  */
 public class Demo {
 
-    public void run() {
-        inFileReduce();
-        reduceTenToFive();
-        reduceFiveToThree();
-        reduceThreeToOne();
-    }
-
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.run();
+    }
+
+    public void run() {
+        inFileReduce();
+//        reduceTenToFive();
+//        reduceFiveToThree();
+//        reduceThreeToOne();
+        commonReduce(1, 10);
+    }
+
+    public void commonReduce(int round, int n) {
+        if ( round > 3 ) return;
+        List<String> files = new ArrayList<>(n);
+        for(int i = 0; i < n; i++) {
+            files.add(Constants.MIDDLE_HOME + "/" + round + i);
+            System.out.println(files.get(i));
+        }
+
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        CommonReducer reducer = new CommonReducer(files, round);
+        Future result = forkJoinPool.submit(reducer);
+
+        try {
+            result.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        commonReduce(round + 1, (n & 0x1) > 0 ? (n / 2 + 1) : n / 2);
     }
 
     private void inFileReduce() {
