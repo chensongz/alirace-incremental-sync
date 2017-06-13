@@ -4,64 +4,103 @@ import com.alibaba.middleware.race.sync.Constants;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.RecursiveAction;
+import java.util.ArrayList;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Created by zwy on 17-6-13.
  */
-public class CommonReducer extends RecursiveAction {
+public class CommonReducer extends RecursiveTask<List<FileIndex>> {
+    private int pre;
     private int round;
-    private List<String> fileList;
+    private List<FileIndex> fileList;
 
-    public CommonReducer(List<String> fileList, int round) {
+    public CommonReducer(List<FileIndex> fileList, int round, int pre) {
+        this.pre = pre;
         this.round = round;
         this.fileList = fileList;
     }
     @Override
-    protected void compute() {
+    protected List<FileIndex> compute() {
         int len = fileList.size();
+        System.out.println("compute " + len + " round " + round);
+        List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
-            String file1 = fileList.get(0);
-            String file2 = fileList.get(1);
-            String newFile = getNewFileName(file1);
-            try {
-                File f = new File(newFile);
-                if(!f.exists()) {
-                    f.createNewFile();
-//                    new File(file1).delete();
-//                    new File(file2).delete();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            FileIndex index0 = fileList.get(0);
+            FileIndex index1 = fileList.get(1);
+
+            System.out.println("2222 " + index0.getFileName() + ":" + index1.getFileName());
+
+            String newFile = getNewFileName(index0.getFileName());
+            persist(newFile);
+
+            index0.mergeIdx(index1.getIdx(), newFile);
+
+            persist(newFile);
+
+            ret.add(index0);
         } else if (len == 1) {
-            String oldFile = fileList.get(0);
+            FileIndex index0 = fileList.get(0);
+            String oldFile = index0.getFileName();
             String newFile = getNewFileName(oldFile);
-            try {
-                File f = new File(oldFile);
-                File nf = new File(newFile);
-                if (f.exists()) { f.renameTo(nf); }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            System.out.println("2222 " + index0.getFileName() + ":" + index0.getFileName());
+
+            index0.setFileName(newFile);
+
+            persist(newFile, oldFile);
+            ret.add(index0);
         } else {
             CommonReducer reducer1, reducer2;
             if ((len & 0x1) > 0) {
-                reducer1 = new CommonReducer(fileList.subList(0, len - 1), round);
-                reducer2 = new CommonReducer(fileList.subList(len - 1, len), round);
+                reducer1 = new CommonReducer(fileList.subList(0, len - 1), round, pre);
+                reducer2 = new CommonReducer(fileList.subList(len - 1, len), round, pre + len - 1);
+
+                reducer1.fork();
+                reducer2.fork();
+
+                ret.addAll(reducer1.join());
+                ret.addAll(reducer2.join());
             } else {
-                reducer1 = new CommonReducer(fileList.subList(0, len / 2), round);
-                reducer2 = new CommonReducer(fileList.subList(len / 2, len), round);
+                List<CommonReducer> reducers = new ArrayList<>();
+                CommonReducer reducer0;
+                for(int i = 0; i < len; i += 2) {
+                    reducer0 = new CommonReducer(fileList.subList(i, i + 2), round, pre + i);
+                    reducers.add(reducer0);
+                }
+                for(CommonReducer reducer: reducers) {
+                    reducer.fork();
+                }
+                for(CommonReducer reducer: reducers) {
+                    ret.addAll(reducer.join());
+                }
             }
-            reducer1.fork();
-            reducer2.fork();
-            reducer1.join();
-            reducer2.join();
+        }
+        return ret;
+    }
+
+    private void persist(String newFile) {
+        try {
+            File f = new File(newFile);
+            if(!f.exists()) {
+                f.createNewFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void persist(String newFile, String oldFile) {
+        try {
+            File f = new File(oldFile);
+            File nf = new File(newFile);
+            if (f.exists()) { f.renameTo(nf); }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     private String getNewFileName(String oldName1) {
         String dir = Constants.MIDDLE_HOME;
-        return dir + "/" + (round + 1) + Integer.parseInt(oldName1.substring(oldName1.length() - 1)) / 2;
+        return dir + "/" + (round + 1) + ((pre & 0x1) > 0 ? (pre / 2 + 1) : (pre / 2));
     }
 }

@@ -5,12 +5,12 @@ import com.alibaba.middleware.race.sync.Constants;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Created by zwy on 17-6-13.
  */
-public class InFileReduce extends RecursiveAction {
+public class InFileReduce extends RecursiveTask<List<FileIndex>> {
 
     private List<String> fileList;
 
@@ -19,25 +19,40 @@ public class InFileReduce extends RecursiveAction {
     }
 
     @Override
-    protected void compute() {
+    protected List<FileIndex> compute() {
         int len = fileList.size();
+        List<FileIndex> ret = new ArrayList<>();
         if (len == 1) {
-            String newFile = getNewFileName(fileList.get(0));
-            try {
-                File f = new File(newFile);
-                if(!f.exists()) {
-                    f.createNewFile();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            String dataFileName = fileList.get(0);
+            String reducedFileName = getNewFileName(dataFileName);
+
+            System.out.println("1111 " + reducedFileName);
+
+            FileIndex fileIndex = new FileIndex(reducedFileName);
+
+            persist(reducedFileName);
+
+            ret.add(fileIndex);
         } else {
             InFileReduce combineTask1 = new InFileReduce(fileList.subList(0, len / 2));
             InFileReduce combineTask2 = new InFileReduce(fileList.subList(len / 2, len));
             combineTask1.fork();
             combineTask2.fork();
-            combineTask1.join();
-            combineTask2.join();
+            ret.addAll(combineTask1.join());
+            ret.addAll(combineTask2.join());
+        }
+        return ret;
+    }
+
+    private void persist(String newFile) {
+        try {
+            File f = new File(newFile);
+            if(!f.exists()) {
+                f.createNewFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
