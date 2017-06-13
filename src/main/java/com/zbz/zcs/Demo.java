@@ -27,7 +27,6 @@ public class Demo {
     }
 
     private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
-        System.out.println("common " + n);
         if(n <= 2) return fileIndices;
 
         ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -47,9 +46,6 @@ public class Demo {
 
     private List<FileIndex> inFileReduce() {
         List<String> dataFiles = new ArrayList<>(Constants.DATA_FILE_NUM);
-//        for(int i = 0; i < 8; i++) {
-//            dataFiles.add(Constants.getDataFile(i));
-//        }
         for(int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             dataFiles.add(Constants.getDataFile(i));
         }

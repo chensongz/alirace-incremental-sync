@@ -23,13 +23,10 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
-        System.out.println("compute " + len + " round " + round);
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
             FileIndex index0 = fileList.get(0);
             FileIndex index1 = fileList.get(1);
-
-            System.out.println("2222 " + index0.getFileName() + ":" + index1.getFileName());
 
             String newFile = getNewFileName(index0.getFileName());
             persist(newFile);
@@ -43,7 +40,6 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             FileIndex index0 = fileList.get(0);
             String oldFile = index0.getFileName();
             String newFile = getNewFileName(oldFile);
-            System.out.println("2222 " + index0.getFileName() + ":" + index0.getFileName());
 
             index0.setFileName(newFile);
 
