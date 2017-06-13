@@ -37,7 +37,7 @@ public class ReadDataWorker {
         long t2 = System.currentTimeMillis();
         String p = "Server readDataWorker: " + (t2 - t1) + "ms";
         System.out.println(p);
-        LoggerFactory.getLogger(Server.class).info(p);
+//        LoggerFactory.getLogger(Server.class).info(p);
     }
 
     private void reduceDataFile(String filename) throws IOException{
@@ -58,16 +58,19 @@ public class ReadDataWorker {
 
     private void clearBinlogReducer() {
         for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
-            long indexOffset = index.getOffset(Long.parseLong(binlog.getPrimaryKey()));
+            long indexOffset = index.getOffset(binlog.getPrimaryValue());
             if (indexOffset < 0) {
                 long offset = persistence.write(binlog.toBytes());
-                index.insert(Long.parseLong(binlog.getPrimaryKey()), offset);
+                System.out.println("binlog:" + binlog);
+                index.insert(binlog.getPrimaryValue(), offset);
             } else {
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog, binlog.getOperation());
+                System.out.println("old Binlog:" + oldBinlog);
+                System.out.println("new Binlog:" + newBinlog);
                 long offset = persistence.write(newBinlog.toBytes());
-                index.insert(Long.parseLong(binlog.getPrimaryKey()), offset);
+                index.insert(binlog.getPrimaryValue(), offset);
             }
         }
         binlogReducer.clearBinlogHashMap();

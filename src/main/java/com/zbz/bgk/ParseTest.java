@@ -23,5 +23,8 @@ public class ParseTest {
 //
 //        Thread t2 = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
 //        t2.start();
+        com.zbz.bgk.ReadDataWorker readDataWorker = new com.zbz.bgk.ReadDataWorker("middleware3", "student",
+                "/home/zwy/work/test/canal.txt", "/home/zwy/work/middlewareTester/middle/database");
+        readDataWorker.compute();
     }
 }

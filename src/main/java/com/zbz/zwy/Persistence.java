@@ -66,7 +66,7 @@ public class Persistence {
             ByteBuffer buf = ByteBuffer.allocate(totalLength);
             buf.putInt(messageLength);
             buf.put(bytes);
-
+            buf.flip();
             try {
                 fc.write(buf, currentOffset);
                 currentOffset += totalLength;
@@ -90,9 +90,10 @@ public class Persistence {
                 //not fixed width
                 ByteBuffer widthBuf = ByteBuffer.allocate(INT_SIZE);
                 fc.read(widthBuf, readOffset);
+                widthBuf.flip();
                 int width = widthBuf.getInt();
                 mb = ByteBuffer.allocate(width);
-                readOffset += width;
+                readOffset += INT_SIZE;
             } else {
                 //fixed width
                 mb = ByteBuffer.allocate(FIXED_WIDTH);
