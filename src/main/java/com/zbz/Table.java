@@ -11,15 +11,16 @@ public class Table {
     private String primaryKey = null;
 
     public void init(Binlog binlog) {
-        int pkIdx = binlog.getPrimaryKeyIndex();
+        //TODO
+//        int pkIdx = binlog.getPrimaryKeyIndex();
         Map<String, Field> fields = binlog.getFields();
 
         int i = 0;
         for (Field field : fields.values()) {
-            if (i++ == pkIdx) {
-                primaryKey = binlog.getPrimaryKey();
-                this.fields.put(primaryKey, Field.NUMERIC);
-            }
+//            if (i++ == pkIdx) {
+//                primaryKey = binlog.getPrimaryKey();
+//                this.fields.put(primaryKey, Field.NUMERIC);
+//            }
             this.fields.put(field.getName(), field.getType());
         }
     }

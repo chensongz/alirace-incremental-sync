@@ -60,16 +60,16 @@ public class Persistence {
         long ret = currentOffset;
         if(FIXED_WIDTH < 0) {
             //not fixed width
-            int msz = bytes.length;
-            int tot = msz + INT_SIZE;
+            int messageLength = bytes.length;
+            int totalLength = messageLength + INT_SIZE;
 
-            ByteBuffer buf = ByteBuffer.allocate(tot);
-            buf.putInt(msz);
+            ByteBuffer buf = ByteBuffer.allocate(totalLength);
+            buf.putInt(messageLength);
             buf.put(bytes);
 
             try {
                 fc.write(buf, currentOffset);
-                currentOffset += tot;
+                currentOffset += totalLength;
             } catch (IOException e) {
                 e.printStackTrace();
                 ret = -1;

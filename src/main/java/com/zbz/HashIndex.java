@@ -21,4 +21,8 @@ public class HashIndex extends Index {
         Long offset = indexHashMap.get(key);
         return offset == null ? Long.MIN_VALUE : offset;
     }
+
+    public Map<Long, Long> getIndexHashMap() {
+        return indexHashMap;
+    }
 }
