@@ -22,13 +22,12 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         this.pre = pre;
         this.round = round;
         this.fileList = fileList;
-        System.out.println("hahahhahah: " + fileList.toString());
     }
 
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
-        System.out.println("fasdfasdf " + len);
+
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
             FileIndex index0 = fileList.get(0);
@@ -39,15 +38,17 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             Index baseIndex = index0.getIndex();
             Index appendIndex = index1.getIndex();
 
-            System.out.println("before worker");
             ReadDataWorker2 worker = new ReadDataWorker2(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
-            System.out.println("after worker");
+//            System.out.println("before worker");
             worker.compute();
+//            System.out.println("after worker");
+
             index1.release();
 
             ret.add(index0);
         } else if (len == 1) {
+
             FileIndex index0 = fileList.get(0);
             ret.add(index0);
         } else {
@@ -88,7 +89,6 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 }
                 for(CommonReducer reducer: reducers) {
                     ret.addAll(reducer.join());
-                    System.out.println("oops");
                 }
             }
         }

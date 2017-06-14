@@ -27,7 +27,9 @@ public class ReadDataWorker2 {
         Set<Long> baseKeySet = baseIndex.getIndexHashMap().keySet();
 
         Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
-
+        System.out.println("base " + baseKeySet.size());
+        System.out.println("append " + appendKeySet.size());
+        /*
         for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(basePersistence.read(appendOffset));
@@ -69,7 +71,7 @@ public class ReadDataWorker2 {
             appendIndex.release();
             appendBinlog = null;
             appendBinlogLine = null;
-        }
+        }*/
 
         appendIndex = null;
         appendPersistence = null;

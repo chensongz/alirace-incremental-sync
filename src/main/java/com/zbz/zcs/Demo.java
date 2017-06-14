@@ -47,9 +47,7 @@ public class Demo {
         for(FileIndex idx: fileIndices) {
             int t = idx.getIndex().getIndexHashMap().size();
             c += t;
-            System.out.println("curr " + t);
         }
-        System.out.println("cnt " + c);
 
 
         t1 = System.currentTimeMillis();
@@ -69,10 +67,10 @@ public class Demo {
 
         try {
             reducedIndices = result.get();
-            System.out.println("ooops " + reducedIndices.size());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("==================================================");
 
         return commonReduce(round + 1, (n >>> 1) + ((n & 0x1) > 0 ? 1 : 0), reducedIndices);
     }
