@@ -16,20 +16,17 @@ public class InterFileReducer {
     }
 
     public void compute() {
-        Set<Long> baseKeySet = baseIndex.getIndexHashMap().keySet();
-
         Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
         for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
-            String appendBinlogLine = new String(basePersistence.read(appendOffset));
+            String appendBinlogLine = new String(appendPersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
             long appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
             long appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
-            long indexOffset;
-            if ((indexOffset = baseIndex.getOffset(appendBinlogPrimaryValue)) >= 0) {
+            long baseOffset;
+            if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryValue)) >= 0) {
                 // update other fields
-                long baseOffset = baseIndex.getOffset(appendBinlogPrimaryValue);
                 String baseBinlogLine = new String(basePersistence.read(baseOffset));
                 Binlog baseBinlog = BinlogFactory.parse(baseBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
@@ -39,14 +36,8 @@ public class InterFileReducer {
                 } else {
                     baseIndex.delete(appendBinlogPrimaryValue);
                 }
-                appendBinlogLine = null;
-                baseBinlogLine = null;
-                baseBinlog = null;
-                appendBinlog = null;
-                newBinlog = null;
-            } else if ((indexOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue)) >= 0) {
+            } else if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue)) >= 0) {
                 //update key field
-                long baseOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue);
                 String baseBinlogLine = new String(basePersistence.read(baseOffset));
                 Binlog baseBinlog = BinlogFactory.parse(baseBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
@@ -57,17 +48,10 @@ public class InterFileReducer {
                 } else {
                     baseIndex.delete(appendBinlogPrimaryOldValue);
                 }
-                appendBinlogLine = null;
-                baseBinlogLine = null;
-                baseBinlog = null;
-                appendBinlog = null;
-                newBinlog = null;
             } else {
                 // if not in baseindex, then insert
                 long offset = basePersistence.write(appendBinlog.toBytes());
                 baseIndex.insert(appendBinlogPrimaryValue, offset);
-                appendBinlogLine = null;
-                appendBinlog = null;
             }
             appendIndex.delete(appendPrimaryValue);
         }
