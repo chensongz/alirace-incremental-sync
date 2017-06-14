@@ -9,6 +9,6 @@ public class BinlogReduceDemo {
 
     public static void main(String[] args) {
         int[] a = {1, 2, 3, 4};
-        Arrays.parallelSort(a);
+//        Arrays.parallelSort(a);
     }
 }

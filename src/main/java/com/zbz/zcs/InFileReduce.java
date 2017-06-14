@@ -1,6 +1,7 @@
 package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.bgk.ReadDataWorker;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,9 +14,13 @@ import java.util.concurrent.RecursiveTask;
 public class InFileReduce extends RecursiveTask<List<FileIndex>> {
 
     private List<String> fileList;
+    private String schema;
+    private String table;
 
-    public InFileReduce(List<String> fileList) {
+    public InFileReduce(List<String> fileList, String schema, String table) {
         this.fileList = fileList;
+        this.schema = schema;
+        this.table = table;
     }
 
     @Override
@@ -27,33 +32,22 @@ public class InFileReduce extends RecursiveTask<List<FileIndex>> {
             String dataFileName = fileList.get(0);
             String reducedFileName = getNewFileName(dataFileName);
 
-            System.out.println("1111 " + reducedFileName);
-
-            FileIndex fileIndex = new FileIndex(reducedFileName);
-
-            persist(reducedFileName);
+            ReadDataWorker worker = new ReadDataWorker(schema, table, dataFileName, reducedFileName);
+            FileIndex fileIndex = worker.compute();
 
             ret.add(fileIndex);
         } else {
-            InFileReduce combineTask1 = new InFileReduce(fileList.subList(0, len / 2));
-            InFileReduce combineTask2 = new InFileReduce(fileList.subList(len / 2, len));
+            //dispatch tasks
+            InFileReduce combineTask1
+                    = new InFileReduce(fileList.subList(0, len / 2), schema, table);
+            InFileReduce combineTask2
+                    = new InFileReduce(fileList.subList(len / 2, len), schema, table);
             combineTask1.fork();
             combineTask2.fork();
             ret.addAll(combineTask1.join());
             ret.addAll(combineTask2.join());
         }
         return ret;
-    }
-
-    private void persist(String newFile) {
-        try {
-            File f = new File(newFile);
-            if(!f.exists()) {
-                f.createNewFile();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private String getNewFileName(String oldName) {

@@ -14,6 +14,7 @@ import java.util.Set;
 public class ReadDataWorker2 {
     private Index baseIndex, appendIndex;
     private Persistence basePersistence, appendPersistence;
+
     public ReadDataWorker2(Index baseIndex, Index appendIndex, Persistence basePersistence, Persistence appendPersistence) {
         this.baseIndex = baseIndex;
         this.appendIndex = appendIndex;

@@ -2,6 +2,7 @@ package com.zbz.bgk;
 
 import com.alibaba.middleware.race.sync.Server;
 import com.zbz.*;
+import com.zbz.zcs.FileIndex;
 import com.zbz.zwy.Persistence;
 import com.zbz.zwy.TimeTester;
 import org.slf4j.LoggerFactory;
@@ -16,15 +17,19 @@ import java.io.IOException;
 public class ReadDataWorker {
     private BinlogReducer binlogReducer;
     private String srcFilename;
-    private Index index = new HashIndex();
+    private String dstFilename;
+    private Index index;
     private Persistence persistence;
+
     public ReadDataWorker(String schema, String table, String srcFilename, String dstFilename) {
         this.binlogReducer = new BinlogReducer(schema, table);
         this.srcFilename = srcFilename;
+        this.dstFilename = dstFilename;
+        this.index = new HashIndex();
         this.persistence = new Persistence(dstFilename);
     }
 
-    public void compute() {
+    public FileIndex compute() {
         TimeTester.getInstance().setT1(System.currentTimeMillis());
         long t1 = System.currentTimeMillis();
 
@@ -37,7 +42,9 @@ public class ReadDataWorker {
         long t2 = System.currentTimeMillis();
         String p = "Server readDataWorker: " + (t2 - t1) + "ms";
         System.out.println(p);
-//        LoggerFactory.getLogger(Server.class).info(p);
+
+        FileIndex fidx = new FileIndex(dstFilename, index, persistence);
+        return fidx;
     }
 
     private void reduceDataFile(String filename) throws IOException{
@@ -61,14 +68,14 @@ public class ReadDataWorker {
             long indexOffset = index.getOffset(binlog.getPrimaryValue());
             if (indexOffset < 0) {
                 long offset = persistence.write(binlog.toBytes());
-                System.out.println("binlog:" + binlog);
+//                System.out.println("binlog:" + binlog);
                 index.insert(binlog.getPrimaryValue(), offset);
             } else {
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog, binlog.getOperation());
-                System.out.println("old Binlog:" + oldBinlog);
-                System.out.println("new Binlog:" + newBinlog);
+//                System.out.println("old Binlog:" + oldBinlog);
+//                System.out.println("new Binlog:" + newBinlog);
                 long offset = persistence.write(newBinlog.toBytes());
                 index.insert(binlog.getPrimaryValue(), offset);
             }

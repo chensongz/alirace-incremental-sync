@@ -13,17 +13,20 @@ import java.util.concurrent.Future;
  */
 public class Demo {
 
+    private String schema = "middleware3";
+    private String table = "student";
+
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.run();
     }
 
     public void run() {
+        long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce();
-        List<FileIndex> result = commonReduce(1, 10, fileIndices);
-        for(FileIndex idx: result) {
-            System.out.println(idx.getIdx());
-        }
+        long t2 = System.currentTimeMillis();
+        System.out.println("Demo: " + (t2 - t1) + " ms");
+//        List<FileIndex> result = commonReduce(1, 10, fileIndices);
     }
 
     private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
@@ -51,7 +54,7 @@ public class Demo {
         }
 
         ForkJoinPool forkJoinPool = new ForkJoinPool(); //todo
-        InFileReduce binlogReducerTask = new InFileReduce(dataFiles);
+        InFileReduce binlogReducerTask = new InFileReduce(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {
             return result.get();

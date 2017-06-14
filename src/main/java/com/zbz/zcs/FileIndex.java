@@ -1,20 +1,20 @@
 package com.zbz.zcs;
 
-import com.alibaba.middleware.race.sync.Constants;
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import com.zbz.Index;
+import com.zbz.zwy.Persistence;
 
 /**
  * Created by zwy on 17-6-13.
  */
 public class FileIndex {
+    private Persistence persist;
     private String fileName;
     private Index index;
-    private String idx;
 
-    public FileIndex(String fileName) {
+    public FileIndex(String fileName, Index index, Persistence persist) {
         this.fileName = fileName;
-        this.idx = fileName.substring(Constants.MIDDLE_HOME.length());
+        this.persist = persist;
+        this.index = index;
     }
 
     public void setFileName(String fileName) {
@@ -23,14 +23,5 @@ public class FileIndex {
 
     public String getFileName() {
         return this.fileName;
-    }
-
-    public void mergeIdx(String idx, String newFileName) {
-        this.fileName = newFileName;
-        this.idx += ("|" + idx);
-    }
-
-    public String getIdx() {
-        return idx;
     }
 }

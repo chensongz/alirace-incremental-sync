@@ -31,8 +31,6 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             String newFile = getNewFileName(index0.getFileName());
             persist(newFile);
 
-            index0.mergeIdx(index1.getIdx(), newFile);
-
             persist(newFile);
 
             ret.add(index0);
