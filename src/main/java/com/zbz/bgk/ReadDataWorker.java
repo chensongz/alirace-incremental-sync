@@ -43,7 +43,7 @@ public class ReadDataWorker {
         String p = "Server readDataWorker: " + (t2 - t1) + "ms";
         System.out.println(p);
 
-        FileIndex fidx = new FileIndex(dstFilename, index, persistence);
+        FileIndex fidx = new FileIndex(index, persistence);
     }
 
     private void reduceDataFile(String filename) throws IOException{

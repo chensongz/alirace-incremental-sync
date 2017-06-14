@@ -69,7 +69,6 @@ public class ReadDataWorker2 {
 
         appendIndex = null;
         appendPersistence = null;
-
     }
 
     public Index getBaseIndex() {

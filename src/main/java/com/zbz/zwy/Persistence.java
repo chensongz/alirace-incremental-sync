@@ -100,7 +100,8 @@ public class Persistence {
                 mb = ByteBuffer.allocate(FIXED_WIDTH);
             }
             fc.read(mb, readOffset);
-            return mb.array();
+            byte[] ret = mb.array();
+            return ret;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

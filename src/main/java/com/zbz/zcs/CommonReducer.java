@@ -22,12 +22,14 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         this.pre = pre;
         this.round = round;
         this.fileList = fileList;
+        System.out.println("hahahhahah: " + fileList.toString());
     }
+
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
+        System.out.println("fasdfasdf " + len);
         List<FileIndex> ret = new ArrayList<>();
-
         if (len == 2) {
             FileIndex index0 = fileList.get(0);
             FileIndex index1 = fileList.get(1);
@@ -41,6 +43,8 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                     baseIndex, appendIndex, basePersistence, appendPersistence);
 
             worker.compute();
+            index1.release();
+
             ret.add(index0);
         } else if (len == 1) {
             FileIndex index0 = fileList.get(0);
@@ -48,8 +52,19 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         } else {
             CommonReducer reducer1, reducer2;
             if ((len & 0x1) > 0) {
-                reducer1 = new CommonReducer(fileList.subList(0, len - 1), round, pre);
-                reducer2 = new CommonReducer(fileList.subList(len - 1, len), round, pre + len - 1);
+                List<FileIndex> fileList1 = new ArrayList<>(len - 1);
+                List<FileIndex> fileList2 = new ArrayList<>(1);
+
+                for(int i = 0; i < len; i++) {
+                    if (i < len - 1) {
+                        fileList1.add(fileList.get(i));
+                    } else {
+                        fileList2.add(fileList.get(i));
+                    }
+                }
+
+                reducer1 = new CommonReducer(fileList1, round, pre);
+                reducer2 = new CommonReducer(fileList2, round, pre + len - 1);
 
                 reducer1.fork();
                 reducer2.fork();
@@ -60,7 +75,11 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 List<CommonReducer> reducers = new ArrayList<>();
                 CommonReducer reducer0;
                 for(int i = 0; i < len; i += 2) {
-                    reducer0 = new CommonReducer(fileList.subList(i, i + 2), round, pre + i);
+                    List<FileIndex> fileList1 = new ArrayList<>(2);
+                    fileList1.add(fileList.get(i));
+                    fileList1.add(fileList.get(i + 1));
+
+                    reducer0 = new CommonReducer(fileList1, round, pre + i);
                     reducers.add(reducer0);
                 }
                 for(CommonReducer reducer: reducers) {
@@ -71,6 +90,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 }
             }
         }
+        fileList.clear();
         return ret;
     }
 

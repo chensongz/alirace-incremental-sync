@@ -118,5 +118,4 @@ public class BinlogReducer {
     public void clearBinlogHashMap() {
         binlogHashMap.clear();
     }
-
 }
