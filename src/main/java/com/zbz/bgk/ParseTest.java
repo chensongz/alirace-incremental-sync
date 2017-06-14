@@ -12,16 +12,8 @@ import java.io.IOException;
  */
 public class ParseTest {
     public static void main(String[] args) throws IOException {
-//        BinlogPool binlogPool = BinlogPool.getInstance();
-//        SendPool sendPool = SendPool.getInstance();
         long start = 600;
         long end = 700;
-//
-//        Thread t1 = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, "", "student"));
-//        t1.start();
-//
-//        Thread t2 = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
-//        t2.start();
         InnerFileReducer innerFileReducer = new InnerFileReducer("middleware3", "student",
                 "/home/zwy/work/test/canal.txt", "/home/zwy/work/middlewareTester/middle/database");
         innerFileReducer.compute();
