@@ -44,7 +44,10 @@ public class ReadDataWorker {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
 
+        int i = 0;
         while ((line = reader.readLine()) != null) {
+//            if (i++ >= 1005000) break;
+            System.out.println(line);
             binlogReducer.reduce(line);
             if (binlogReducer.isFull()) {
                 clearBinlogReducer();
@@ -59,39 +62,40 @@ public class ReadDataWorker {
     private void clearBinlogReducer() {
         for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
             long indexOffset;
-            if ((indexOffset = index.getOffset(binlog.getPrimaryValue())) >= 0) {
+            long primaryOldValue = binlog.getPrimaryOldValue();
+            long primaryValue = binlog.getPrimaryValue();
+            System.out.println("current1 Binlog:" + binlog);
+            if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
+                System.out.println("old Binlog1:" + oldBinlog);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("old Binlog:" + oldBinlog);
-                    System.out.println("current1 Binlog:" + binlog);
-                    System.out.println("new Binlog:" + newBinlog);
+                    System.out.println("new Binlog1:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
-                    index.insert(newBinlog.getPrimaryValue(), offset);
+                    index.insert(primaryValue, offset);
                 } else {
-                    index.delete(oldBinlog.getPrimaryValue());
+                    index.delete(primaryValue);
                 }
-            } else if ((indexOffset = index.getOffset(binlog.getPrimaryOldValue())) >= 0) {
+            } else if ((indexOffset = index.getOffset(primaryOldValue)) >= 0) {
                 // update key value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
+                System.out.println("old Binlog2:" + oldBinlog);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("old Binlog:" + oldBinlog);
-                    System.out.println("current2 Binlog:" + binlog);
-                    System.out.println("new Binlog:" + newBinlog);
+                    System.out.println("new Binlog2:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
-                    index.delete(oldBinlog.getPrimaryValue());
-                    index.insert(newBinlog.getPrimaryValue(), offset);
+                    index.delete(primaryOldValue);
+                    index.insert(primaryValue, offset);
                 } else {
-                    index.delete(oldBinlog.getPrimaryValue());
+                    index.delete(primaryOldValue);
                 }
             } else {
                 long offset = persistence.write(binlog.toBytes());
-                System.out.println("binlog:" + binlog);
-                index.insert(binlog.getPrimaryValue(), offset);
+//                System.out.println("binlog:" + binlog);
+                index.insert(primaryValue, offset);
             }
 
         }

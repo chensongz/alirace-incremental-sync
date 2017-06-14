@@ -6,7 +6,7 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 500;
+    private static final int CAPACITY = 1;
 
     private HashMap<Long, Binlog> binlogHashMap = new HashMap<>();
     private String schema;
@@ -84,25 +84,35 @@ public class BinlogReducer {
         Binlog newBinlog = BinlogFactory.createBinlog(line, schema, table);
         Binlog binlog;
         if (newBinlog != null) {
-            if (binlogHashMap.containsKey(newBinlog.getPrimaryValue())) {
+            long primaryValue = newBinlog.getPrimaryValue();
+            long primaryOldValue = newBinlog.getPrimaryOldValue();
+            if (binlogHashMap.containsKey(primaryValue)) {
                 // maybe insert record or update fields or delete record
-                Binlog oldBinlog = binlogHashMap.get(newBinlog.getPrimaryValue());
+                Binlog oldBinlog = binlogHashMap.get(primaryValue);
+                System.out.println("update old1 binlog:" + oldBinlog);
+                System.out.println("update current1 binlog:" + newBinlog);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
+                System.out.println("update new1 binlog:" + binlog);
                 if (binlog != null) {
-                    binlogHashMap.put(binlog.getPrimaryValue(), binlog);
+                    binlogHashMap.put(primaryValue, binlog);
                 } else {
-                    binlogHashMap.remove(oldBinlog.getPrimaryValue());
+                    binlogHashMap.remove(primaryValue);
                 }
-            } else if (binlogHashMap.containsKey(newBinlog.getPrimaryOldValue())) {
+            } else if (binlogHashMap.containsKey(primaryOldValue)) {
                 // maybe update primary key
-                Binlog oldBinlog = binlogHashMap.get(newBinlog.getPrimaryOldValue());
+                Binlog oldBinlog = binlogHashMap.get(primaryOldValue);
+                System.out.println("update old binlog:" + oldBinlog);
+                System.out.println("update current binlog:" + newBinlog);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
-                binlogHashMap.remove(oldBinlog.getPrimaryValue());
+                System.out.println("update new binlog:" + binlog);
                 if (binlog != null) {
-                    binlogHashMap.put(binlog.getPrimaryValue(), binlog);
+                    binlogHashMap.remove(primaryOldValue);
+                    binlogHashMap.put(primaryValue, binlog);
+                } else {
+                    binlogHashMap.remove(primaryOldValue);
                 }
             } else {
-                binlogHashMap.put(newBinlog.getPrimaryValue(), newBinlog);
+                binlogHashMap.put(primaryValue, newBinlog);
             }
         }
     }

@@ -17,7 +17,7 @@ public class ParseTest {
     public static void main(String[] args) throws IOException {
 //        BinlogPool binlogPool = BinlogPool.getInstance();
 //        SendPool sendPool = SendPool.getInstance();
-        long start = 550;
+        long start = -2;
         long end = 800;
 //
 //        Thread t1 = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, "", "student"));
@@ -26,7 +26,7 @@ public class ParseTest {
 //        Thread t2 = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
 //        t2.start();
         com.zbz.bgk.ReadDataWorker readDataWorker = new com.zbz.bgk.ReadDataWorker("middleware3", "student",
-                "/home/zwy/work/test/canal.txt", "/home/zwy/work/middlewareTester/middle/database");
+                "/home/zwy/work/test/canal_01", "/home/zwy/work/middlewareTester/middle/database");
         readDataWorker.compute();
         Index index = readDataWorker.getIndex();
         com.zbz.zwy.Persistence persistence = readDataWorker.getPersistence();
