@@ -68,7 +68,6 @@ public class BinlogFactory {
 //        }
 //        System.out.println("");
         Binlog binlog = new Binlog();
-//        System.out.println("operation:" + strings[0]);
         binlog.setOperation(Byte.parseByte(strings[0]));
         String primaryInfo = strings[1];
         String[] primaryInfos = primaryInfo.split(":");
