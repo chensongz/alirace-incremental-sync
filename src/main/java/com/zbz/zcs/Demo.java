@@ -41,6 +41,17 @@ public class Demo {
         List<FileIndex> fileIndices = inFileReduce();
         long t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
+
+
+        int c = 0;
+        for(FileIndex idx: fileIndices) {
+            int t = idx.getIndex().getIndexHashMap().size();
+            c += t;
+            System.out.println("curr " + t);
+        }
+        System.out.println("cnt " + c);
+
+
         t1 = System.currentTimeMillis();
         List<FileIndex> result = commonReduce(1, 10, fileIndices);
         t2 = System.currentTimeMillis();

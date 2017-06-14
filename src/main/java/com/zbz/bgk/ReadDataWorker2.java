@@ -32,6 +32,7 @@ public class ReadDataWorker2 {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(basePersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
+
             long indexOffset;
 
             if ((indexOffset = baseIndex.getOffset(appendBinlog.getPrimaryValue())) >= 0) {
@@ -65,6 +66,9 @@ public class ReadDataWorker2 {
                 baseIndex.insert(appendBinlog.getPrimaryValue(), offset);
             }
             appendIndex.delete(appendPrimaryValue);
+            appendIndex.release();
+            appendBinlog = null;
+            appendBinlogLine = null;
         }
 
         appendIndex = null;

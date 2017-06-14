@@ -74,6 +74,8 @@ public class Persistence {
             } catch (IOException e) {
                 e.printStackTrace();
                 ret = -1;
+            } finally {
+                buf = null;
             }
         } else {
             //fixed length
@@ -101,6 +103,7 @@ public class Persistence {
             }
             fc.read(mb, readOffset);
             byte[] ret = mb.array();
+            mb = null;
             return ret;
         } catch (Exception e) {
             e.printStackTrace();

@@ -13,4 +13,6 @@ abstract public class Index {
     abstract public long getOffset(long key);
 
     abstract public Map<Long, Long> getIndexHashMap();
+
+    abstract public void release();
 }

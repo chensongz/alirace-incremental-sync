@@ -25,4 +25,9 @@ public class HashIndex extends Index {
     public Map<Long, Long> getIndexHashMap() {
         return indexHashMap;
     }
+
+    public void release() {
+        indexHashMap.clear();
+        indexHashMap = null;
+    }
 }
