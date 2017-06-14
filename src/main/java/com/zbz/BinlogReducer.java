@@ -89,10 +89,7 @@ public class BinlogReducer {
             if (binlogHashMap.containsKey(primaryValue)) {
                 // maybe insert record or update fields or delete record
                 Binlog oldBinlog = binlogHashMap.get(primaryValue);
-                System.out.println("update old1 binlog:" + oldBinlog);
-                System.out.println("update current1 binlog:" + newBinlog);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
-                System.out.println("update new1 binlog:" + binlog);
                 if (binlog != null) {
                     binlogHashMap.put(primaryValue, binlog);
                 } else {
@@ -101,10 +98,7 @@ public class BinlogReducer {
             } else if (binlogHashMap.containsKey(primaryOldValue)) {
                 // maybe update primary key
                 Binlog oldBinlog = binlogHashMap.get(primaryOldValue);
-                System.out.println("update old binlog:" + oldBinlog);
-                System.out.println("update current binlog:" + newBinlog);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
-                System.out.println("update new binlog:" + binlog);
                 if (binlog != null) {
                     binlogHashMap.remove(primaryOldValue);
                     binlogHashMap.put(primaryValue, binlog);

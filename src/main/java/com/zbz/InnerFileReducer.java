@@ -1,10 +1,6 @@
-package com.zbz.bgk;
+package com.zbz;
 
-import com.alibaba.middleware.race.sync.Server;
-import com.zbz.*;
-import com.zbz.zwy.Persistence;
 import com.zbz.zwy.TimeTester;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,12 +9,12 @@ import java.io.IOException;
 /**
  * Created by bgk on 6/13/17.
  */
-public class ReadDataWorker {
+public class InnerFileReducer {
     private BinlogReducer binlogReducer;
     private String srcFilename;
     private Index index = new HashIndex();
     private Persistence persistence;
-    public ReadDataWorker(String schema, String table, String srcFilename, String dstFilename) {
+    public InnerFileReducer(String schema, String table, String srcFilename, String dstFilename) {
         this.binlogReducer = new BinlogReducer(schema, table);
         this.srcFilename = srcFilename;
         this.persistence = new Persistence(dstFilename);
@@ -35,7 +31,7 @@ public class ReadDataWorker {
         }
 
         long t2 = System.currentTimeMillis();
-        String p = "Server readDataWorker: " + (t2 - t1) + "ms";
+        String p = "Server InnerFileReducer: " + (t2 - t1) + "ms";
         System.out.println(p);
 //        LoggerFactory.getLogger(Server.class).info(p);
     }
@@ -44,10 +40,7 @@ public class ReadDataWorker {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
 
-        int i = 0;
         while ((line = reader.readLine()) != null) {
-//            if (i++ >= 1005000) break;
-            System.out.println(line);
             binlogReducer.reduce(line);
             if (binlogReducer.isFull()) {
                 clearBinlogReducer();
@@ -64,15 +57,12 @@ public class ReadDataWorker {
             long indexOffset;
             long primaryOldValue = binlog.getPrimaryOldValue();
             long primaryValue = binlog.getPrimaryValue();
-            System.out.println("current1 Binlog:" + binlog);
             if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                System.out.println("old Binlog1:" + oldBinlog);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("new Binlog1:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
                     index.insert(primaryValue, offset);
                 } else {
@@ -82,10 +72,8 @@ public class ReadDataWorker {
                 // update key value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                System.out.println("old Binlog2:" + oldBinlog);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("new Binlog2:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
                     index.delete(primaryOldValue);
                     index.insert(primaryValue, offset);
@@ -94,7 +82,6 @@ public class ReadDataWorker {
                 }
             } else {
                 long offset = persistence.write(binlog.toBytes());
-//                System.out.println("binlog:" + binlog);
                 index.insert(primaryValue, offset);
             }
 

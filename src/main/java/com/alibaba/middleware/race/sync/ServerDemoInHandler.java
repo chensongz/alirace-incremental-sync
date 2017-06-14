@@ -1,7 +1,7 @@
 package com.alibaba.middleware.race.sync;
 
 import com.zbz.Pool;
-import com.zbz.Record;
+import com.zbz.bak.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

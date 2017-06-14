@@ -1,20 +1,14 @@
-package com.zbz.bgk;
-
-import com.zbz.Binlog;
-import com.zbz.BinlogFactory;
-import com.zbz.BinlogReducer;
-import com.zbz.Index;
-import com.zbz.zwy.Persistence;
+package com.zbz;
 
 import java.util.Set;
 
 /**
  * Created by bgk on 6/14/17.
  */
-public class ReadDataWorker2 {
+public class InterFileReducer {
     private Index baseIndex, appendIndex;
     private Persistence basePersistence, appendPersistence;
-    public ReadDataWorker2(Index baseIndex, Index appendIndex, Persistence basePersistence, Persistence appendPersistence) {
+    public InterFileReducer(Index baseIndex, Index appendIndex, Persistence basePersistence, Persistence appendPersistence) {
         this.baseIndex = baseIndex;
         this.appendIndex = appendIndex;
         this.basePersistence = basePersistence;
@@ -45,6 +39,11 @@ public class ReadDataWorker2 {
                 } else {
                     baseIndex.delete(appendBinlogPrimaryValue);
                 }
+                appendBinlogLine = null;
+                baseBinlogLine = null;
+                baseBinlog = null;
+                appendBinlog = null;
+                newBinlog = null;
             } else if ((indexOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue)) >= 0) {
                 //update key field
                 long baseOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue);
@@ -58,10 +57,17 @@ public class ReadDataWorker2 {
                 } else {
                     baseIndex.delete(appendBinlogPrimaryOldValue);
                 }
+                appendBinlogLine = null;
+                baseBinlogLine = null;
+                baseBinlog = null;
+                appendBinlog = null;
+                newBinlog = null;
             } else {
                 // if not in baseindex, then insert
                 long offset = basePersistence.write(appendBinlog.toBytes());
                 baseIndex.insert(appendBinlogPrimaryValue, offset);
+                appendBinlogLine = null;
+                appendBinlog = null;
             }
             appendIndex.delete(appendPrimaryValue);
         }
