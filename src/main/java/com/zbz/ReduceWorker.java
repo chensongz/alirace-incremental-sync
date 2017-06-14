@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ReduceWorker implements Runnable {
 
-    private static int END_CNT = 2;
+    private static int END_CNT = 1;
 
     private String schema;
     private String table;
@@ -51,18 +51,18 @@ public class ReduceWorker implements Runnable {
         logger.info("inter file reduce: " + (t2 - t1) + " ms");
 
         Index baseIndex = result.get(0).getIndex();
-        Index appendIndex = result.get(1).getIndex();
+//        Index appendIndex = result.get(1).getIndex();
         Persistence basePersistence = result.get(0).getPersist();
-        Persistence appendPersistence = result.get(1).getPersist();
+//        Persistence appendPersistence = result.get(1).getPersist();
 
-//        printResult(baseIndex, basePersistence);
+        printResult(baseIndex, basePersistence);
 
-        t1 = System.currentTimeMillis();
-        FinalReducer finalReducer = new FinalReducer(baseIndex, appendIndex,
-                basePersistence, appendPersistence);
-        finalReducer.compute(start, end, sendPool);
-        t2 = System.currentTimeMillis();
-        logger.info("final reduce: " + (t2 - t1) + " ms");
+//        t1 = System.currentTimeMillis();
+//        FinalReducer finalReducer = new FinalReducer(baseIndex, appendIndex,
+//                basePersistence, appendPersistence);
+//        finalReducer.compute(start, end, sendPool);
+//        t2 = System.currentTimeMillis();
+//        logger.info("final reduce: " + (t2 - t1) + " ms");
 
     }
 
@@ -70,10 +70,12 @@ public class ReduceWorker implements Runnable {
         for(long i = start + 1; i < end; i++) {
             long offset = index.getOffset(i);
             if(offset >= 0) {
-                byte[] b = persistence.read(offset);
-                System.out.println(new String(b));
+                String binlogLine = new String(persistence.read(offset));
+                Binlog binlog = BinlogFactory.parse(binlogLine);
+                sendPool.put(binlog.toSendString());
             }
         }
+        sendPool.put("NULL");
     }
 
 
