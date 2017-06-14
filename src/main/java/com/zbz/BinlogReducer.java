@@ -64,6 +64,7 @@ public class BinlogReducer {
             return newBinlog;
         } else if (transferOperation == Binlog.D) {
             newBinlog.setOperation(Binlog.D);
+            newBinlog.setPrimaryValue(String.valueOf(oldBinlog.getPrimaryOldValue()));
             return newBinlog;
         } else {
             oldBinlog.setOperation(transferOperation);
@@ -91,7 +92,10 @@ public class BinlogReducer {
                 Binlog oldBinlog = binlogHashMap.get(primaryValue);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
                 if (binlog != null) {
-                    binlogHashMap.put(primaryValue, binlog);
+                    if (primaryValue != binlog.getPrimaryValue()) {
+                        binlogHashMap.remove(primaryValue);
+                    }
+                    binlogHashMap.put(binlog.getPrimaryValue(), binlog);
                 } else {
                     binlogHashMap.remove(primaryValue);
                 }

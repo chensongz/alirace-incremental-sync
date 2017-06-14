@@ -17,7 +17,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  */
 public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
-    private static Logger logger = LoggerFactory.getLogger(ServerDemoInHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(Server.class);
 
     private Pool<String> sendPool;
 
@@ -65,6 +65,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         while (true) {
             // 向客户端发送消息
             String message = (String) getMessage();
+//            logger.info(message);
             if (message != null) {
                 ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
