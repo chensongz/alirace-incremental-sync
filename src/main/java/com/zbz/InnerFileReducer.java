@@ -23,7 +23,6 @@ public class InnerFileReducer {
     public void compute() {
         TimeTester.getInstance().setT1(System.currentTimeMillis());
         long t1 = System.currentTimeMillis();
-
         try {
             reduceDataFile(srcFilename);
         } catch (IOException e) {
