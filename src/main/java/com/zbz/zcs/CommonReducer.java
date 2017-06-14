@@ -39,9 +39,10 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             Index baseIndex = index0.getIndex();
             Index appendIndex = index1.getIndex();
 
+            System.out.println("before worker");
             ReadDataWorker2 worker = new ReadDataWorker2(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
-
+            System.out.println("after worker");
             worker.compute();
             index1.release();
 
