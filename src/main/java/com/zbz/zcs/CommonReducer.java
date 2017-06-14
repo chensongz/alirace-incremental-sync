@@ -2,10 +2,9 @@ package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.zbz.Index;
-import com.zbz.bgk.ReadDataWorker2;
-import com.zbz.zwy.Persistence;
+import com.zbz.InterFileReducer;
+import com.zbz.Persistence;
 
-import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.RecursiveTask;
@@ -38,7 +37,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             Index baseIndex = index0.getIndex();
             Index appendIndex = index1.getIndex();
 
-            ReadDataWorker2 worker = new ReadDataWorker2(
+            InterFileReducer worker = new InterFileReducer(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
 //            System.out.println("before worker");
             worker.compute();
@@ -94,27 +93,6 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         }
         fileList.clear();
         return ret;
-    }
-
-    private void persist(String newFile) {
-        try {
-            File f = new File(newFile);
-            if(!f.exists()) {
-                f.createNewFile();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void persist(String newFile, String oldFile) {
-        try {
-            File f = new File(oldFile);
-            File nf = new File(newFile);
-            if (f.exists()) { f.renameTo(nf); }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private String getNewFileName(String oldName1) {
