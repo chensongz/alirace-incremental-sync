@@ -1,6 +1,5 @@
 package com.zbz.zcs;
 
-import com.alibaba.middleware.race.sync.Constants;
 import com.zbz.Index;
 import com.zbz.InterFileReducer;
 import com.zbz.Persistence;
@@ -12,11 +11,11 @@ import java.util.concurrent.RecursiveTask;
 /**
  * Created by zwy on 17-6-13.
  */
-public class CommonReducer extends RecursiveTask<List<FileIndex>> {
+public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
     private int round;
     private List<FileIndex> fileList;
 
-    public CommonReducer(List<FileIndex> fileList) {
+    public InterFileWorker(List<FileIndex> fileList) {
         this.fileList = fileList;
     }
 
@@ -46,7 +45,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
             FileIndex index0 = fileList.get(0);
             ret.add(index0);
         } else {
-            CommonReducer reducer1, reducer2;
+            InterFileWorker reducer1, reducer2;
             if ((len & 0x1) > 0) {
                 List<FileIndex> fileList1 = new ArrayList<>(len - 1);
                 List<FileIndex> fileList2 = new ArrayList<>(1);
@@ -59,8 +58,8 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                     }
                 }
 
-                reducer1 = new CommonReducer(fileList1);
-                reducer2 = new CommonReducer(fileList2);
+                reducer1 = new InterFileWorker(fileList1);
+                reducer2 = new InterFileWorker(fileList2);
 
                 reducer1.fork();
                 reducer2.fork();
@@ -68,20 +67,20 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 ret.addAll(reducer1.join());
                 ret.addAll(reducer2.join());
             } else {
-                List<CommonReducer> reducers = new ArrayList<>();
-                CommonReducer reducer0;
+                List<InterFileWorker> reducers = new ArrayList<>();
+                InterFileWorker reducer0;
                 for(int i = 0; i < len; i += 2) {
                     List<FileIndex> fileList1 = new ArrayList<>(2);
                     fileList1.add(fileList.get(i));
                     fileList1.add(fileList.get(i + 1));
 
-                    reducer0 = new CommonReducer(fileList1);
+                    reducer0 = new InterFileWorker(fileList1);
                     reducers.add(reducer0);
                 }
-                for(CommonReducer reducer: reducers) {
+                for(InterFileWorker reducer: reducers) {
                     reducer.fork();
                 }
-                for(CommonReducer reducer: reducers) {
+                for(InterFileWorker reducer: reducers) {
                     ret.addAll(reducer.join());
                 }
             }

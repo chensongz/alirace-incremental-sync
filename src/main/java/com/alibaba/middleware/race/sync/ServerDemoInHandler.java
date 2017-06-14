@@ -20,11 +20,11 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(ServerDemoInHandler.class);
 
-    private Pool<Record> sendPool;
+    private Pool<String> sendPool;
 
     public ServerDemoInHandler() {
         try {
-            sendPool = Pool.getPoolInstance(Record.class, 5000);
+            sendPool = Pool.getPoolInstance(String.class, 5000);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -99,11 +99,11 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     private Object getMessage() throws InterruptedException {
 
-        Record record = sendPool.poll();
-        if (record.getPrimaryKeyValue() > 0) {
-            return record.toString();
-        } else {
+        String message = sendPool.poll();
+        if (message.equals("NULL")) {
             return null;
+        } else {
+            return message;
         }
     }
 }

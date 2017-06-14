@@ -1,40 +1,49 @@
-package com.zbz.zcs;
+package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.zcs.InterFileWorker;
+import com.zbz.zcs.FileIndex;
+import com.zbz.zcs.InnerFileWorker;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
-import com.zbz.*;
-
 /**
- * Created by zhuchensong on 6/9/17.
+ * Created by zwy on 17-6-14.
  */
-public class Demo {
+public class ReduceWorker implements Runnable {
 
-    private String schema = "middleware3";
-    private String table = "student";
+    private static int END_CNT = 2;
 
-    public static void main(String[] args) {
-        Demo demo = new Demo();
-        demo.run();
+    private String schema;
+    private String table;
+    private long start;
+    private long end;
+    private Pool<String> sendPool;
+
+    public ReduceWorker(String schema, String table, long start, long end, Pool<String> sendPool) {
+        this.schema = schema;
+        this.table = table;
+        this.start = start;
+        this.end = end;
+        this.sendPool = sendPool;
     }
 
+    @Override
     public void run() {
         long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce();
         long t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
 
-
         t1 = System.currentTimeMillis();
-        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
+        List<FileIndex> result = interFileReduce(Constants.DATA_FILE_NUM, fileIndices);
         t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
 
-
+        //todo 调用卞老师
         FileIndex f = result.get(0);
         Index idx = f.getIndex();
         Persistence per = f.getPersist();
@@ -47,12 +56,12 @@ public class Demo {
         }
     }
 
-    private List<FileIndex> commonReduce(int n, List<FileIndex> fileIndices) {
+    private List<FileIndex> interFileReduce(int n, List<FileIndex> fileIndices) {
 
         int nn = n;
         try {
             List<FileIndex> reducedIndices = fileIndices;
-            while(nn > 1) {
+            while(nn > END_CNT) {
                 ForkJoinPool forkJoinPool = new ForkJoinPool();
                 InterFileWorker reducer = new InterFileWorker(reducedIndices);
                 Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
