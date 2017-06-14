@@ -32,8 +32,12 @@ public class InFileReduce extends RecursiveTask<List<FileIndex>> {
             String dataFileName = fileList.get(0);
             String reducedFileName = getNewFileName(dataFileName);
 
-            ReadDataWorker worker = new ReadDataWorker(schema, table, dataFileName, reducedFileName);
-            FileIndex fileIndex = worker.compute();
+            ReadDataWorker worker =
+                    new ReadDataWorker(schema, table, dataFileName, reducedFileName);
+            worker.compute();
+
+            FileIndex fileIndex =
+                    new FileIndex(reducedFileName,  worker.getIndex(),  worker.getPersistence());
 
             ret.add(fileIndex);
         } else {

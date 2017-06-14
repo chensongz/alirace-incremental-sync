@@ -4,6 +4,7 @@ import com.zbz.Binlog;
 import com.zbz.BinlogFactory;
 import com.zbz.BinlogReducer;
 import com.zbz.Index;
+import com.zbz.zcs.FileIndex;
 import com.zbz.zwy.Persistence;
 
 import java.util.Set;
@@ -26,10 +27,12 @@ public class ReadDataWorker2 {
         Set<Long> baseKeySet = baseIndex.getIndexHashMap().keySet();
 
         for (Long appendPrimaryValue : appendIndex.getIndexHashMap().keySet()) {
+
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(basePersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
             long indexOffset;
+
             if ((indexOffset = baseIndex.getOffset(appendBinlog.getPrimaryValue())) >= 0) {
                 // update other fields
                 long baseOffset = baseIndex.getOffset(appendBinlog.getPrimaryValue());
@@ -61,7 +64,6 @@ public class ReadDataWorker2 {
                 baseIndex.insert(appendBinlog.getPrimaryValue(), offset);
             }
         }
-
     }
 
     public Index getBaseIndex() {

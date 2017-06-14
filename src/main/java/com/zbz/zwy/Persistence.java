@@ -28,6 +28,7 @@ public class Persistence {
             fc = new RandomAccessFile(filename, "rw").getChannel();
             currentOffset = 0;
             FIXED_WIDTH = width;
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -29,7 +29,7 @@ public class ReadDataWorker {
         this.persistence = new Persistence(dstFilename);
     }
 
-    public FileIndex compute() {
+    public void compute() {
         TimeTester.getInstance().setT1(System.currentTimeMillis());
         long t1 = System.currentTimeMillis();
 
@@ -44,7 +44,6 @@ public class ReadDataWorker {
         System.out.println(p);
 
         FileIndex fidx = new FileIndex(dstFilename, index, persistence);
-        return fidx;
     }
 
     private void reduceDataFile(String filename) throws IOException{
@@ -72,9 +71,9 @@ public class ReadDataWorker {
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("old Binlog:" + oldBinlog);
-                    System.out.println("current1 Binlog:" + binlog);
-                    System.out.println("new Binlog:" + newBinlog);
+//                    System.out.println("old Binlog:" + oldBinlog);
+//                    System.out.println("current1 Binlog:" + binlog);
+//                    System.out.println("new Binlog:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
                     index.insert(newBinlog.getPrimaryValue(), offset);
                 } else {
@@ -86,9 +85,9 @@ public class ReadDataWorker {
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
-                    System.out.println("old Binlog:" + oldBinlog);
-                    System.out.println("current2 Binlog:" + binlog);
-                    System.out.println("new Binlog:" + newBinlog);
+//                    System.out.println("old Binlog:" + oldBinlog);
+//                    System.out.println("current2 Binlog:" + binlog);
+//                    System.out.println("new Binlog:" + newBinlog);
                     long offset = persistence.write(newBinlog.toBytes());
                     index.delete(oldBinlog.getPrimaryValue());
                     index.insert(newBinlog.getPrimaryValue(), offset);
@@ -97,7 +96,7 @@ public class ReadDataWorker {
                 }
             } else {
                 long offset = persistence.write(binlog.toBytes());
-                System.out.println("binlog:" + binlog);
+//                System.out.println("binlog:" + binlog);
                 index.insert(binlog.getPrimaryValue(), offset);
             }
         }

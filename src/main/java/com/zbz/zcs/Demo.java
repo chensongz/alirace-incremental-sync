@@ -19,7 +19,7 @@ public class Demo {
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.run();
-        demo.run0();
+//        demo.run0();
     }
 
     public void run0() {
@@ -40,12 +40,15 @@ public class Demo {
         long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce();
         long t2 = System.currentTimeMillis();
-        System.out.println("Demo multi-thread: " + (t2 - t1) + " ms");
-//        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
+        t1 = System.currentTimeMillis();
+        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        t2 = System.currentTimeMillis();
+        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
     }
 
     private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
-        if(n <= 2) return fileIndices;
+        if(n <= 1) return fileIndices;
 
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         CommonReducer reducer = new CommonReducer(fileIndices, round, 0);
@@ -55,6 +58,7 @@ public class Demo {
 
         try {
             reducedIndices = result.get();
+            System.out.println("ooops " + reducedIndices.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

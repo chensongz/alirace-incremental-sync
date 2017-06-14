@@ -24,4 +24,12 @@ public class FileIndex {
     public String getFileName() {
         return this.fileName;
     }
+
+    public Persistence getPersist() {
+        return persist;
+    }
+
+    public Index getIndex() {
+        return index;
+    }
 }
