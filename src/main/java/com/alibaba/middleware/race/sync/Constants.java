@@ -1,6 +1,5 @@
 package com.alibaba.middleware.race.sync;
 
-
 public class Constants {
     public static final int DATA_FILE_NUM = 10;
     // 工作主目录

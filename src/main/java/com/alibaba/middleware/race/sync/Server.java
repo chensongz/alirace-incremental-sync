@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.zbz.*;
-import com.zbz.bak.DatabaseWorker;
-import com.zbz.bak.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +78,6 @@ public class Server {
         System.out.println("start:" + args[2]);
         // 第四个参数是end pk Id
         System.out.println("end:" + args[3]);
-
     }
 
     /**
@@ -111,9 +108,7 @@ public class Server {
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-
             ChannelFuture f = b.bind(port).sync();
-
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
