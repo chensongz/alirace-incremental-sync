@@ -13,20 +13,16 @@ import java.util.concurrent.RecursiveTask;
  * Created by zwy on 17-6-13.
  */
 public class CommonReducer extends RecursiveTask<List<FileIndex>> {
-    private int pre;
     private int round;
     private List<FileIndex> fileList;
 
-    public CommonReducer(List<FileIndex> fileList, int round, int pre) {
-        this.pre = pre;
-        this.round = round;
+    public CommonReducer(List<FileIndex> fileList) {
         this.fileList = fileList;
     }
 
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
-        System.out.println(fileList.toString());
 
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
@@ -40,9 +36,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
 
             InterFileReducer worker = new InterFileReducer(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
-            System.out.println("before worker");
             worker.compute();
-            System.out.println("after worker");
 
             index1.release();
 
@@ -65,8 +59,8 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                     }
                 }
 
-                reducer1 = new CommonReducer(fileList1, round, pre);
-                reducer2 = new CommonReducer(fileList2, round, pre + len - 1);
+                reducer1 = new CommonReducer(fileList1);
+                reducer2 = new CommonReducer(fileList2);
 
                 reducer1.fork();
                 reducer2.fork();
@@ -81,7 +75,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                     fileList1.add(fileList.get(i));
                     fileList1.add(fileList.get(i + 1));
 
-                    reducer0 = new CommonReducer(fileList1, round, pre + i);
+                    reducer0 = new CommonReducer(fileList1);
                     reducers.add(reducer0);
                 }
                 for(CommonReducer reducer: reducers) {
@@ -94,10 +88,5 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         }
         fileList.clear();
         return ret;
-    }
-
-    private String getNewFileName(String oldName1) {
-        String dir = Constants.MIDDLE_HOME;
-        return dir + "/" + (round + 1) + ((pre & 0x1) > 0 ? (pre / 2 + 1) : (pre / 2));
     }
 }
