@@ -1,5 +1,6 @@
 package com.zbz;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -20,8 +21,6 @@ public class Binlog {
 
     private long primaryValue;
 
-    private int primaryKeyIndex = 0;
-
     private LinkedHashMap<String, Field> fields = new LinkedHashMap<>();
 
     public void setOperation(byte operation) {
@@ -30,14 +29,6 @@ public class Binlog {
 
     public void setPrimaryKey(String primaryKey) {
         this.primaryKey = primaryKey;
-    }
-
-    public void setPrimaryKeyIndex(int primaryKeyIndex) {
-        this.primaryKeyIndex = primaryKeyIndex;
-    }
-
-    public int getPrimaryKeyIndex() {
-        return this.primaryKeyIndex;
     }
 
     public void setPrimaryOldValue(String primaryOldValue) {
@@ -83,11 +74,21 @@ public class Binlog {
 
     @Override
     public String toString() {
-        String s = "";
-        s = s + "operation:" + operation + " primaryvalue: " + primaryValue;
-        for (Field field: fields.values()) {
-            s += " " + field.getName() + "-" + field.getValue() + "\t";
+        StringBuilder sb = new StringBuilder();
+        sb.append(operation).append("|");
+        sb.append(primaryKey).append(":")
+                .append(primaryOldValue).append(":")
+                .append(primaryValue).append("|");
+        for (Field field : fields.values()) {
+            sb.append(field.getName()).append(":")
+                    .append(field.getType()).append(":")
+                    .append(field.getValue()).append("|");
         }
-        return s;
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public byte[] toBytes() {
+        return toString().getBytes();
     }
 }

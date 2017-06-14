@@ -12,6 +12,15 @@ public class BinlogReducer {
     private String schema;
     private String table;
 
+    public static Binlog updateOldBinlog(Binlog oldBinlog, Binlog newBinlog, byte newBinlogOperation) {
+        oldBinlog.setOperation(newBinlogOperation);
+        oldBinlog.setPrimaryValue(String.valueOf(newBinlog.getPrimaryValue()));
+        for (Field field: newBinlog.getFields().values()) {
+            oldBinlog.addField(field);
+        }
+        return oldBinlog;
+    }
+
     public BinlogReducer(String schema, String table) {
         this.schema = schema;
         this.table = table;
@@ -19,6 +28,7 @@ public class BinlogReducer {
 
     public void reduce(String line) {
         Binlog newBinlog = BinlogFactory.createBinlog(line, schema, table);
+        Binlog binlog;
         if (newBinlog != null) {
             if (binlogHashMap.containsKey(newBinlog.getPrimaryValue())) {
                 // maybe insert record or update fields or delete record
@@ -29,7 +39,8 @@ public class BinlogReducer {
                         switch (newBinlog.getOperation()) {
                             case Binlog.U:
                                 // update fields I -> U => I
-                                updateOldBinlog(oldBinlog, newBinlog, Binlog.I);
+                                binlog = updateOldBinlog(oldBinlog, newBinlog, Binlog.I);
+                                binlogHashMap.put(oldBinlog.getPrimaryValue(), binlog);
                                 break;
                             case Binlog.D:
                                 // delete record I -> D => null
@@ -44,7 +55,8 @@ public class BinlogReducer {
                         switch (newBinlog.getOperation()) {
                             case Binlog.U:
                                 // U -> U => U
-                                updateOldBinlog(oldBinlog, newBinlog, Binlog.U);
+                                binlog = updateOldBinlog(oldBinlog, newBinlog, Binlog.U);
+                                binlogHashMap.put(oldBinlog.getPrimaryValue(), binlog);
                                 break;
                             case Binlog.D:
                                 // U -> D => D
@@ -74,11 +86,13 @@ public class BinlogReducer {
                 switch (oldBinlog.getOperation()) {
                     case Binlog.I:
                         // I -> U => I
-                        updateOldBinlog(oldBinlog, newBinlog, Binlog.I);
+                        binlog = updateOldBinlog(oldBinlog, newBinlog, Binlog.I);
+                        binlogHashMap.put(oldBinlog.getPrimaryValue(), binlog);
                         break;
                     case Binlog.U:
                         // U -> U => U
-                        updateOldBinlog(oldBinlog, newBinlog, Binlog.U);
+                        binlog = updateOldBinlog(oldBinlog, newBinlog, Binlog.U);
+                        binlogHashMap.put(oldBinlog.getPrimaryValue(), binlog);
                         break;
                     default:
                         break;
@@ -87,15 +101,6 @@ public class BinlogReducer {
                 binlogHashMap.put(newBinlog.getPrimaryValue(), newBinlog);
             }
         }
-    }
-
-    public void updateOldBinlog(Binlog oldBinlog, Binlog newBinlog, byte Operation) {
-        oldBinlog.setOperation(Operation);
-        oldBinlog.setPrimaryValue(String.valueOf(newBinlog.getPrimaryValue()));
-        for (Field field: newBinlog.getFields().values()) {
-            oldBinlog.addField(field);
-        }
-        binlogHashMap.put(oldBinlog.getPrimaryValue(), oldBinlog);
     }
 
     public boolean isFull() {
@@ -109,4 +114,5 @@ public class BinlogReducer {
     public void clearBinlogHashMap() {
         binlogHashMap.clear();
     }
+
 }

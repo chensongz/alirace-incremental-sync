@@ -27,7 +27,6 @@ public class BinlogFactory {
         String oldValue;
         String newValue;
         int i = 6;
-        int j = 0; //get primary key position
         while (i < strings.length) {
             fieldStrings = strings[i++].split(":");
             fieldname = fieldStrings[0];
@@ -37,7 +36,6 @@ public class BinlogFactory {
             if (fieldStrings[2].equals("1")) {
                 // if field is primary key
                 binlog.setPrimaryKey(fieldStrings[0]);
-                binlog.setPrimaryKeyIndex(j);
                 if (binlog.getOperation() == Binlog.D) {
                     // if delete operation
                     binlog.setPrimaryOldValue(newValue);
@@ -51,7 +49,6 @@ public class BinlogFactory {
                 Field field = new Field(fieldname, Byte.parseByte(fieldType), newValue);
                 binlog.addField(field);
             }
-            j++;
         }
         return binlog;
     }
@@ -62,5 +59,36 @@ public class BinlogFactory {
             return createBinlog(line);
         }
         return null;
+    }
+
+    public static Binlog parse(String binlogLine) {
+        String[] strings = binlogLine.split("\\|");
+//        for (String s : strings) {
+//            System.out.print(s);
+//        }
+//        System.out.println("");
+        Binlog binlog = new Binlog();
+//        System.out.println("operation:" + strings[0]);
+        binlog.setOperation(Byte.parseByte(strings[0]));
+        String primaryInfo = strings[1];
+        String[] primaryInfos = primaryInfo.split(":");
+        binlog.setPrimaryKey(primaryInfos[0]);
+        binlog.setPrimaryOldValue(primaryInfos[1]);
+        binlog.setPrimaryValue(primaryInfos[2]);
+        String[] fieldStrings;
+        String fieldname;
+        String fieldType;
+        String fieldValue;
+        int i = 2;
+        while (i < strings.length) {
+            fieldStrings = strings[i++].split(":");
+            fieldname = fieldStrings[0];
+            fieldType = fieldStrings[1];
+            fieldValue = fieldStrings[2];
+            Field field = new Field(fieldname, Byte.parseByte(fieldType), fieldValue);
+            binlog.addField(field);
+        }
+
+        return binlog;
     }
 }
