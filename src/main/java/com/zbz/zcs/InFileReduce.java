@@ -3,7 +3,6 @@ package com.zbz.zcs;
 import com.alibaba.middleware.race.sync.Constants;
 import com.zbz.bgk.ReadDataWorker;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
@@ -32,8 +31,12 @@ public class InFileReduce extends RecursiveTask<List<FileIndex>> {
             String dataFileName = fileList.get(0);
             String reducedFileName = getNewFileName(dataFileName);
 
-            ReadDataWorker worker = new ReadDataWorker(schema, table, dataFileName, reducedFileName);
-            FileIndex fileIndex = worker.compute();
+            ReadDataWorker worker =
+                    new ReadDataWorker(schema, table, dataFileName, reducedFileName);
+            worker.compute();
+
+            FileIndex fileIndex =
+                    new FileIndex(worker.getIndex(),  worker.getPersistence());
 
             ret.add(fileIndex);
         } else {

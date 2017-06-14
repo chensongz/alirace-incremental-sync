@@ -28,6 +28,7 @@ public class Persistence {
             fc = new RandomAccessFile(filename, "rw").getChannel();
             currentOffset = 0;
             FIXED_WIDTH = width;
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -73,6 +74,8 @@ public class Persistence {
             } catch (IOException e) {
                 e.printStackTrace();
                 ret = -1;
+            } finally {
+                buf = null;
             }
         } else {
             //fixed length
@@ -99,7 +102,9 @@ public class Persistence {
                 mb = ByteBuffer.allocate(FIXED_WIDTH);
             }
             fc.read(mb, readOffset);
-            return mb.array();
+            byte[] ret = mb.array();
+            mb = null;
+            return ret;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

@@ -8,20 +8,24 @@ import com.zbz.zwy.Persistence;
  */
 public class FileIndex {
     private Persistence persist;
-    private String fileName;
     private Index index;
 
-    public FileIndex(String fileName, Index index, Persistence persist) {
-        this.fileName = fileName;
+    public FileIndex(Index index, Persistence persist) {
         this.persist = persist;
         this.index = index;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public Persistence getPersist() {
+        return persist;
     }
 
-    public String getFileName() {
-        return this.fileName;
+    public Index getIndex() {
+        return index;
+    }
+
+    public void release() {
+        persist.close();
+        persist = null;
+        index = null;
     }
 }

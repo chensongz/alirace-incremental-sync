@@ -1,10 +1,10 @@
 package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.bgk.ReadDataWorker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
@@ -19,18 +19,47 @@ public class Demo {
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.run();
+//        demo.run0();
+    }
+
+    public void run0() {
+        long t1 = System.currentTimeMillis();
+
+        for(int i = 0; i < Constants.DATA_FILE_NUM; i++) {
+            String dataFileName = Constants.getDataFile(i);
+            String reducedFileName = dataFileName + "_";
+            ReadDataWorker worker = new ReadDataWorker(schema, table, dataFileName, reducedFileName);
+            worker.compute();
+        }
+
+        long t2 = System.currentTimeMillis();
+        System.out.println("Demo single-thread: " + (t2 - t1) + " ms");
     }
 
     public void run() {
         long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce();
         long t2 = System.currentTimeMillis();
-        System.out.println("Demo: " + (t2 - t1) + " ms");
-//        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
+
+
+        int c = 0;
+        for(FileIndex idx: fileIndices) {
+            int t = idx.getIndex().getIndexHashMap().size();
+            c += t;
+            System.out.println("curr " + t);
+        }
+        System.out.println("cnt " + c);
+
+
+        t1 = System.currentTimeMillis();
+        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        t2 = System.currentTimeMillis();
+        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
     }
 
     private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
-        if(n <= 2) return fileIndices;
+        if(n <= 1) return fileIndices;
 
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         CommonReducer reducer = new CommonReducer(fileIndices, round, 0);
@@ -40,6 +69,7 @@ public class Demo {
 
         try {
             reducedIndices = result.get();
+            System.out.println("ooops " + reducedIndices.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,6 +1,9 @@
 package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.Index;
+import com.zbz.bgk.ReadDataWorker2;
+import com.zbz.zwy.Persistence;
 
 import java.io.File;
 import java.util.List;
@@ -19,35 +22,50 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
         this.pre = pre;
         this.round = round;
         this.fileList = fileList;
+        System.out.println("hahahhahah: " + fileList.toString());
     }
+
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
+        System.out.println("fasdfasdf " + len);
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
             FileIndex index0 = fileList.get(0);
             FileIndex index1 = fileList.get(1);
 
-            String newFile = getNewFileName(index0.getFileName());
-            persist(newFile);
+            Persistence basePersistence = index0.getPersist();
+            Persistence appendPersistence = index1.getPersist();
+            Index baseIndex = index0.getIndex();
+            Index appendIndex = index1.getIndex();
 
-            persist(newFile);
+            System.out.println("before worker");
+            ReadDataWorker2 worker = new ReadDataWorker2(
+                    baseIndex, appendIndex, basePersistence, appendPersistence);
+            System.out.println("after worker");
+            worker.compute();
+            index1.release();
 
             ret.add(index0);
         } else if (len == 1) {
             FileIndex index0 = fileList.get(0);
-            String oldFile = index0.getFileName();
-            String newFile = getNewFileName(oldFile);
-
-            index0.setFileName(newFile);
-
-            persist(newFile, oldFile);
             ret.add(index0);
         } else {
             CommonReducer reducer1, reducer2;
             if ((len & 0x1) > 0) {
-                reducer1 = new CommonReducer(fileList.subList(0, len - 1), round, pre);
-                reducer2 = new CommonReducer(fileList.subList(len - 1, len), round, pre + len - 1);
+                List<FileIndex> fileList1 = new ArrayList<>(len - 1);
+                List<FileIndex> fileList2 = new ArrayList<>(1);
+
+                for(int i = 0; i < len; i++) {
+                    if (i < len - 1) {
+                        fileList1.add(fileList.get(i));
+                    } else {
+                        fileList2.add(fileList.get(i));
+                    }
+                }
+
+                reducer1 = new CommonReducer(fileList1, round, pre);
+                reducer2 = new CommonReducer(fileList2, round, pre + len - 1);
 
                 reducer1.fork();
                 reducer2.fork();
@@ -58,7 +76,11 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 List<CommonReducer> reducers = new ArrayList<>();
                 CommonReducer reducer0;
                 for(int i = 0; i < len; i += 2) {
-                    reducer0 = new CommonReducer(fileList.subList(i, i + 2), round, pre + i);
+                    List<FileIndex> fileList1 = new ArrayList<>(2);
+                    fileList1.add(fileList.get(i));
+                    fileList1.add(fileList.get(i + 1));
+
+                    reducer0 = new CommonReducer(fileList1, round, pre + i);
                     reducers.add(reducer0);
                 }
                 for(CommonReducer reducer: reducers) {
@@ -69,6 +91,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 }
             }
         }
+        fileList.clear();
         return ret;
     }
 
