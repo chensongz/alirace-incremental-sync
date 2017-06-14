@@ -36,12 +36,12 @@ public class ReduceWorker implements Runnable {
         long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce();
         long t2 = System.currentTimeMillis();
-        System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
+        System.out.println("Reduce multi-thread stage1: " + (t2 - t1) + " ms");
 
         t1 = System.currentTimeMillis();
         List<FileIndex> result = interFileReduce(Constants.DATA_FILE_NUM, fileIndices);
         t2 = System.currentTimeMillis();
-        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
+        System.out.println("Reduce multi-thread stage2: " + (t2 - t1) + " ms");
 
         //todo 调用卞老师
         FileIndex f = result.get(0);
@@ -57,7 +57,6 @@ public class ReduceWorker implements Runnable {
     }
 
     private List<FileIndex> interFileReduce(int n, List<FileIndex> fileIndices) {
-
         int nn = n;
         try {
             List<FileIndex> reducedIndices = fileIndices;
@@ -69,7 +68,6 @@ public class ReduceWorker implements Runnable {
                 reducedIndices = result.get();
                 nn = (nn >>> 1) + ((nn & 0x1) > 0 ? 1 : 0);
             }
-
             return reducedIndices;
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,8 +80,7 @@ public class ReduceWorker implements Runnable {
         for(int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             dataFiles.add(Constants.getDataFile(i));
         }
-
-        ForkJoinPool forkJoinPool = new ForkJoinPool(); //todo
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
         InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {

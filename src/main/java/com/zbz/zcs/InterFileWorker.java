@@ -12,7 +12,6 @@ import java.util.concurrent.RecursiveTask;
  * Created by zwy on 17-6-13.
  */
 public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
-    private int round;
     private List<FileIndex> fileList;
 
     public InterFileWorker(List<FileIndex> fileList) {
