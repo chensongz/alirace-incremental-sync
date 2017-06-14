@@ -1,6 +1,5 @@
 package com.zbz;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -35,7 +34,7 @@ public class Binlog {
 
     public void setPrimaryOldValue(String primaryOldValue) {
         if (primaryOldValue.equals("NULL")) {
-            this.primaryOldValue = -1;
+            this.primaryOldValue = Long.MIN_VALUE + 1;
         } else {
             this.primaryOldValue = Long.parseLong(primaryOldValue);
         }
@@ -44,7 +43,7 @@ public class Binlog {
 
     public void setPrimaryValue(String primaryValue) {
         if (primaryValue.equals("NULL")) {
-            this.primaryValue = -1;
+            this.primaryValue = Long.MIN_VALUE + 1;
         } else {
             this.primaryValue = Long.parseLong(primaryValue);
         }
