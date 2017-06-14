@@ -1,83 +1,38 @@
 package com.zbz;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.LinkedHashMap;
 
 /**
  * Created by zwy on 17-6-10.
  */
 public class Persistence {
-    public static int NUM = 10;
-    public static int CHAR = 10;
-    public static String SEPARATOR = "\t";
+
+    public static final int INT_SIZE = Integer.SIZE / Byte.SIZE;
 
     private FileChannel fc;
-    private Table table;
-    private long recordOffset;
-    private int RECORD_WIDTH;
+    private int FIXED_WIDTH;
+    private long currentOffset;
+
+
 
     public Persistence(String filename) {
+        this(filename, -1);
+    }
+
+    public Persistence(String filename, int width) {
         try {
             fc = new RandomAccessFile(filename, "rw").getChannel();
-            recordOffset = 0;
+            currentOffset = 0;
+            FIXED_WIDTH = width;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public void init(Table table) {
-        this.table = table;
-
-        RECORD_WIDTH = 0;
-        for(Byte type: table.getFields().values()) {
-            if (type == Field.NUMERIC) {
-                RECORD_WIDTH += Persistence.NUM;
-            } else if (type == Field.STRING) {
-                RECORD_WIDTH += Persistence.CHAR;
-            }
-        }
-    }
-
-    private void writeRecord(Record record, long offset) {
-        try {
-            byte[] recordBytes = record.toBytes();
-            ByteBuffer byteBuffer = ByteBuffer.allocate(RECORD_WIDTH);
-//            System.out.println("RRR " + record.toString() + ":" + recordBytes.length + ":" + RECORD_WIDTH);
-            byteBuffer.put(recordBytes);
-            byteBuffer.put((byte)'\r');
-            byteBuffer.flip();
-            fc.write(byteBuffer, offset);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public long insert(Record record) {
-        writeRecord(record, recordOffset);
-        long ret = recordOffset;
-        recordOffset += RECORD_WIDTH;
-        return ret;
-    }
-
-    public void update(Record record, long offset) {
-        writeRecord(record, offset);
-    }
-
-    public Record query(long offset) {
-        ByteBuffer recordBytes = ByteBuffer.allocate(RECORD_WIDTH);
-        try {
-            fc.read(recordBytes, offset);
-            return recordFromBytes(recordBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public void close() {
         try {
@@ -87,32 +42,67 @@ public class Persistence {
         }
     }
 
-    private Record recordFromString(String str) {
-        String[] vals = str.split(SEPARATOR);
-        LinkedHashMap<String, Byte> fields = table.getFields();
-        Record ret = new Record();
+    public long write(byte[] bytes, long offset) {
+        if(FIXED_WIDTH < 0) return -1;
 
-        int i = 0;
-        for(String field: fields.keySet()) {
-            ret.put(field, vals[i++], table.isPrimaryKey(field));
+        ByteBuffer buf = ByteBuffer.allocate(FIXED_WIDTH);
+        buf.put(bytes);
+        try {
+            fc.write(buf, offset);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+        return offset;
+    }
+
+    public long write(byte[] bytes) {
+        long ret = currentOffset;
+        if(FIXED_WIDTH < 0) {
+            //not fixed width
+            int messageLength = bytes.length;
+            int totalLength = messageLength + INT_SIZE;
+
+            ByteBuffer buf = ByteBuffer.allocate(totalLength);
+            buf.putInt(messageLength);
+            buf.put(bytes);
+            buf.flip();
+            try {
+                fc.write(buf, currentOffset);
+                currentOffset += totalLength;
+            } catch (IOException e) {
+                e.printStackTrace();
+                ret = -1;
+            }
+        } else {
+            //fixed length
+            write(bytes, currentOffset);
+            currentOffset += FIXED_WIDTH;
         }
         return ret;
     }
 
-    private Record recordFromBytes(ByteBuffer recordBytes) {
-        recordBytes.flip();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-
-        while(recordBytes.remaining() > 0) {
-            byte curr = recordBytes.get();
-            if(curr != (byte)'\r') {
-                bao.write(curr);
+    public byte[] read(long offset) {
+        ByteBuffer mb;
+        long readOffset = offset;
+        try {
+            if(FIXED_WIDTH < 0) {
+                //not fixed width
+                ByteBuffer widthBuf = ByteBuffer.allocate(INT_SIZE);
+                fc.read(widthBuf, readOffset);
+                widthBuf.flip();
+                int width = widthBuf.getInt();
+                mb = ByteBuffer.allocate(width);
+                readOffset += INT_SIZE;
             } else {
-                break;
+                //fixed width
+                mb = ByteBuffer.allocate(FIXED_WIDTH);
             }
+            fc.read(mb, readOffset);
+            return mb.array();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        String recordString = bao.toString();
-//        System.out.println("RecordFromBytes: " + recordString);
-        return recordFromString(recordString);
     }
 }

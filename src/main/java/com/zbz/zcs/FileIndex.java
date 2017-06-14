@@ -1,7 +1,7 @@
 package com.zbz.zcs;
 
 import com.zbz.Index;
-import com.zbz.zwy.Persistence;
+import com.zbz.Persistence;
 
 /**
  * Created by zwy on 17-6-13.

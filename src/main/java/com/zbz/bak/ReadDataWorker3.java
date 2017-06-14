@@ -1,7 +1,10 @@
-package com.zbz;
+package com.zbz.bak;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
+import com.zbz.Binlog;
+import com.zbz.BinlogReducer;
+import com.zbz.Pool;
 import com.zbz.zwy.TimeTester;
 import org.slf4j.LoggerFactory;
 
@@ -12,12 +15,12 @@ import java.io.IOException;
 /**
  * Created by zwy on 17-6-8.
  */
-public class ReadDataWorker implements Runnable {
+public class ReadDataWorker3 implements Runnable {
 
     private Pool<Binlog> binlogPool;
     private BinlogReducer binlogReducer;
 
-    public ReadDataWorker(Pool<Binlog> binlogPool, String schema, String table) {
+    public ReadDataWorker3(Pool<Binlog> binlogPool, String schema, String table) {
         this.binlogReducer = new BinlogReducer(schema, table);
         this.binlogPool = binlogPool;
     }
@@ -38,7 +41,7 @@ public class ReadDataWorker implements Runnable {
         }
 
         long t2 = System.currentTimeMillis();
-        String p = "Server readDataWorker: " + (t2 - t1) + "ms";
+        String p = "Server ReadDataWorker3: " + (t2 - t1) + "ms";
         System.out.println(p);
         LoggerFactory.getLogger(Server.class).info(p);
     }

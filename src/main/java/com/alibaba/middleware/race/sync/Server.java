@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.zbz.*;
+import com.zbz.bak.DatabaseWorker;
+import com.zbz.bak.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +62,11 @@ public class Server {
             e.printStackTrace();
         }
 
-        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, schema, table));
-        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
-
-        readDataWorker.start();
-        databaseWorker.start();
+//        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, schema, table));
+//        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
+//
+//        readDataWorker.start();
+//        databaseWorker.start();
 
         server.startServer(Constants.SERVER_PORT);
     }

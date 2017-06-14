@@ -1,7 +1,11 @@
-package com.zbz;
+package com.zbz.bak;
 
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.zbz.Binlog;
+import com.zbz.Field;
+import com.zbz.HashIndex;
+import com.zbz.Index;
 
 import java.util.*;
 
@@ -14,7 +18,7 @@ public class Database {
 
     private Table table = null;
     private Index index = null;
-    private Persistence persistence = null;
+    private Persistence1 persistence = null;
 
     public void init(Binlog binlog) {
         if (binlog.getOperation() != Binlog.I) return;
@@ -25,7 +29,7 @@ public class Database {
         }
 
         if(persistence == null) {
-            persistence = new Persistence(Constants.MIDDLE_HOME + "/database");
+            persistence = new Persistence1(Constants.MIDDLE_HOME + "/database");
             persistence.init(table);
         }
 
