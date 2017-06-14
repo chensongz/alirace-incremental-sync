@@ -2,8 +2,10 @@ package com.zbz.bgk;
 
 import com.alibaba.middleware.race.sync.Constants;
 //import com.zbz.BinlogPool;
-import com.zbz.DatabaseWorker;
-import com.zbz.ReadDataWorker;
+import com.zbz.Binlog;
+import com.zbz.BinlogFactory;
+import com.zbz.Index;
+import com.zbz.zwy.Persistence;
 //import com.zbz.SendPool;
 
 import java.io.IOException;
@@ -15,8 +17,8 @@ public class ParseTest {
     public static void main(String[] args) throws IOException {
 //        BinlogPool binlogPool = BinlogPool.getInstance();
 //        SendPool sendPool = SendPool.getInstance();
-//        long start = 550;
-//        long end = 800;
+        long start = 550;
+        long end = 800;
 //
 //        Thread t1 = new Thread(new ReadDataWorker(binlogPool, Constants.DATA_HOME, "", "student"));
 //        t1.start();
@@ -26,5 +28,16 @@ public class ParseTest {
         com.zbz.bgk.ReadDataWorker readDataWorker = new com.zbz.bgk.ReadDataWorker("middleware3", "student",
                 "/home/zwy/work/test/canal.txt", "/home/zwy/work/middlewareTester/middle/database");
         readDataWorker.compute();
+        Index index = readDataWorker.getIndex();
+        com.zbz.zwy.Persistence persistence = readDataWorker.getPersistence();
+        for (long value = start; value < end; value++) {
+            long offset = index.getOffset(value);
+            if (offset >= 0) {
+                String binlogLine = new String(persistence.read(offset));
+                Binlog binlog = BinlogFactory.parse(binlogLine);
+                System.out.println("result :" + binlog);
+            }
+
+        }
     }
 }
