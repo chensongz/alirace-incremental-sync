@@ -28,13 +28,13 @@ public class Demo {
 
 
         t1 = System.currentTimeMillis();
-        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        List<FileIndex> result = commonReduce(1, Constants.DATA_FILE_NUM, fileIndices);
         t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
     }
 
     private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
-        if(n <= 1) return fileIndices;
+        if(n <= 5) return fileIndices;
 
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         CommonReducer reducer = new CommonReducer(fileIndices, round, 0);

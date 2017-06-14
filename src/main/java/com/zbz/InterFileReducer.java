@@ -16,7 +16,7 @@ public class InterFileReducer {
     }
 
     public void compute() {
-        Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
+        final Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
         for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
@@ -53,7 +53,6 @@ public class InterFileReducer {
                 long offset = basePersistence.write(appendBinlog.toBytes());
                 baseIndex.insert(appendBinlogPrimaryValue, offset);
             }
-            appendIndex.delete(appendPrimaryValue);
         }
 
         appendIndex = null;

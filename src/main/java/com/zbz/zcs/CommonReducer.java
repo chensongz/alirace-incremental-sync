@@ -26,6 +26,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
     @Override
     protected List<FileIndex> compute() {
         int len = fileList.size();
+        System.out.println(fileList.toString());
 
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
@@ -39,9 +40,9 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
 
             InterFileReducer worker = new InterFileReducer(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
-//            System.out.println("before worker");
+            System.out.println("before worker");
             worker.compute();
-//            System.out.println("after worker");
+            System.out.println("after worker");
 
             index1.release();
 
