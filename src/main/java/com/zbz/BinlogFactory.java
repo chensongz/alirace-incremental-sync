@@ -63,12 +63,11 @@ public class BinlogFactory {
 
     public static Binlog parse(String binlogLine) {
         String[] strings = binlogLine.split("\\|");
-        for (String s : strings) {
-            System.out.print(s);
-        }
-        System.out.println("");
+//        for (String s : strings) {
+//            System.out.print(s);
+//        }
+//        System.out.println("");
         Binlog binlog = new Binlog();
-        System.out.println("operation:" + strings[0]);
         binlog.setOperation(Byte.parseByte(strings[0]));
         String primaryInfo = strings[1];
         String[] primaryInfos = primaryInfo.split(":");

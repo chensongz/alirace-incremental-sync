@@ -9,9 +9,11 @@ import java.util.LinkedHashMap;
  */
 public class Binlog {
     // 1 represent I, 2 represent U, 3 represent D
+    public static final byte ID = 0;
     public static final byte I = 1;
     public static final byte U = 2;
     public static final byte D = 3;
+    public static final byte DI = 4;
 
     private byte operation;
 
