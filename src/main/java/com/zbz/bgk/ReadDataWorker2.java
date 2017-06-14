@@ -24,7 +24,9 @@ public class ReadDataWorker2 {
     public void compute() {
         Set<Long> baseKeySet = baseIndex.getIndexHashMap().keySet();
 
-        for (Long appendPrimaryValue : appendIndex.getIndexHashMap().keySet()) {
+        Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
+
+        for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(basePersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
@@ -59,7 +61,11 @@ public class ReadDataWorker2 {
                 long offset = basePersistence.write(appendBinlog.toBytes());
                 baseIndex.insert(appendBinlog.getPrimaryValue(), offset);
             }
+            appendIndex.delete(appendPrimaryValue);
         }
+
+        appendIndex = null;
+        appendPersistence = null;
 
     }
 
