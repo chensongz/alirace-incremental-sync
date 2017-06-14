@@ -87,6 +87,7 @@ public class CommonReducer extends RecursiveTask<List<FileIndex>> {
                 }
                 for(CommonReducer reducer: reducers) {
                     ret.addAll(reducer.join());
+                    System.out.println("oops");
                 }
             }
         }
