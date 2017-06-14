@@ -22,7 +22,7 @@ public class FinalReducer {
         Set<Long> baseKeySet = baseIndex.getIndexHashMap().keySet();
         Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
-        for (long primaryValue = start; primaryValue <= end; primaryValue++) {
+        for (long primaryValue = start; primaryValue < end; primaryValue++) {
             if (appendKeySet.contains(primaryValue)) {
                 // if second file contains the primary value, then update and send to pool
                 long appendOffset = appendIndex.getOffset(primaryValue);
@@ -53,6 +53,7 @@ public class FinalReducer {
                 }
             }
         }
+        sendPool.put("NULL");
 
         baseIndex = null;
         basePersistence = null;
