@@ -89,7 +89,7 @@ public class ReduceWorker implements Runnable {
         try {
             List<FileIndex> reducedIndices = fileIndices;
             while (nn > END_CNT) {
-                ForkJoinPool forkJoinPool = new ForkJoinPool();
+                ForkJoinPool forkJoinPool = new ForkJoinPool(32);
                 InterFileWorker reducer = new InterFileWorker(reducedIndices);
                 Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
                 reducedIndices = result.get();
