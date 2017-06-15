@@ -22,7 +22,7 @@ public class Binlog {
 
     private Long primaryValue;
 
-    private LinkedHashMap<String, Field> fields = new LinkedHashMap<>();
+    private LinkedHashMap<String, String> fields = new LinkedHashMap<>();
 
     public void setOperation(byte operation) {
         this.operation = operation;
@@ -68,11 +68,11 @@ public class Binlog {
         return primaryValue;
     }
 
-    public void addField(Field field) {
-        fields.put(field.getName(), field);
+    public void addField(String fieldname, String fieldValue) {
+        fields.put(fieldname, fieldValue);
     }
 
-    public HashMap<String, Field> getFields() {
+    public HashMap<String, String> getFields() {
         return fields;
     }
 
@@ -83,10 +83,9 @@ public class Binlog {
         sb.append(primaryKey).append(":")
                 .append(primaryOldValue).append(":")
                 .append(primaryValue).append("|");
-        for (Field field : fields.values()) {
-            sb.append(field.getName()).append(":")
-                    .append(field.getType()).append(":")
-                    .append(field.getValue()).append("|");
+        for (String fieldname : fields.keySet()) {
+            sb.append(fieldname).append(":")
+                    .append(fields.get(fieldname)).append("|");
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -99,8 +98,8 @@ public class Binlog {
     public String toSendString() {
         StringBuilder sb = new StringBuilder(32);
         sb.append(primaryValue).append("\t");
-        for (Field field : fields.values()) {
-            sb.append(field.getValue()).append("\t");
+        for (String fieldname : fields.keySet()) {
+            sb.append(fields.get(fieldname)).append("\t");
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();

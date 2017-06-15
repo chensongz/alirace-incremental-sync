@@ -1,7 +1,6 @@
 package com.zbz.bak;
 
 import com.zbz.Binlog;
-import com.zbz.Field;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,16 +15,16 @@ public class Table {
     public void init(Binlog binlog) {
         //TODO
 //        int pkIdx = binlog.getPrimaryKeyIndex();
-        Map<String, Field> fields = binlog.getFields();
+//        Map<String, Field> fields = binlog.getFields();
 
         int i = 0;
-        for (Field field : fields.values()) {
+//        for (Field field : fields.values()) {
 //            if (i++ == pkIdx) {
 //                primaryKey = binlog.getPrimaryKey();
 //                this.fields.put(primaryKey, Field.NUMERIC);
 //            }
-            this.fields.put(field.getName(), field.getType());
-        }
+//            this.fields.put(field.getName(), field.getType());
+//        }
     }
 
     public boolean isPrimaryKey(String field) {

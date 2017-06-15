@@ -1,6 +1,7 @@
 package com.zbz;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Victor on 2017/6/10.
@@ -71,8 +72,9 @@ public class BinlogReducer {
         } else {
             oldBinlog.setOperation(transferOperation);
             oldBinlog.setPrimaryValue(newBinlog.getPrimaryValue());
-            for (Field field: newBinlog.getFields().values()) {
-                oldBinlog.addField(field);
+            Map<String, String> fields =  newBinlog.getFields();
+            for (String fieldname: fields.keySet()) {
+                oldBinlog.addField(fieldname, fields.get(fieldname));
             }
             return oldBinlog;
         }

@@ -1,7 +1,5 @@
 package com.zbz.bak;
 
-import com.zbz.Field;
-
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

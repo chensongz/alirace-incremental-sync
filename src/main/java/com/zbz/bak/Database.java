@@ -3,7 +3,6 @@ package com.zbz.bak;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.zbz.Binlog;
-import com.zbz.Field;
 import com.zbz.HashIndex;
 import com.zbz.Index;
 
@@ -87,15 +86,15 @@ public class Database {
     private Record parseFromBinlog(Binlog binlog) {
 
         Record record = new Record();
-        HashMap<String, Field> fields = binlog.getFields();
-        for(String field: table.getFields().keySet()) {
-            if (table.isPrimaryKey(field)) {
-                record.put(field, String.valueOf(binlog.getPrimaryValue()), true);
-            } else {
-                Field val = fields.get(field);
-                record.put(field, val == null ? "NULL" : val.getValue(), false);
-            }
-        }
+//        HashMap<String, Field> fields = binlog.getFields();
+//        for(String field: table.getFields().keySet()) {
+//            if (table.isPrimaryKey(field)) {
+//                record.put(field, String.valueOf(binlog.getPrimaryValue()), true);
+//            } else {
+//                Field val = fields.get(field);
+//                record.put(field, val == null ? "NULL" : val.getValue(), false);
+//            }
+//        }
         return record;
     }
 

@@ -23,14 +23,12 @@ public class BinlogFactory {
 
         String[] fieldStrings;
         String fieldname;
-        String fieldType;
         String oldValue;
         String newValue;
         int i = 6;
         while (i < strings.length) {
             fieldStrings = strings[i++].split(":");
             fieldname = fieldStrings[0];
-            fieldType = fieldStrings[1];
             oldValue = strings[i++];
             newValue = strings[i++];
             if (fieldStrings[2].equals("1")) {
@@ -46,8 +44,7 @@ public class BinlogFactory {
                 }
             } else {
                 // if field is not primary key
-                Field field = new Field(fieldname, Byte.parseByte(fieldType), newValue);
-                binlog.addField(field);
+                binlog.addField(fieldname, newValue);
             }
         }
         return binlog;
@@ -72,16 +69,13 @@ public class BinlogFactory {
         binlog.setPrimaryValue(primaryInfos[2]);
         String[] fieldStrings;
         String fieldname;
-        String fieldType;
         String fieldValue;
         int i = 2;
         while (i < strings.length) {
             fieldStrings = strings[i++].split(":");
             fieldname = fieldStrings[0];
-            fieldType = fieldStrings[1];
             fieldValue = fieldStrings[2];
-            Field field = new Field(fieldname, Byte.parseByte(fieldType), fieldValue);
-            binlog.addField(field);
+            binlog.addField(fieldname, fieldValue);
         }
 
         return binlog;
