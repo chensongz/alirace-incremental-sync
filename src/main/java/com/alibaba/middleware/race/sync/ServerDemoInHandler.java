@@ -1,7 +1,6 @@
 package com.alibaba.middleware.race.sync;
 
 import com.zbz.Pool;
-import com.zbz.bak.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +17,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  */
 public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
-    private static Logger logger = LoggerFactory.getLogger(ServerDemoInHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(Server.class);
 
-    private Pool<Record> sendPool;
+    private Pool<String> sendPool;
 
     public ServerDemoInHandler() {
         try {
-            sendPool = Pool.getPoolInstance(Record.class, 5000);
+            sendPool = Pool.getPoolInstance(String.class, 5000);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -59,13 +58,14 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         result.readBytes(result1);
         String resultStr = new String(result1);
         // 接收并打印客户端的信息
-        logger.info("receive client:" + resultStr);
+        logger.info("receive from client:" + resultStr);
         Channel channel = Server.getMap().get(ipString);
 
         long t1 = System.currentTimeMillis();
         while (true) {
             // 向客户端发送消息
             String message = (String) getMessage();
+            logger.info(message);
             if (message != null) {
                 ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
@@ -82,14 +82,11 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
                         logger.info("Server send all message success!!");
                     }
                 });
-
                 break;
             }
         }
         long t2 = System.currentTimeMillis();
-        String p = "Server sender: " + (t2 - t1) + "ms";
-        System.out.println(p);
-        logger.info(p);
+        logger.info("Server send cost: " + (t2 - t1) + "ms");
     }
 
     @Override
@@ -98,12 +95,11 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
     }
 
     private Object getMessage() throws InterruptedException {
-
-        Record record = sendPool.poll();
-        if (record.getPrimaryKeyValue() > 0) {
-            return record.toString();
-        } else {
+        String message = sendPool.poll();
+        if (message.equals("NULL")) {
             return null;
+        } else {
+            return message;
         }
     }
 }

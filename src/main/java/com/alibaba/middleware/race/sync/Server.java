@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.zbz.*;
-import com.zbz.bak.DatabaseWorker;
-import com.zbz.bak.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,22 +49,17 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-        Pool<Binlog> binlogPool = null;
-        Pool<Record> sendPool = null;
+        Pool<String> sendPool = null;
         try {
-            binlogPool = Pool.getPoolInstance(Binlog.class, 5000);
-            sendPool = Pool.getPoolInstance(Record.class, 5000);
+            sendPool = Pool.getPoolInstance(String.class, 5000);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
             e.printStackTrace();
         }
 
-//        Thread readDataWorker = new Thread(new ReadDataWorker(binlogPool, schema, table));
-//        Thread databaseWorker = new Thread(new DatabaseWorker(binlogPool, sendPool, start, end));
-//
-//        readDataWorker.start();
-//        databaseWorker.start();
+        Thread reduceWorker = new Thread(new ReduceWorker(schema, table, start, end, sendPool));
+        reduceWorker.start();
 
         server.startServer(Constants.SERVER_PORT);
     }
@@ -85,7 +78,6 @@ public class Server {
         System.out.println("start:" + args[2]);
         // 第四个参数是end pk Id
         System.out.println("end:" + args[3]);
-
     }
 
     /**
@@ -116,9 +108,7 @@ public class Server {
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-
             ChannelFuture f = b.bind(port).sync();
-
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();

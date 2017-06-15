@@ -68,6 +68,7 @@
     <logger name="com.alibaba.middleware.race.sync.Server" additivity="false">
         <level value="INFO"/>
         <appender-ref ref="FILE_SERVER"/>
+        <appender-ref ref="STDOUT"/>
     </logger>
 
     <logger name="com.alibaba.middleware.race.sync.Client" additivity="false">
@@ -75,7 +76,6 @@
         <appender-ref ref="FILE_CLIENT"/>
         <appender-ref ref="STDOUT"/>
     </logger>
-
 
     <root>
         <level value="${app.logging.level}"/>

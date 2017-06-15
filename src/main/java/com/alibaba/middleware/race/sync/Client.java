@@ -19,15 +19,13 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class Client {
 
     private final static int port = Constants.SERVER_PORT;
-    // idle时间
     private static String ip;
-    private EventLoopGroup loop = new NioEventLoopGroup();
+//    private EventLoopGroup loop = new NioEventLoopGroup();
 
     public static void main(String[] args) throws Exception {
         initProperties();
         Logger logger = LoggerFactory.getLogger(Client.class);
         logger.info("Welcome to Client");
-        // 从args获取server端的ip
         ip = args[0];
         Client client = new Client();
         client.connect(ip, port);
@@ -52,7 +50,6 @@ public class Client {
      */
     public void connect(String host, int port) throws Exception {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-
         try {
             Bootstrap b = new Bootstrap();
             b.group(workerGroup);
@@ -67,17 +64,13 @@ public class Client {
                     ch.pipeline().addLast(new ClientDemoInHandler());
                 }
             });
-
             // Start the client.
             ChannelFuture f = b.connect(host, port).sync();
-
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
         }
-
     }
-
 
 }

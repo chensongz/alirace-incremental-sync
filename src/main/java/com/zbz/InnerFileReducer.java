@@ -6,6 +6,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.alibaba.middleware.race.sync.Server;
+
 /**
  * Created by bgk on 6/13/17.
  */
@@ -31,8 +35,8 @@ public class InnerFileReducer {
 
         long t2 = System.currentTimeMillis();
         String p = "Server InnerFileReducer: " + (t2 - t1) + "ms";
-        System.out.println(p);
-//        LoggerFactory.getLogger(Server.class).info(p);
+//        System.out.println(p);
+        LoggerFactory.getLogger(Server.class).info(p);
     }
 
     private void reduceDataFile(String filename) throws IOException{
@@ -48,7 +52,9 @@ public class InnerFileReducer {
         clearBinlogReducer();
 
         reader.close();
-        System.out.println(filename + " reduced...");
+
+        Logger logger = LoggerFactory.getLogger(Server.class);
+        logger.info(filename + " reduced...");
     }
 
     private void clearBinlogReducer() {
@@ -62,8 +68,12 @@ public class InnerFileReducer {
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
+                    if (primaryValue != newBinlog.getPrimaryValue()) {
+                        System.out.println("delete primaryValue:" + primaryValue + "- :" + newBinlog.getPrimaryValue());
+                        index.delete(primaryValue);
+                    }
                     long offset = persistence.write(newBinlog.toBytes());
-                    index.insert(primaryValue, offset);
+                    index.insert(newBinlog.getPrimaryValue(), offset);
                 } else {
                     index.delete(primaryValue);
                 }

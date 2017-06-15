@@ -92,4 +92,14 @@ public class Binlog {
     public byte[] toBytes() {
         return toString().getBytes();
     }
+
+    public String toSendString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(primaryValue).append("\t");
+        for (Field field : fields.values()) {
+            sb.append(field.getValue()).append("\t");
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
 }

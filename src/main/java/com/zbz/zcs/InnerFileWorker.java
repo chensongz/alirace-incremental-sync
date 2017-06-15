@@ -10,13 +10,13 @@ import java.util.concurrent.RecursiveTask;
 /**
  * Created by zwy on 17-6-13.
  */
-public class InFileReduce extends RecursiveTask<List<FileIndex>> {
+public class InnerFileWorker extends RecursiveTask<List<FileIndex>> {
 
     private List<String> fileList;
     private String schema;
     private String table;
 
-    public InFileReduce(List<String> fileList, String schema, String table) {
+    public InnerFileWorker(List<String> fileList, String schema, String table) {
         this.fileList = fileList;
         this.schema = schema;
         this.table = table;
@@ -41,10 +41,10 @@ public class InFileReduce extends RecursiveTask<List<FileIndex>> {
             ret.add(fileIndex);
         } else {
             //dispatch tasks
-            InFileReduce combineTask1
-                    = new InFileReduce(fileList.subList(0, len / 2), schema, table);
-            InFileReduce combineTask2
-                    = new InFileReduce(fileList.subList(len / 2, len), schema, table);
+            InnerFileWorker combineTask1
+                    = new InnerFileWorker(fileList.subList(0, len / 2), schema, table);
+            InnerFileWorker combineTask2
+                    = new InnerFileWorker(fileList.subList(len / 2, len), schema, table);
             combineTask1.fork();
             combineTask2.fork();
             ret.addAll(combineTask1.join());

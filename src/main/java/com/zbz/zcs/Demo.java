@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
+import com.zbz.*;
+
 /**
  * Created by zhuchensong on 6/9/17.
  */
@@ -28,28 +30,42 @@ public class Demo {
 
 
         t1 = System.currentTimeMillis();
-        List<FileIndex> result = commonReduce(1, 10, fileIndices);
+        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
         t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
+
+
+        FileIndex f = result.get(0);
+        Index idx = f.getIndex();
+        Persistence per = f.getPersist();
+        for(long i = 600; i < 700; i++) {
+            long offset = idx.getOffset(i);
+            if (offset >= 0) {
+                String binlogLine = new String(per.read(offset));
+                System.out.println(binlogLine);
+            }
+        }
     }
 
-    private List<FileIndex> commonReduce(int round, int n, List<FileIndex> fileIndices) {
-        if(n <= 1) return fileIndices;
+    private List<FileIndex> commonReduce(int n, List<FileIndex> fileIndices) {
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
-        CommonReducer reducer = new CommonReducer(fileIndices, round, 0);
-        Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
-
-        List<FileIndex> reducedIndices = null;
-
+        int nn = n;
         try {
-            reducedIndices = result.get();
+            List<FileIndex> reducedIndices = fileIndices;
+            while(nn > 1) {
+                ForkJoinPool forkJoinPool = new ForkJoinPool();
+                InterFileWorker reducer = new InterFileWorker(reducedIndices);
+                Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
+
+                reducedIndices = result.get();
+                nn = (nn >>> 1) + ((nn & 0x1) > 0 ? 1 : 0);
+            }
+
+            return reducedIndices;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        System.out.println("==================================================");
-
-        return commonReduce(round + 1, (n >>> 1) + ((n & 0x1) > 0 ? 1 : 0), reducedIndices);
     }
 
     private List<FileIndex> inFileReduce() {
@@ -59,7 +75,7 @@ public class Demo {
         }
 
         ForkJoinPool forkJoinPool = new ForkJoinPool(); //todo
-        InFileReduce binlogReducerTask = new InFileReduce(dataFiles, schema, table);
+        InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {
             return result.get();
