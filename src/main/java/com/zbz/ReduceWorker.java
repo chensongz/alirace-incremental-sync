@@ -2,17 +2,15 @@ package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
-import com.zbz.zcs.InterFileWorker;
 import com.zbz.zcs.FileIndex;
-import com.zbz.zcs.InnerFileWorker;
+import com.zbz.zcs.InterFileWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by zwy on 17-6-14.
