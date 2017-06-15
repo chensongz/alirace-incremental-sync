@@ -24,7 +24,7 @@ public class ParseTest {
 //        }
 //        System.out.println("---");
         for (long value = start; value < end; value++) {
-            long offset = index.getOffset(String.valueOf(value));
+            long offset = index.getOffset(value);
             if (offset >= 0) {
                 String binlogLine = new String(persistence.read(offset));
                 Binlog binlog = BinlogFactory.parse(binlogLine);

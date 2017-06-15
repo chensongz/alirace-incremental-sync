@@ -16,14 +16,14 @@ public class InterFileReducer {
     }
 
     public void compute() {
-        final Set<String> appendKeySet = appendIndex.getIndexHashMap().keySet();
+        final Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
-        for (String appendPrimaryValue : appendKeySet) {
+        for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(appendPersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
-            String appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
-            String appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
+            Long appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
+            Long appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
             long baseOffset;
             if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryValue)) >= 0) {
                 // update other fields
@@ -32,7 +32,7 @@ public class InterFileReducer {
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
                 if (newBinlog != null) {
                     if (appendBinlogPrimaryValue != newBinlog.getPrimaryValue()) {
-                        System.out.println("delete primaryValue:" + appendBinlogPrimaryValue + "- :" + newBinlog.getPrimaryValue());
+//                        System.out.println("delete primaryValue:" + appendBinlogPrimaryValue + "- :" + newBinlog.getPrimaryValue());
                         baseIndex.delete(appendBinlogPrimaryValue);
                     }
                     long offset = basePersistence.write(newBinlog.toBytes());

@@ -6,9 +6,9 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 10;
+    private static final int CAPACITY = 8192;
 
-    private HashMap<String, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
+    private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
     private String schema;
     private String table;
 
@@ -64,11 +64,11 @@ public class BinlogReducer {
             return newBinlog;
         } else if (transferOperation == Binlog.D) {
             newBinlog.setOperation(Binlog.D);
-            newBinlog.setPrimaryValue(String.valueOf(oldBinlog.getPrimaryOldValue()));
+            newBinlog.setPrimaryValue(oldBinlog.getPrimaryOldValue());
             return newBinlog;
         } else {
             oldBinlog.setOperation(transferOperation);
-            oldBinlog.setPrimaryValue(String.valueOf(newBinlog.getPrimaryValue()));
+            oldBinlog.setPrimaryValue(newBinlog.getPrimaryValue());
             for (Field field: newBinlog.getFields().values()) {
                 oldBinlog.addField(field);
             }
@@ -85,8 +85,8 @@ public class BinlogReducer {
         Binlog newBinlog = BinlogFactory.createBinlog(line);
         Binlog binlog;
         if (newBinlog != null) {
-            String primaryValue = newBinlog.getPrimaryValue();
-            String primaryOldValue = newBinlog.getPrimaryOldValue();
+            Long primaryValue = newBinlog.getPrimaryValue();
+            Long primaryOldValue = newBinlog.getPrimaryOldValue();
             if (binlogHashMap.containsKey(primaryValue)) {
                 // maybe insert record or update fields or delete record
                 Binlog oldBinlog = binlogHashMap.get(primaryValue);
@@ -119,7 +119,7 @@ public class BinlogReducer {
         return binlogHashMap.size() >= CAPACITY;
     }
 
-    public HashMap<String, Binlog> getBinlogHashMap() {
+    public HashMap<Long, Binlog> getBinlogHashMap() {
         return binlogHashMap;
     }
 

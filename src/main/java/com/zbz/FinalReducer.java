@@ -19,63 +19,60 @@ public class FinalReducer {
     }
 
     public void compute(long start, long end, Pool<String> sendPool) {
-        Set<String> appendKeySet = appendIndex.getIndexHashMap().keySet();
+        Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
-        for (String appendPrimaryValue : appendKeySet) {
+        for (Long appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(appendPersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
-            String appendBinlogPrimaryValueStr = appendBinlog.getPrimaryValue();
-            String appendBinlogPrimaryOldValueStr = appendBinlog.getPrimaryOldValue();
-
-            long appendBinlogPrimaryValue = parseLong(appendBinlogPrimaryValueStr);
-            long appendBinlogPrimaryOldValue = parseLong(appendBinlogPrimaryOldValueStr);
+            long appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
+            long appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
 
             if ((appendBinlogPrimaryOldValue <= start || appendBinlogPrimaryOldValue >= end)
                 && (appendBinlogPrimaryValue <= start || appendBinlogPrimaryValue >= end)) {
                 // both not in,then do nothing
-                baseIndex.delete(appendBinlogPrimaryOldValueStr);
-                baseIndex.delete(appendBinlogPrimaryValueStr);
+                baseIndex.delete(appendBinlogPrimaryOldValue);
+                baseIndex.delete(appendBinlogPrimaryValue);
             } else {
                 long baseOffset;
-                if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryValueStr)) >= 0) {
+                if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryValue)) >= 0) {
                     // update other fields
                     String baseBinlogLine = new String(basePersistence.read(baseOffset));
                     Binlog baseBinlog = BinlogFactory.parse(baseBinlogLine);
                     Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
                     if (newBinlog != null) {
-                        if (appendBinlogPrimaryValue != Long.parseLong(newBinlog.getPrimaryValue())) {
+                        if (appendBinlogPrimaryValue != newBinlog.getPrimaryValue()) {
 //                            System.out.println("delete primaryValue:" + appendBinlogPrimaryValue + "- :" + newBinlog.getPrimaryValue());
-                            baseIndex.delete(appendBinlogPrimaryValueStr);
+                            baseIndex.delete(appendBinlogPrimaryValue);
                         }
                         long offset = basePersistence.write(newBinlog.toBytes());
                         baseIndex.insert(newBinlog.getPrimaryValue(), offset);
                     } else {
-                        baseIndex.delete(appendBinlogPrimaryValueStr);
+                        baseIndex.delete(appendBinlogPrimaryValue);
                     }
-                } else if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryOldValueStr)) >= 0) {
+                } else if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryOldValue)) >= 0) {
                     //update key field
                     String baseBinlogLine = new String(basePersistence.read(baseOffset));
                     Binlog baseBinlog = BinlogFactory.parse(baseBinlogLine);
                     Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
                     if (newBinlog != null) {
                         long offset = basePersistence.write(newBinlog.toBytes());
-                        baseIndex.delete(appendBinlogPrimaryOldValueStr);
-                        baseIndex.insert(appendBinlogPrimaryValueStr, offset);
+                        baseIndex.delete(appendBinlogPrimaryOldValue);
+                        baseIndex.insert(appendBinlogPrimaryValue, offset);
                     } else {
-                        baseIndex.delete(appendBinlogPrimaryOldValueStr);
+                        baseIndex.delete(appendBinlogPrimaryOldValue);
                     }
                 } else {
                     // if not in baseindex, then insert
                     long offset = basePersistence.write(appendBinlog.toBytes());
-                    baseIndex.insert(appendBinlogPrimaryValueStr, offset);
+                    baseIndex.insert(appendBinlogPrimaryValue, offset);
                 }
             }
 
         }
 
         for (long primaryValue = start + 1; primaryValue < end; primaryValue++) {
-            long baseOffset = baseIndex.getOffset(String.valueOf(primaryValue));
+            long baseOffset = baseIndex.getOffset(primaryValue);
             if (baseOffset >= 0) {
                 String baseBinlogLine = new String(basePersistence.read(baseOffset));
                 Binlog baseBinlog = BinlogFactory.parse(baseBinlogLine);

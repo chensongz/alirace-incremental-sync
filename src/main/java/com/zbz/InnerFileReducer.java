@@ -79,8 +79,8 @@ public class InnerFileReducer {
     private void clearBinlogReducer() {
         for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
             long indexOffset;
-            String primaryOldValue = binlog.getPrimaryOldValue();
-            String primaryValue = binlog.getPrimaryValue();
+            Long primaryOldValue = binlog.getPrimaryOldValue();
+            Long primaryValue = binlog.getPrimaryValue();
             if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));

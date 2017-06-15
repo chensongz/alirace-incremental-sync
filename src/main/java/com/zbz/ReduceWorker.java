@@ -75,7 +75,7 @@ public class ReduceWorker implements Runnable {
 
     private void printResult(Index index, Persistence persistence) {
         for (long i = start + 1; i < end; i++) {
-            long offset = index.getOffset(String.valueOf(i));
+            long offset = index.getOffset(i);
             if (offset >= 0) {
                 String binlogLine = new String(persistence.read(offset));
                 Binlog binlog = BinlogFactory.parse(binlogLine);
