@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ReduceWorker implements Runnable {
 
-    private static int END_CNT = 1;
+    private static int END_CNT = 2;
 
     private String schema;
     private String table;
@@ -55,27 +55,27 @@ public class ReduceWorker implements Runnable {
         Index baseIndex = result.get(0).getIndex();
         Persistence basePersistence = result.get(0).getPersist();
 
-        t1 = System.currentTimeMillis();
-        logger.info("printResult start");
-        printResult(baseIndex, basePersistence);
-        t2 = System.currentTimeMillis();
-        logger.info("printResult: " + (t2 - t1) + " ms");
-
-//        Index appendIndex = result.get(1).getIndex();
-//        Persistence appendPersistence = result.get(1).getPersist();
-
 //        t1 = System.currentTimeMillis();
-//        FinalReducer finalReducer = new FinalReducer(baseIndex, appendIndex,
-//                basePersistence, appendPersistence);
-//        finalReducer.compute(start, end, sendPool);
+//        logger.info("printResult start");
+//        printResult(baseIndex, basePersistence);
 //        t2 = System.currentTimeMillis();
-//        logger.info("final reduce: " + (t2 - t1) + " ms");
+//        logger.info("printResult: " + (t2 - t1) + " ms");
+
+        Index appendIndex = result.get(1).getIndex();
+        Persistence appendPersistence = result.get(1).getPersist();
+
+        t1 = System.currentTimeMillis();
+        FinalReducer finalReducer = new FinalReducer(baseIndex, appendIndex,
+                basePersistence, appendPersistence);
+        finalReducer.compute(start, end, sendPool);
+        t2 = System.currentTimeMillis();
+        logger.info("final reduce: " + (t2 - t1) + " ms");
 
     }
 
     private void printResult(Index index, Persistence persistence) {
         for (long i = start + 1; i < end; i++) {
-            long offset = index.getOffset(i);
+            long offset = index.getOffset(String.valueOf(i));
             if (offset >= 0) {
                 String binlogLine = new String(persistence.read(offset));
                 Binlog binlog = BinlogFactory.parse(binlogLine);

@@ -18,9 +18,9 @@ public class Binlog {
 
     private String primaryKey = null;
 
-    private long primaryOldValue;
+    private String primaryOldValue;
 
-    private long primaryValue;
+    private String primaryValue;
 
     private LinkedHashMap<String, Field> fields = new LinkedHashMap<>();
 
@@ -33,20 +33,21 @@ public class Binlog {
     }
 
     public void setPrimaryOldValue(String primaryOldValue) {
-        if (primaryOldValue.equals("NULL")) {
-            this.primaryOldValue = Long.MIN_VALUE + 1;
-        } else {
-            this.primaryOldValue = Long.parseLong(primaryOldValue);
-        }
-
+        this.primaryOldValue = primaryOldValue;
+//        if (primaryOldValue.equals("NULL")) {
+//            this.primaryOldValue = Long.MIN_VALUE + 1;
+//        } else {
+//            this.primaryOldValue = Long.parseLong(primaryOldValue);
+//        }
     }
 
     public void setPrimaryValue(String primaryValue) {
-        if (primaryValue.equals("NULL")) {
-            this.primaryValue = Long.MIN_VALUE + 1;
-        } else {
-            this.primaryValue = Long.parseLong(primaryValue);
-        }
+        this.primaryValue = primaryValue;
+//        if (primaryValue.equals("NULL")) {
+//            this.primaryValue = Long.MIN_VALUE + 1;
+//        } else {
+//            this.primaryValue = Long.parseLong(primaryValue);
+//        }
     }
 
     public byte getOperation() {
@@ -57,11 +58,11 @@ public class Binlog {
         return primaryKey;
     }
 
-    public long getPrimaryOldValue() {
+    public String getPrimaryOldValue() {
         return primaryOldValue;
     }
 
-    public long getPrimaryValue() {
+    public String getPrimaryValue() {
         return primaryValue;
     }
 

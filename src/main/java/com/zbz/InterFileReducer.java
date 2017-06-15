@@ -16,14 +16,14 @@ public class InterFileReducer {
     }
 
     public void compute() {
-        final Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
+        final Set<String> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
-        for (Long appendPrimaryValue : appendKeySet) {
+        for (String appendPrimaryValue : appendKeySet) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(appendPersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
-            long appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
-            long appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
+            String appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
+            String appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
             long baseOffset;
             if ((baseOffset = baseIndex.getOffset(appendBinlogPrimaryValue)) >= 0) {
                 // update other fields

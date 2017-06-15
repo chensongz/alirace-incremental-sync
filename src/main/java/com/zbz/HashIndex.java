@@ -7,22 +7,22 @@ import java.util.Map;
  * Created by Victor on 2017/6/10.
  */
 public class HashIndex extends Index {
-    private Map<Long, Long> indexHashMap = new HashMap<>();
+    private Map<String, Long> indexHashMap = new HashMap<>();
 
-    public void insert(long key, long offset) {
+    public void insert(String key, long offset) {
         indexHashMap.put(key, offset);
     }
 
-    public void delete(long key) {
+    public void delete(String key) {
         indexHashMap.remove(key);
     }
 
-    public long getOffset(long key) {
+    public long getOffset(String key) {
         Long offset = indexHashMap.get(key);
         return offset == null ? Long.MIN_VALUE : offset;
     }
 
-    public Map<Long, Long> getIndexHashMap() {
+    public Map<String, Long> getIndexHashMap() {
         return indexHashMap;
     }
 

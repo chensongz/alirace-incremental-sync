@@ -6,9 +6,9 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 10000;
+    private static final int CAPACITY = 10;
 
-    private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
+    private HashMap<String, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
     private String schema;
     private String table;
 
@@ -85,8 +85,8 @@ public class BinlogReducer {
         Binlog newBinlog = BinlogFactory.createBinlog(line);
         Binlog binlog;
         if (newBinlog != null) {
-            long primaryValue = newBinlog.getPrimaryValue();
-            long primaryOldValue = newBinlog.getPrimaryOldValue();
+            String primaryValue = newBinlog.getPrimaryValue();
+            String primaryOldValue = newBinlog.getPrimaryOldValue();
             if (binlogHashMap.containsKey(primaryValue)) {
                 // maybe insert record or update fields or delete record
                 Binlog oldBinlog = binlogHashMap.get(primaryValue);
@@ -119,7 +119,7 @@ public class BinlogReducer {
         return binlogHashMap.size() >= CAPACITY;
     }
 
-    public HashMap<Long, Binlog> getBinlogHashMap() {
+    public HashMap<String, Binlog> getBinlogHashMap() {
         return binlogHashMap;
     }
 

@@ -28,6 +28,16 @@ public class Demo {
         long t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
 
+        long wtime = 0;
+        long rtime = 0;
+        for(FileIndex index: fileIndices) {
+            wtime += index.getPersist().getWtime();
+            rtime += index.getPersist().getRtime();
+        }
+
+        System.out.println("Read Time: " + rtime / Constants.DATA_FILE_NUM);
+        System.out.println("Write Time: " + wtime / Constants.DATA_FILE_NUM);
+
 
 //        t1 = System.currentTimeMillis();
 //        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
@@ -74,7 +84,7 @@ public class Demo {
             dataFiles.add(Constants.getDataFile(i));
         }
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool(10); //todo
+        ForkJoinPool forkJoinPool = new ForkJoinPool(); //todo
         InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {

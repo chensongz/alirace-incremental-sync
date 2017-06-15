@@ -70,7 +70,7 @@ public class Database {
     public List<Record> query(long start, long end) {
         List<Long> offsets = new ArrayList<>((int)(end - start));
         for (long i = start + 1; i < end; i++) {
-            long offset = index.getOffset(i);
+            long offset = index.getOffset(String.valueOf(i));
             if(offset >= 0) {
                 offsets.add(offset);
             }

@@ -18,11 +18,18 @@ public class InnerFileReducer {
     private String srcFilename;
     private Index index;
     private Persistence persistence;
+
+    private long mem;
+    private long per;
+
     public InnerFileReducer(String schema, String table, String srcFilename, String dstFilename) {
         this.binlogReducer = new BinlogReducer(schema, table);
         this.srcFilename = srcFilename;
         this.persistence = new Persistence(dstFilename);
         this.index = new HashIndex();
+
+        mem = 0;
+        per = 0;
     }
 
     public void compute() {
@@ -37,7 +44,9 @@ public class InnerFileReducer {
         long t2 = System.currentTimeMillis();
         String p = "Server InnerFileReducer: " + (t2 - t1) + "ms";
 //        System.out.println(p);
-        LoggerFactory.getLogger(Server.class).info(p);
+        Logger logger = LoggerFactory.getLogger(Server.class);
+        logger.info(p);
+        logger.info(Thread.currentThread().toString() + " Mem: " + mem + ", Per: " + per);
     }
 
     private void reduceDataFile(String filename) throws IOException{
@@ -45,12 +54,21 @@ public class InnerFileReducer {
         String line;
 
         while ((line = reader.readLine()) != null) {
+            long t1 = System.currentTimeMillis();
             binlogReducer.reduce(line);
+            long t2 = System.currentTimeMillis();
+            mem += (t2 - t1);
             if (binlogReducer.isFull()) {
+                t1 = System.currentTimeMillis();
                 clearBinlogReducer();
+                t2 = System.currentTimeMillis();
+                per += (t2 - t1);
             }
         }
+        long t1 = System.currentTimeMillis();
         clearBinlogReducer();
+        long t2 = System.currentTimeMillis();
+        per += (t2 - t1);
 
         reader.close();
 
@@ -61,8 +79,8 @@ public class InnerFileReducer {
     private void clearBinlogReducer() {
         for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
             long indexOffset;
-            long primaryOldValue = binlog.getPrimaryOldValue();
-            long primaryValue = binlog.getPrimaryValue();
+            String primaryOldValue = binlog.getPrimaryOldValue();
+            String primaryValue = binlog.getPrimaryValue();
             if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
