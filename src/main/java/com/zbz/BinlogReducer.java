@@ -82,7 +82,7 @@ public class BinlogReducer {
     }
 
     public void reduce(String line) {
-        Binlog newBinlog = BinlogFactory.createBinlog(line, schema, table);
+        Binlog newBinlog = BinlogFactory.createBinlog(line);
         Binlog binlog;
         if (newBinlog != null) {
             long primaryValue = newBinlog.getPrimaryValue();
