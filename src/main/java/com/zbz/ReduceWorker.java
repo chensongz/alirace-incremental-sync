@@ -91,7 +91,7 @@ public class ReduceWorker implements Runnable {
         try {
             List<FileIndex> reducedIndices = fileIndices;
             while (nn > END_CNT) {
-                ForkJoinPool forkJoinPool = new ForkJoinPool();
+                ForkJoinPool forkJoinPool = new ForkJoinPool(10);
                 InterFileWorker reducer = new InterFileWorker(reducedIndices);
                 Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
                 reducedIndices = result.get();
@@ -109,7 +109,7 @@ public class ReduceWorker implements Runnable {
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             dataFiles.add(Constants.getDataFile(i));
         }
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        ForkJoinPool forkJoinPool = new ForkJoinPool(10);
         InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {
