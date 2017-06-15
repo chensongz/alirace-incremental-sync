@@ -21,6 +21,7 @@ public class InnerFileReducer {
 
     private long mem;
     private long per;
+    private long read;
 
     public InnerFileReducer(String schema, String table, String srcFilename, String dstFilename) {
         this.binlogReducer = new BinlogReducer(schema, table);
@@ -30,6 +31,7 @@ public class InnerFileReducer {
 
         mem = 0;
         per = 0;
+        read = 0;
     }
 
     public void compute() {
@@ -47,13 +49,21 @@ public class InnerFileReducer {
         Logger logger = LoggerFactory.getLogger(Server.class);
         logger.info(p);
         logger.info(Thread.currentThread().toString() + " Mem: " + mem + ", Per: " + per);
+        logger.info(Thread.currentThread().toString() + " Parse: "
+                + binlogReducer.getParseBinlog() + ", Read: " + read);
     }
 
     private void reduceDataFile(String filename) throws IOException{
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
 
-        while ((line = reader.readLine()) != null) {
+        while (true) {
+            long t11 = System.currentTimeMillis();
+            if((line = reader.readLine()) == null) break;
+            long t12 = System.currentTimeMillis();
+
+            read += (t12 - t11);
+
             long t1 = System.currentTimeMillis();
             binlogReducer.reduce(line);
             long t2 = System.currentTimeMillis();

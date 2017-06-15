@@ -6,11 +6,13 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 8192;
+    private static final int CAPACITY = 1024 * 128;
 
     private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
     private String schema;
     private String table;
+
+    private long parseBinlog = 0;
 
     public static Binlog updateOldBinlog(Binlog oldBinlog, Binlog newBinlog) {
         byte transferOperation = newBinlog.getOperation();
@@ -82,7 +84,12 @@ public class BinlogReducer {
     }
 
     public void reduce(String line) {
+        long t1 = System.currentTimeMillis();
         Binlog newBinlog = BinlogFactory.createBinlog(line);
+        long t2 = System.currentTimeMillis();
+
+        parseBinlog += (t2 - t1);
+
         Binlog binlog;
         if (newBinlog != null) {
             Long primaryValue = newBinlog.getPrimaryValue();
@@ -125,5 +132,9 @@ public class BinlogReducer {
 
     public void clearBinlogHashMap() {
         binlogHashMap.clear();
+    }
+
+    public long getParseBinlog() {
+        return this.parseBinlog;
     }
 }

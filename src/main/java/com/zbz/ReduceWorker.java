@@ -105,18 +105,28 @@ public class ReduceWorker implements Runnable {
     }
 
     private List<FileIndex> inFileReduce() {
-        List<String> dataFiles = new ArrayList<>(Constants.DATA_FILE_NUM);
+        Logger logger = LoggerFactory.getLogger(Server.class);
+        List<FileIndex> ret = new ArrayList<>(Constants.DATA_FILE_NUM);
+
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
-            dataFiles.add(Constants.getDataFile(i));
+            String dataFileName = Constants.getDataFile(i);
+            String reducedFileName = getNewFileName(dataFileName);
+            InnerFileReducer worker =
+                    new InnerFileReducer(schema, table, dataFileName, reducedFileName);
+
+            logger.info("file " + dataFileName + " inner reduce start");
+            long t1 = System.currentTimeMillis();
+            worker.compute();
+            long t2 = System.currentTimeMillis();
+            logger.info("file " + dataFileName + " inner reduce: " + (t2 - t1) + " ms");
+            FileIndex fIndex = new FileIndex(worker.getIndex(), worker.getPersistence());
+            ret.add(fIndex);
         }
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
-        InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
-        Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
-        try {
-            return result.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return ret;
+    }
+
+    private String getNewFileName(String oldName) {
+        String dir = Constants.MIDDLE_HOME;
+        return dir + "/1" + oldName.substring(oldName.length() - 1);
     }
 }
