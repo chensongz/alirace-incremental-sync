@@ -1,10 +1,9 @@
 package com.zbz.bgk;
 
-import com.zbz.Binlog;
-import com.zbz.BinlogFactory;
-import com.zbz.BinlogReducer;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Created by bgk on 6/11/17.
@@ -36,54 +35,39 @@ public class Test {
 //        }
 //        sb.setLength(sb.length() - 1);
 //        System.out.println(sb.toString());
+//        long t1 = System.currentTimeMillis();
+//        for (int i = 0; i < 10000000; i++) {
+//            String[] strings = "a|bnc|23|NULL|a|bnc|23|NULL|a|bnc|23|NULL|".split("\\|");
+//        }
+//        long t2 = System.currentTimeMillis();
+//        System.out.println("1 use time:" + (t2 - t1));
+//        t1 = System.currentTimeMillis();
+//        String a = "a|bnc|23|NULL|a|bnc|23|NULL|a|bnc|23|NULL|";
+//        for (int i = 0; i < 100000000; i++) {
+//            int m = 0;
+//           while(true) {
+//               int index = a.indexOf("|");
+//               if (index < 0 ) break;
+//              String str = a.substring(0, index);
+//              if (str.equals("23")){
+//                  m++;
+//              }
+//              a = a.substring(index + 1);
+//           }
 //
-//
-//        HashMap<Long, Long> index1 = new HashMap<>();
-//        HashMap<Long, Long> index2 = new HashMap<>();
-//        index1.put(100L, 200L);
-//        index1.put(101L, 200L);
-//        index1.put(104L, 200L);
-//        index2.put(100L, 200L);
-//        index2.put(102L, 200L);
-//        index2.put(103L, 200L);
-//        Set<Long> keys = index1.keySet();
-//        keys.retainAll(index2.keySet());
-//        System.out.println(keys);
-//
-
-//        String line1 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|D|id:1:1|1999996|NULL|first_name:2:0|高|张|";
-//        String line2 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|I|id:1:1|NULL|1999996|first_name:2:0|张|高|score:1:0|90|80";
-//        String line1 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|U|id:1:1|998|999|first_name:2:0|高|张|";
-//        String line2 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|U|id:1:1|999|1999996|first_name:2:0|张|高|score:1:0|90|80";
-        String line1 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|I|id:1:1|NULL|999|first_name:2:0|高|张|";
-        String line2 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|D|id:1:1|999|NULL|first_name:2:0|张|高|score:1:0|90|80";
-
-//        String line1 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|I|id:1:1|NULL|1999996|first_name:2:0|张|高|score:1:0|90|80";
-//        String line2 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|U|id:1:1|1999996|9997|first_name:2:0|高|张|";
-//        Binlog binlog1 = BinlogFactory.createBinlog(line1);
-//        Binlog binlog2 = BinlogFactory.createBinlog(line2);
-//        System.out.println(binlog1);
-//        System.out.println("binlog1 primary key:" + binlog1.getPrimaryKey());
-//        System.out.println("binlog1 primary vaule:" + binlog1.getPrimaryValue());
-//        System.out.println("binlog1 primary old vaule:" + binlog1.getPrimaryOldValue());
-//
-//        System.out.println(binlog2);
-//        System.out.println("binlog2 primary key:" + binlog2.getPrimaryKey());
-//        System.out.println("binlog2 primary vaule:" + binlog2.getPrimaryValue());
-//        System.out.println("binlog2 primary old vaule:" + binlog2.getPrimaryOldValue());
-//
-//        Binlog binlog = BinlogReducer.updateOldBinlog(binlog1, binlog2);
-//        System.out.println(binlog);
-//        System.out.println("binlog primary key:" + binlog.getPrimaryKey());
-//        System.out.println("binlog primary vaule:" + binlog.getPrimaryValue());
-//        System.out.println("binlog primary old vaule:" + binlog.getPrimaryOldValue());
-
-        BinlogReducer binlogReducer = new BinlogReducer("middleware3", "student");
-        binlogReducer.reduce(line1);
-        binlogReducer.reduce(line2);
-
-        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
-            System.out.println(binlog);
+//        }
+//        t2 = System.currentTimeMillis();
+//        System.out.println("2 use time:" + (t2 - t1));int cnt = 0;
+        int i = 0;
+        int cnt = 0;
+        int m = 0;
+        String line = "|fads|fasdf|fasdf|fsdf|op";
+        while(cnt < 5) {
+            i = line.indexOf('|', m);
+            m = i + 1;
+            cnt++;
         }
+        line = line.substring(i + 1);
+        System.out.println(line);
     }
 }

@@ -15,7 +15,7 @@ public class BinlogFactory {
         while((i = curr.indexOf("|", currentIndex)) >= 0) {
             fieldCnt++;
             String fieldString = curr.substring(currentIndex, i);
-            if(fieldCnt == 5) {
+            if(fieldCnt == 0) {
                 switch (fieldString) {
                     case "I":
                         binlog.setOperation(Binlog.I);
@@ -29,7 +29,7 @@ public class BinlogFactory {
 
                 }
                 currentIndex = i + 1;
-            } else if(fieldCnt > 5) {
+            } else if(fieldCnt > 0) {
                 int j;
 
                 j = fieldString.indexOf(':');

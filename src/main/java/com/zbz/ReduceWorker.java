@@ -38,9 +38,15 @@ public class ReduceWorker implements Runnable {
 
         Logger logger = LoggerFactory.getLogger(Server.class);
 
+
+        long t11 = System.currentTimeMillis();
+        List<String> copiedFiles = copyFile();
+        long t12 = System.currentTimeMillis();
+        logger.info("copy file: " + (t12 - t11) + "ms");
+
         logger.info("inner file reduce start");
         long t1 = System.currentTimeMillis();
-        List<FileIndex> fileIndices = inFileReduce();
+        List<FileIndex> fileIndices = inFileReduce(copiedFiles);
         long t2 = System.currentTimeMillis();
         logger.info("inner file reduce: " + (t2 - t1) + " ms");
 
@@ -71,18 +77,6 @@ public class ReduceWorker implements Runnable {
 
     }
 
-    private void printResult(Index index, Persistence persistence) {
-        for (long i = start + 1; i < end; i++) {
-            long offset = index.getOffset(i);
-            if (offset >= 0) {
-                String binlogLine = new String(persistence.read(offset));
-                Binlog binlog = BinlogFactory.parse(binlogLine);
-                sendPool.put(binlog.toSendString());
-            }
-        }
-        sendPool.put("NULL");
-    }
-
 
     private List<FileIndex> interFileReduce(int n, List<FileIndex> fileIndices) {
         int nn = n;
@@ -102,12 +96,13 @@ public class ReduceWorker implements Runnable {
         }
     }
 
-    private List<FileIndex> inFileReduce() {
+    private List<FileIndex> inFileReduce(List<String> files) {
         Logger logger = LoggerFactory.getLogger(Server.class);
         List<FileIndex> ret = new ArrayList<>(Constants.DATA_FILE_NUM);
 
-        for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
-            String dataFileName = Constants.getDataFile(i);
+        for(String file: files) {
+
+            String dataFileName = file;
             String reducedFileName = getNewFileName(dataFileName);
             InnerFileReducer worker =
                     new InnerFileReducer(schema, table, dataFileName, reducedFileName);
@@ -123,8 +118,27 @@ public class ReduceWorker implements Runnable {
         return ret;
     }
 
+    private List<String> copyFile() {
+
+        List<String> newFiles = new ArrayList<>(Constants.DATA_FILE_NUM);
+
+        for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
+            String dataFileName = Constants.getDataFile(i);
+            String copiedFileName = getCopiedFileName(dataFileName);
+            CopyWorker worker = new CopyWorker(dataFileName, copiedFileName);
+            worker.compute();
+            newFiles.add(copiedFileName);
+        }
+        return newFiles;
+    }
+
     private String getNewFileName(String oldName) {
         String dir = Constants.MIDDLE_HOME;
         return dir + "/1" + oldName.substring(oldName.length() - 1);
+    }
+
+    private String getCopiedFileName(String oldName) {
+        String dir = Constants.MIDDLE_HOME;
+        return dir + "/0" + oldName.substring(oldName.length() - 1);
     }
 }
