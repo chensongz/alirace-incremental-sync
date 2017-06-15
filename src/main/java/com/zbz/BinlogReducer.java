@@ -6,7 +6,7 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 1;
+    private static final int CAPACITY = 5000;
 
     private HashMap<Long, Binlog> binlogHashMap = new HashMap<>();
     private String schema;
@@ -82,7 +82,7 @@ public class BinlogReducer {
     }
 
     public void reduce(String line) {
-        Binlog newBinlog = BinlogFactory.createBinlog(line, schema, table);
+        Binlog newBinlog = BinlogFactory.createBinlog(line);
         Binlog binlog;
         if (newBinlog != null) {
             long primaryValue = newBinlog.getPrimaryValue();
