@@ -75,7 +75,7 @@ public class Binlog {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(32);
         sb.append(operation).append("|");
         sb.append(primaryKey).append(":")
                 .append(primaryOldValue).append(":")
@@ -94,7 +94,7 @@ public class Binlog {
     }
 
     public String toSendString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(32);
         sb.append(primaryValue).append("\t");
         for (Field field : fields.values()) {
             sb.append(field.getValue()).append("\t");
