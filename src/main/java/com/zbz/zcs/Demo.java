@@ -29,22 +29,22 @@ public class Demo {
         System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
 
 
-        t1 = System.currentTimeMillis();
-        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
-        t2 = System.currentTimeMillis();
-        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
+//        t1 = System.currentTimeMillis();
+//        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
+//        t2 = System.currentTimeMillis();
+//        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
 
 
-        FileIndex f = result.get(0);
-        Index idx = f.getIndex();
-        Persistence per = f.getPersist();
-        for(long i = 600; i < 700; i++) {
-            long offset = idx.getOffset(i);
-            if (offset >= 0) {
-                String binlogLine = new String(per.read(offset));
-                System.out.println(binlogLine);
-            }
-        }
+//        FileIndex f = result.get(0);
+//        Index idx = f.getIndex();
+//        Persistence per = f.getPersist();
+//        for(long i = 600; i < 700; i++) {
+//            long offset = idx.getOffset(i);
+//            if (offset >= 0) {
+//                String binlogLine = new String(per.read(offset));
+//                System.out.println(binlogLine);
+//            }
+//        }
     }
 
     private List<FileIndex> commonReduce(int n, List<FileIndex> fileIndices) {
@@ -52,7 +52,7 @@ public class Demo {
         int nn = n;
         try {
             List<FileIndex> reducedIndices = fileIndices;
-            while(nn > 1) {
+            while(nn > 2) {
                 ForkJoinPool forkJoinPool = new ForkJoinPool();
                 InterFileWorker reducer = new InterFileWorker(reducedIndices);
                 Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
@@ -74,7 +74,7 @@ public class Demo {
             dataFiles.add(Constants.getDataFile(i));
         }
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool(); //todo
+        ForkJoinPool forkJoinPool = new ForkJoinPool(10); //todo
         InnerFileWorker binlogReducerTask = new InnerFileWorker(dataFiles, schema, table);
         Future<List<FileIndex>> result = forkJoinPool.submit(binlogReducerTask);
         try {

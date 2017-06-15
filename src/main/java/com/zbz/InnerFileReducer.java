@@ -16,12 +16,13 @@ import com.alibaba.middleware.race.sync.Server;
 public class InnerFileReducer {
     private BinlogReducer binlogReducer;
     private String srcFilename;
-    private Index index = new HashIndex();
+    private Index index;
     private Persistence persistence;
     public InnerFileReducer(String schema, String table, String srcFilename, String dstFilename) {
         this.binlogReducer = new BinlogReducer(schema, table);
         this.srcFilename = srcFilename;
         this.persistence = new Persistence(dstFilename);
+        this.index = new HashIndex();
     }
 
     public void compute() {
@@ -69,7 +70,6 @@ public class InnerFileReducer {
                 Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
                 if (newBinlog != null) {
                     if (primaryValue != newBinlog.getPrimaryValue()) {
-                        System.out.println("delete primaryValue:" + primaryValue + "- :" + newBinlog.getPrimaryValue());
                         index.delete(primaryValue);
                     }
                     long offset = persistence.write(newBinlog.toBytes());

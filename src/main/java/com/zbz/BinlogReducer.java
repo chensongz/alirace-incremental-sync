@@ -6,9 +6,9 @@ import java.util.HashMap;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 1;
+    private static final int CAPACITY = 10000;
 
-    private HashMap<Long, Binlog> binlogHashMap = new HashMap<>();
+    private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
     private String schema;
     private String table;
 
