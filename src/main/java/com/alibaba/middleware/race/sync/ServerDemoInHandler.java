@@ -65,7 +65,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
         while (true) {
             // 向客户端发送消息
             String message = (String) getMessage();
-            logger.info(message);
+            logger.info("send message: " + message);
             if (message != null) {
                 ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {

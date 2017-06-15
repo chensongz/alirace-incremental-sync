@@ -1,7 +1,10 @@
 package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
+import com.alibaba.middleware.race.sync.Server;
 import com.zbz.InnerFileReducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +27,24 @@ public class InnerFileWorker extends RecursiveTask<List<FileIndex>> {
 
     @Override
     protected List<FileIndex> compute() {
+        Logger logger = LoggerFactory.getLogger(Server.class);
+
         int len = fileList.size();
         List<FileIndex> ret = new ArrayList<>();
         if (len == 1) {
-
             String dataFileName = fileList.get(0);
             String reducedFileName = getNewFileName(dataFileName);
-
             InnerFileReducer worker =
                     new InnerFileReducer(schema, table, dataFileName, reducedFileName);
+
+            logger.info("file " + dataFileName + " inner reduce start");
+            long t1 = System.currentTimeMillis();
             worker.compute();
+            long t2 = System.currentTimeMillis();
+            logger.info("file " + dataFileName + " inner reduce: " + (t2 - t1) + " ms");
 
             FileIndex fileIndex =
-                    new FileIndex(worker.getIndex(),  worker.getPersistence());
-
+                    new FileIndex(worker.getIndex(), worker.getPersistence());
             ret.add(fileIndex);
         } else {
             //dispatch tasks

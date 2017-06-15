@@ -1,8 +1,11 @@
 package com.zbz.zcs;
 
+import com.alibaba.middleware.race.sync.Server;
 import com.zbz.Index;
 import com.zbz.InterFileReducer;
 import com.zbz.Persistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,8 +23,9 @@ public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
 
     @Override
     protected List<FileIndex> compute() {
-        int len = fileList.size();
+        Logger logger = LoggerFactory.getLogger(Server.class);
 
+        int len = fileList.size();
         List<FileIndex> ret = new ArrayList<>();
         if (len == 2) {
             FileIndex index0 = fileList.get(0);
@@ -34,13 +38,18 @@ public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
 
             InterFileReducer worker = new InterFileReducer(
                     baseIndex, appendIndex, basePersistence, appendPersistence);
+
+            logger.info(basePersistence.getFilename() + " <- " + appendPersistence.getFilename()
+                    + " inter reduce start");
+            long t1 = System.currentTimeMillis();
             worker.compute();
+            long t2 = System.currentTimeMillis();
+            logger.info(basePersistence.getFilename() + " <- " + appendPersistence.getFilename()
+                    + " inter reduce: " + (t2 - t1) + " ms");
 
             index1.release();
-
             ret.add(index0);
         } else if (len == 1) {
-
             FileIndex index0 = fileList.get(0);
             ret.add(index0);
         } else {
@@ -49,7 +58,7 @@ public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
                 List<FileIndex> fileList1 = new ArrayList<>(len - 1);
                 List<FileIndex> fileList2 = new ArrayList<>(1);
 
-                for(int i = 0; i < len; i++) {
+                for (int i = 0; i < len; i++) {
                     if (i < len - 1) {
                         fileList1.add(fileList.get(i));
                     } else {
@@ -68,7 +77,7 @@ public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
             } else {
                 List<InterFileWorker> reducers = new ArrayList<>();
                 InterFileWorker reducer0;
-                for(int i = 0; i < len; i += 2) {
+                for (int i = 0; i < len; i += 2) {
                     List<FileIndex> fileList1 = new ArrayList<>(2);
                     fileList1.add(fileList.get(i));
                     fileList1.add(fileList.get(i + 1));
@@ -76,10 +85,10 @@ public class InterFileWorker extends RecursiveTask<List<FileIndex>> {
                     reducer0 = new InterFileWorker(fileList1);
                     reducers.add(reducer0);
                 }
-                for(InterFileWorker reducer: reducers) {
+                for (InterFileWorker reducer : reducers) {
                     reducer.fork();
                 }
-                for(InterFileWorker reducer: reducers) {
+                for (InterFileWorker reducer : reducers) {
                     ret.addAll(reducer.join());
                 }
             }
