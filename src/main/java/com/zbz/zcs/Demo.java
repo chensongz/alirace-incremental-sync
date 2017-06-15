@@ -28,23 +28,33 @@ public class Demo {
         long t2 = System.currentTimeMillis();
         System.out.println("Demo multi-thread stage1: " + (t2 - t1) + " ms");
 
-
-        t1 = System.currentTimeMillis();
-        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
-        t2 = System.currentTimeMillis();
-        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
-
-
-        FileIndex f = result.get(0);
-        Index idx = f.getIndex();
-        Persistence per = f.getPersist();
-        for(long i = 600; i < 700; i++) {
-            long offset = idx.getOffset(i);
-            if (offset >= 0) {
-                String binlogLine = new String(per.read(offset));
-                System.out.println(binlogLine);
-            }
+        long wtime = 0;
+        long rtime = 0;
+        for(FileIndex index: fileIndices) {
+            wtime += index.getPersist().getWtime();
+            rtime += index.getPersist().getRtime();
         }
+
+        System.out.println("Read Time: " + rtime / Constants.DATA_FILE_NUM);
+        System.out.println("Write Time: " + wtime / Constants.DATA_FILE_NUM);
+
+
+//        t1 = System.currentTimeMillis();
+//        List<FileIndex> result = commonReduce(Constants.DATA_FILE_NUM, fileIndices);
+//        t2 = System.currentTimeMillis();
+//        System.out.println("Demo multi-thread stage2: " + (t2 - t1) + " ms");
+
+
+//        FileIndex f = result.get(0);
+//        Index idx = f.getIndex();
+//        Persistence per = f.getPersist();
+//        for(long i = 600; i < 700; i++) {
+//            long offset = idx.getOffset(i);
+//            if (offset >= 0) {
+//                String binlogLine = new String(per.read(offset));
+//                System.out.println(binlogLine);
+//            }
+//        }
     }
 
     private List<FileIndex> commonReduce(int n, List<FileIndex> fileIndices) {
@@ -52,7 +62,7 @@ public class Demo {
         int nn = n;
         try {
             List<FileIndex> reducedIndices = fileIndices;
-            while(nn > 1) {
+            while(nn > 2) {
                 ForkJoinPool forkJoinPool = new ForkJoinPool();
                 InterFileWorker reducer = new InterFileWorker(reducedIndices);
                 Future<List<FileIndex>> result = forkJoinPool.submit(reducer);

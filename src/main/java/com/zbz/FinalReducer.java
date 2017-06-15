@@ -27,6 +27,7 @@ public class FinalReducer {
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);
             long appendBinlogPrimaryValue = appendBinlog.getPrimaryValue();
             long appendBinlogPrimaryOldValue = appendBinlog.getPrimaryOldValue();
+
             if ((appendBinlogPrimaryOldValue <= start || appendBinlogPrimaryOldValue >= end)
                 && (appendBinlogPrimaryValue <= start || appendBinlogPrimaryValue >= end)) {
                 // both not in,then do nothing
@@ -41,7 +42,7 @@ public class FinalReducer {
                     Binlog newBinlog = BinlogReducer.updateOldBinlog(baseBinlog, appendBinlog);
                     if (newBinlog != null) {
                         if (appendBinlogPrimaryValue != newBinlog.getPrimaryValue()) {
-                            System.out.println("delete primaryValue:" + appendBinlogPrimaryValue + "- :" + newBinlog.getPrimaryValue());
+//                            System.out.println("delete primaryValue:" + appendBinlogPrimaryValue + "- :" + newBinlog.getPrimaryValue());
                             baseIndex.delete(appendBinlogPrimaryValue);
                         }
                         long offset = basePersistence.write(newBinlog.toBytes());
@@ -87,4 +88,11 @@ public class FinalReducer {
         appendPersistence = null;
     }
 
+    private long parseLong(String key) {
+        if (key.equals("NULL")) {
+            return Long.MIN_VALUE + 1;
+        } else {
+            return Long.parseLong(key);
+        }
+    }
 }

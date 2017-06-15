@@ -9,15 +9,15 @@ import java.util.Map;
 public class HashIndex extends Index {
     private Map<Long, Long> indexHashMap = new HashMap<>();
 
-    public void insert(long key, long offset) {
+    public void insert(Long key, long offset) {
         indexHashMap.put(key, offset);
     }
 
-    public void delete(long key) {
+    public void delete(Long key) {
         indexHashMap.remove(key);
     }
 
-    public long getOffset(long key) {
+    public long getOffset(Long key) {
         Long offset = indexHashMap.get(key);
         return offset == null ? Long.MIN_VALUE : offset;
     }
