@@ -33,7 +33,6 @@ public class Binlog {
     }
 
     public void setPrimaryOldValue(String primaryOldValue) {
-//        this.primaryOldValue = primaryOldValue;
         if (primaryOldValue.equals("NULL")) {
             this.primaryOldValue = Long.MIN_VALUE + 1;
         } else {
@@ -46,7 +45,6 @@ public class Binlog {
     }
 
     public void setPrimaryValue(String primaryValue) {
-//        this.primaryValue = primaryValue;
         if (primaryValue.equals("NULL")) {
             this.primaryValue = Long.MIN_VALUE + 1;
         } else {

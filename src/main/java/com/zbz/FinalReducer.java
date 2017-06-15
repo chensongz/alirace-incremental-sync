@@ -88,11 +88,4 @@ public class FinalReducer {
         appendPersistence = null;
     }
 
-    private long parseLong(String key) {
-        if (key.equals("NULL")) {
-            return Long.MIN_VALUE + 1;
-        } else {
-            return Long.parseLong(key);
-        }
-    }
 }
