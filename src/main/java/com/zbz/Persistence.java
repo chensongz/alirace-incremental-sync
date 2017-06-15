@@ -13,17 +13,17 @@ public class Persistence {
 
     public static final int INT_SIZE = Integer.SIZE / Byte.SIZE;
 
+    private String filename;
     private FileChannel fc;
     private int FIXED_WIDTH;
     private long currentOffset;
-
-
 
     public Persistence(String filename) {
         this(filename, -1);
     }
 
     public Persistence(String filename, int width) {
+        this.filename = filename;
         try {
             fc = new RandomAccessFile(filename, "rw").getChannel();
             currentOffset = 0;
@@ -32,7 +32,6 @@ public class Persistence {
             e.printStackTrace();
         }
     }
-
 
     public void close() {
         try {
@@ -43,7 +42,7 @@ public class Persistence {
     }
 
     public long write(byte[] bytes, long offset) {
-        if(FIXED_WIDTH < 0) return -1;
+        if (FIXED_WIDTH < 0) return -1;
 
         ByteBuffer buf = ByteBuffer.allocate(FIXED_WIDTH);
         buf.put(bytes);
@@ -58,7 +57,7 @@ public class Persistence {
 
     public long write(byte[] bytes) {
         long ret = currentOffset;
-        if(FIXED_WIDTH < 0) {
+        if (FIXED_WIDTH < 0) {
             //not fixed width
             int messageLength = bytes.length;
             int totalLength = messageLength + INT_SIZE;
@@ -86,7 +85,7 @@ public class Persistence {
         ByteBuffer mb;
         long readOffset = offset;
         try {
-            if(FIXED_WIDTH < 0) {
+            if (FIXED_WIDTH < 0) {
                 //not fixed width
                 ByteBuffer widthBuf = ByteBuffer.allocate(INT_SIZE);
                 fc.read(widthBuf, readOffset);
@@ -104,5 +103,9 @@ public class Persistence {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }
