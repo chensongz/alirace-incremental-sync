@@ -1,14 +1,13 @@
 package com.zbz;
 
+import com.alibaba.middleware.race.sync.Server;
 import com.zbz.zwy.TimeTester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.alibaba.middleware.race.sync.Server;
 
 /**
  * Created by bgk on 6/13/17.
