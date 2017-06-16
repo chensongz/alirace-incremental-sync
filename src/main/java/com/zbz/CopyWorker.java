@@ -31,7 +31,7 @@ public class CopyWorker {
                     m = i + 1;
                     cnt++;
                 }
-                line = line.substring(i + 1);
+                line = line.substring(i);
                 writer.write(line);
                 writer.newLine();
             }

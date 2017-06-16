@@ -11,7 +11,7 @@ public class BinlogFactory {
         int fieldCnt = -1;
         int i;
         String curr = line;
-        int currentIndex = 0;
+        int currentIndex = 1;
         while((i = curr.indexOf("|", currentIndex)) >= 0) {
             fieldCnt++;
             String fieldString = curr.substring(currentIndex, i);
