@@ -8,14 +8,14 @@ public class BinlogFactory {
     public static Binlog createBinlog(String line) {
         Binlog binlog = new Binlog();
 
-        int fieldCnt = -1;
+        int fieldCnt = 0;
         int i;
         String curr = line;
-        int currentIndex = 1;
+        int currentIndex = 0;
         while((i = curr.indexOf("|", currentIndex)) >= 0) {
             fieldCnt++;
             String fieldString = curr.substring(currentIndex, i);
-            if(fieldCnt == 0) {
+            if(fieldCnt == 1) {
                 switch (fieldString) {
                     case "I":
                         binlog.setOperation(Binlog.I);
@@ -29,7 +29,7 @@ public class BinlogFactory {
 
                 }
                 currentIndex = i + 1;
-            } else if(fieldCnt > 0) {
+            } else if(fieldCnt > 1) {
                 int j;
 
                 j = fieldString.indexOf(':');

@@ -16,9 +16,11 @@ public class CopyWorker {
     }
 
     public void compute() {
+        BufferedReader reader;
+        BufferedWriter writer;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(oldName));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(newName));
+             reader = new BufferedReader(new FileReader(oldName));
+             writer = new BufferedWriter(new FileWriter(newName));
 
             String line;
             while((line =  reader.readLine()) != null) {
@@ -31,13 +33,17 @@ public class CopyWorker {
                     m = i + 1;
                     cnt++;
                 }
-                line = line.substring(i);
+
+                line = line.substring(i + 1);
                 writer.write(line);
                 writer.newLine();
             }
 
+            reader.close();
+            writer.close();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
         }
     }
 }

@@ -3,12 +3,14 @@ package com.zbz;
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
 import com.zbz.zcs.FileIndex;
+import com.zbz.zcs.InnerFileWorker;
 import com.zbz.zcs.InterFileWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
@@ -44,12 +46,22 @@ public class ReduceWorker implements Runnable {
         long t12 = System.currentTimeMillis();
         logger.info("copy file: " + (t12 - t11) + "ms");
 
+        ///
+//        List<String> copiedFiles = new ArrayList<>(Constants.DATA_FILE_NUM);
+
+//        for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
+//            String dataFileName = Constants.getDataFile(i);
+//            String copiedFileName = getCopiedFileName(dataFileName);
+//            copiedFiles.add(copiedFileName);
+//        }
+        ///
+
         logger.info("inner file reduce start");
         long t1 = System.currentTimeMillis();
         List<FileIndex> fileIndices = inFileReduce(copiedFiles);
         long t2 = System.currentTimeMillis();
         logger.info("inner file reduce: " + (t2 - t1) + " ms");
-
+//
         t1 = System.currentTimeMillis();
         logger.info("inter file reduce start");
         List<FileIndex> result = interFileReduce(Constants.DATA_FILE_NUM, fileIndices);
@@ -98,23 +110,21 @@ public class ReduceWorker implements Runnable {
 
     private List<FileIndex> inFileReduce(List<String> files) {
         Logger logger = LoggerFactory.getLogger(Server.class);
-        List<FileIndex> ret = new ArrayList<>(Constants.DATA_FILE_NUM);
+        List<FileIndex> ret = null;
 
-        for(String file: files) {
 
-            String dataFileName = file;
-            String reducedFileName = getNewFileName(dataFileName);
-            InnerFileReducer worker =
-                    new InnerFileReducer(schema, table, dataFileName, reducedFileName);
+        ForkJoinPool forkJoinPool = new ForkJoinPool(32);
+        InnerFileWorker reducer = new InnerFileWorker(files, schema, table);
+        Future<List<FileIndex>> result = forkJoinPool.submit(reducer);
 
-            logger.info("file " + dataFileName + " inner reduce start");
-            long t1 = System.currentTimeMillis();
-            worker.compute();
-            long t2 = System.currentTimeMillis();
-            logger.info("file " + dataFileName + " inner reduce: " + (t2 - t1) + " ms");
-            FileIndex fIndex = new FileIndex(worker.getIndex(), worker.getPersistence());
-            ret.add(fIndex);
+        try {
+            ret = result.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
+
         return ret;
     }
 

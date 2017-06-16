@@ -7,7 +7,7 @@ import java.util.Map;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 1024 * 128;
+    private static final int CAPACITY = 8192;
 
     private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
     private String schema;
