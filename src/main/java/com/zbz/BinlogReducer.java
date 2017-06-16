@@ -7,11 +7,12 @@ import java.util.Map;
  * Created by Victor on 2017/6/10.
  */
 public class BinlogReducer {
-    private static final int CAPACITY = 1024 * 128;
+    private static final int CAPACITY = 8192;
 
-    private HashMap<Long, Binlog> binlogHashMap = new HashMap<>(CAPACITY);
+    private HashMap<Long, Binlog> binlogHashMap;
     private String schema;
     private String table;
+    private int capacity;
 
     private long parseBinlog = 0;
 
@@ -80,18 +81,18 @@ public class BinlogReducer {
         }
     }
 
-    public BinlogReducer(String schema, String table) {
-        this.schema = schema;
+    public BinlogReducer(String schema, String table, int capacity) {
         this.table = table;
+        this.schema = schema;
+        this.capacity = capacity;
+        this.binlogHashMap = new HashMap<>(capacity);
     }
 
-    public void reduce(String line) {
-        long t1 = System.currentTimeMillis();
-        Binlog newBinlog = BinlogFactory.createBinlog(line);
-        long t2 = System.currentTimeMillis();
+    public BinlogReducer(String schema, String table) {
+        this(schema, table, CAPACITY);
+    }
 
-        parseBinlog += (t2 - t1);
-
+    public void reduce(Binlog newBinlog) {
         Binlog binlog;
         if (newBinlog != null) {
             Long primaryValue = newBinlog.getPrimaryValue();
@@ -124,8 +125,18 @@ public class BinlogReducer {
         }
     }
 
+    public void reduce(String line) {
+        long t1 = System.currentTimeMillis();
+        Binlog newBinlog = BinlogFactory.createBinlog(line);
+        long t2 = System.currentTimeMillis();
+
+        parseBinlog += (t2 - t1);
+
+        reduce(newBinlog);
+    }
+
     public boolean isFull() {
-        return binlogHashMap.size() >= CAPACITY;
+        return binlogHashMap.size() >= capacity;
     }
 
     public HashMap<Long, Binlog> getBinlogHashMap() {
