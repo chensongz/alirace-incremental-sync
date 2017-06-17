@@ -13,10 +13,9 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 public class TestReducer implements Runnable {
 
@@ -70,19 +69,36 @@ public class TestReducer implements Runnable {
 
     private void reduceDataFile(String filename) throws IOException {
         Logger logger = LoggerFactory.getLogger(Server.class);
-        File file = new File(filename);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        logger.info(filename + " size: " + file.length());
-//        String line;
+//        File file = new File(filename);
+//        BufferedReader reader = new BufferedReader(new FileReader(file));
+//        logger.info(filename + " size: " + file.length());
+
+        FileChannel fc = new RandomAccessFile(filename, "rw").getChannel();
+        long size = fc.size();
+        MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+
+        long count = 0;
         long t1 = System.currentTimeMillis();
-//        while ((line = reader.readLine()) != null) {
-        while ((reader.readLine()) != null) {
-//            binlogReducer.reduce(line);
+        while (true) {
+            buffer.get();
+            count++;
+            if (count >= size) break;
         }
-        reader.close();
         long t2 = System.currentTimeMillis();
+        logger.info(filename + " size: " + size);
+        logger.info(filename + " MappedByteBuffer read byte cost time: " + (t2 - t1) + " ms");
+
+
+//        String line;
+//        long t1 = System.currentTimeMillis();
+//        while ((line = reader.readLine()) != null) {
+//        while ((reader.readLine()) != null) {
+////            binlogReducer.reduce(line);
+//        }
+//        reader.close();
+//        long t2 = System.currentTimeMillis();
 //        logger.info(filename + " reduce cost time: " + (t2 - t1) + " ms");
-        logger.info(filename + " readline cost time: " + (t2 - t1) + " ms");
+//        logger.info(filename + " readline cost time: " + (t2 - t1) + " ms");
 //        logger.info(filename + " readline and parse cost time: " + (t2 - t1) + " ms");
 //        logger.info(filename + " parse cost time: " + binlogReducer.getParseBinlogTime() + " ms");
     }
