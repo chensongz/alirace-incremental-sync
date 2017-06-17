@@ -13,6 +13,9 @@ public class BinlogReducer {
     private String schema;
     private String table;
     private int capacity;
+    public int insertCount = 0;
+    public int updateCount = 0;
+    public int deleteCount = 0;
 
     private long parseBinlog = 0;
 
@@ -130,7 +133,9 @@ public class BinlogReducer {
         long t2 = System.currentTimeMillis();
 
         parseBinlog += (t2 - t1);
-
+        if (newBinlog.getOperation() == Binlog.I) insertCount++;
+        if (newBinlog.getOperation() == Binlog.U) updateCount++;
+        if (newBinlog.getOperation() == Binlog.D) deleteCount++;
         reduce(newBinlog);
     }
 

@@ -41,6 +41,7 @@ public class TestReducer implements Runnable {
 
     @Override
     public void run() {
+        Logger logger = LoggerFactory.getLogger(Server.class);
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             String dataFileName = Constants.getDataFile(i);
             try {
@@ -49,6 +50,7 @@ public class TestReducer implements Runnable {
                 e.printStackTrace();
             }
         }
+        logger.info("insert count:" + binlogReducer.insertCount + " update count:" + binlogReducer.updateCount + " delete count:" + binlogReducer.deleteCount);
         TLongObjectHashMap<Binlog> binlogTLongObjectHashMap = binlogReducer.getBinlogHashMap();
         for (long key = start + 1; key < end; key ++) {
             Binlog binlog = binlogTLongObjectHashMap.get(key);
