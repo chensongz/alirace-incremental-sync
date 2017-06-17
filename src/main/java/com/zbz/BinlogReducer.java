@@ -18,7 +18,7 @@ public class BinlogReducer {
     public int updateCount = 0;
     public int deleteCount = 0;
 
-    private long parseBinlog = 0;
+    private long parseBinlogTime = 0;
 
     public static Binlog updateOldBinlog(Binlog oldBinlog, Binlog newBinlog) {
         byte transferOperation = newBinlog.getOperation();
@@ -133,11 +133,11 @@ public class BinlogReducer {
         Binlog newBinlog = BinlogFactory.createBinlog(line);
         long t2 = System.currentTimeMillis();
 
-        parseBinlog += (t2 - t1);
+        parseBinlogTime += (t2 - t1);
         if (newBinlog.getOperation() == Binlog.I) insertCount++;
         if (newBinlog.getOperation() == Binlog.U) updateCount++;
         if (newBinlog.getOperation() == Binlog.D) deleteCount++;
-        reduce(newBinlog);
+//        reduce(newBinlog);
     }
 
     public boolean isFull() {
@@ -152,7 +152,7 @@ public class BinlogReducer {
         binlogHashMap.clear();
     }
 
-    public long getParseBinlog() {
-        return this.parseBinlog;
+    public long getParseBinlogTime() {
+        return this.parseBinlogTime;
     }
 }

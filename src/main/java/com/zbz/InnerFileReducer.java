@@ -49,7 +49,7 @@ public class InnerFileReducer {
         logger.info(p);
         logger.info(Thread.currentThread().toString() + " Mem: " + mem + ", Per: " + per);
         logger.info(Thread.currentThread().toString() + " Parse: "
-                + binlogReducer.getParseBinlog() + ", Read: " + read);
+                + binlogReducer.getParseBinlogTime() + ", Read: " + read);
     }
 
     private void reduceDataFile(String filename) throws IOException{

@@ -57,7 +57,7 @@ public class Test {
                 long t2 = System.currentTimeMillis();
                 System.out.println("Total time: " + (t2 - t1));
                 System.out.println("Reduce time: " + reduce);
-                System.out.println("Parse binlog: " + binlogReducer.getParseBinlog());
+                System.out.println("Parse binlog: " + binlogReducer.getParseBinlogTime());
 
             } catch (Exception e) {
                 e.printStackTrace();
