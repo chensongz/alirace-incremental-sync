@@ -13,9 +13,9 @@ public class BinlogFactory {
         int fieldCnt = -1;
         int i;
         int currentIndex = 0;
-        while((i = line.indexOf('|', currentIndex)) >= 0) {
+        while ((i = line.indexOf('|', currentIndex)) >= 0) {
             fieldCnt++;
-            if(fieldCnt == 5) {
+            if (fieldCnt == 5) {
                 switch (line.charAt(currentIndex)) {
                     case 'I':
                         binlog.setOperation(Binlog.I);
@@ -26,10 +26,9 @@ public class BinlogFactory {
                     case 'D':
                         binlog.setOperation(Binlog.D);
                         break;
-
                 }
                 currentIndex = i + 1;
-            } else if(fieldCnt > 5) {
+            } else if (fieldCnt > 5) {
                 String fieldString = line.substring(currentIndex, i);
                 int j;
 
@@ -38,7 +37,6 @@ public class BinlogFactory {
                 fieldString = fieldString.substring(j + 1);
                 j = fieldString.indexOf(':');
                 String isPrimaryKey = fieldString.substring(j + 1);
-
 
                 int idx = line.indexOf('|', currentIndex);
                 currentIndex = idx + 1;

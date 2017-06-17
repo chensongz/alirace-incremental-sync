@@ -1,6 +1,7 @@
 package com.zbz;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
+
 import java.util.Map;
 
 /**
@@ -65,7 +66,7 @@ public class BinlogReducer {
                 break;
         }
         if (transferOperation == Binlog.ID) {
-            return  null;
+            return null;
         } else if (transferOperation == Binlog.DI) {
             newBinlog.setOperation(Binlog.U);
             return newBinlog;
@@ -76,8 +77,8 @@ public class BinlogReducer {
         } else {
             oldBinlog.setOperation(transferOperation);
             oldBinlog.setPrimaryValue(newBinlog.getPrimaryValue());
-            Map<String, String> fields =  newBinlog.getFields();
-            for (String fieldname: fields.keySet()) {
+            Map<String, String> fields = newBinlog.getFields();
+            for (String fieldname : fields.keySet()) {
                 oldBinlog.addField(fieldname, fields.get(fieldname));
             }
             return oldBinlog;

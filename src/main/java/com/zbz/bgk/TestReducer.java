@@ -42,6 +42,7 @@ public class TestReducer implements Runnable {
     @Override
     public void run() {
         Logger logger = LoggerFactory.getLogger(Server.class);
+        logger.info("TestReducer start run");
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             try {
                 reduceDataFile(Constants.getDataFile(i));
@@ -49,9 +50,10 @@ public class TestReducer implements Runnable {
                 e.printStackTrace();
             }
         }
-        logger.info("insert count:" + binlogReducer.insertCount + " update count:" + binlogReducer.updateCount + " delete count:" + binlogReducer.deleteCount);
+        logger.info("insert count: " + binlogReducer.insertCount + " update count: " + binlogReducer.updateCount + " delete count: " + binlogReducer.deleteCount);
         TLongObjectHashMap<Binlog> binlogTLongObjectHashMap = binlogReducer.getBinlogHashMap();
-        for (long key = start + 1; key < end; key ++) {
+        logger.info("TestReducer start sendPool");
+        for (long key = start + 1; key < end; key++) {
             Binlog binlog = binlogTLongObjectHashMap.get(key);
             if (binlog != null) {
                 sendPool.put(binlog.toSendString());
@@ -60,11 +62,8 @@ public class TestReducer implements Runnable {
         sendPool.put("NULL");
     }
 
-
-
-
-
     private void reduceDataFile(String filename) throws IOException {
+        Logger logger = LoggerFactory.getLogger(Server.class);
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         long t1 = System.currentTimeMillis();
@@ -73,8 +72,7 @@ public class TestReducer implements Runnable {
         }
         reader.close();
         long t2 = System.currentTimeMillis();
-        Logger logger = LoggerFactory.getLogger(Server.class);
-        logger.info(filename + " reduced... cost time:" + (t2-t1));
+        logger.info(filename + " reduce cost time: " + (t2 - t1) + " ms");
     }
 
 }

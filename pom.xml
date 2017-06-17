@@ -9,7 +9,6 @@
     <version>1.0</version>
     <name>sync</name>
 
-
     <dependencies>
         <!--log相关-->
         <dependency>
@@ -43,12 +42,9 @@
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
         </dependency>
-
-
     </dependencies>
 
     <build>
-
         <directory>target</directory>
         <outputDirectory>target/classes</outputDirectory>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -103,5 +99,3 @@
         </plugins>
     </build>
 </project>
-
-
