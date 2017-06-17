@@ -43,9 +43,8 @@ public class TestReducer implements Runnable {
     public void run() {
         Logger logger = LoggerFactory.getLogger(Server.class);
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
-            String dataFileName = Constants.getDataFile(i);
             try {
-                reduceDataFile(dataFileName);
+                reduceDataFile(Constants.getDataFile(i));
             } catch (IOException e) {
                 e.printStackTrace();
             }
