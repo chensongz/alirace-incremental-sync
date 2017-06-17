@@ -181,15 +181,15 @@ public class Test {
         HashIndex index = new HashIndex();
         Persistence persistence = new Persistence(name);
 
-        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
+        for (Object binlog : binlogReducer.getBinlogHashMap().values()) {
             long indexOffset;
-            Long primaryOldValue = binlog.getPrimaryOldValue();
-            Long primaryValue = binlog.getPrimaryValue();
+            long primaryOldValue = ((Binlog)binlog).getPrimaryOldValue();
+            long primaryValue = ((Binlog)binlog).getPrimaryValue();
             if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
+                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, ((Binlog)binlog));
                 if (newBinlog != null) {
                     if (primaryValue != newBinlog.getPrimaryValue()) {
                         index.delete(primaryValue);
@@ -203,7 +203,7 @@ public class Test {
                 // update key value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
+                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, ((Binlog)binlog));
                 if (newBinlog != null) {
                     long offset = persistence.write(newBinlog.toBytes());
                     index.delete(primaryOldValue);
@@ -212,7 +212,7 @@ public class Test {
                     index.delete(primaryOldValue);
                 }
             } else {
-                long offset = persistence.write(binlog.toBytes());
+                long offset = persistence.write(((Binlog)binlog).toBytes());
                 index.insert(primaryValue, offset);
             }
 

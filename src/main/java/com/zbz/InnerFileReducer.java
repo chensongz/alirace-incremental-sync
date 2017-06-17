@@ -67,12 +67,12 @@ public class InnerFileReducer {
             binlogReducer.reduce(line);
             long t2 = System.currentTimeMillis();
             mem += (t2 - t1);
-            if (binlogReducer.isFull()) {
-                t1 = System.currentTimeMillis();
-                clearBinlogReducer();
-                t2 = System.currentTimeMillis();
-                per += (t2 - t1);
-            }
+//            if (binlogReducer.isFull()) {
+//                t1 = System.currentTimeMillis();
+//                clearBinlogReducer();
+//                t2 = System.currentTimeMillis();
+//                per += (t2 - t1);
+//            }
         }
         long t1 = System.currentTimeMillis();
         clearBinlogReducer();
@@ -86,15 +86,15 @@ public class InnerFileReducer {
     }
 
     private void clearBinlogReducer() {
-        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
+        for (Object binlog : binlogReducer.getBinlogHashMap().values()) {
             long indexOffset;
-            Long primaryOldValue = binlog.getPrimaryOldValue();
-            Long primaryValue = binlog.getPrimaryValue();
-            if ((indexOffset = index.getOffset(primaryValue)) >= 0) {
+            Long primaryOldValue = ((Binlog)binlog).getPrimaryOldValue();
+            Long primaryValue = ((Binlog)binlog).getPrimaryValue();
+            if ((indexOffset = index.getOffset(primaryValue)) > 0) {
                 // update other value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
+                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, ((Binlog)binlog));
                 if (newBinlog != null) {
                     if (primaryValue != newBinlog.getPrimaryValue()) {
                         index.delete(primaryValue);
@@ -104,11 +104,11 @@ public class InnerFileReducer {
                 } else {
                     index.delete(primaryValue);
                 }
-            } else if ((indexOffset = index.getOffset(primaryOldValue)) >= 0) {
+            } else if ((indexOffset = index.getOffset(primaryOldValue)) > 0) {
                 // update key value
                 String oldBinlogLine = new String(persistence.read(indexOffset));
                 Binlog oldBinlog = BinlogFactory.parse(oldBinlogLine);
-                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, binlog);
+                Binlog newBinlog = BinlogReducer.updateOldBinlog(oldBinlog, ((Binlog)binlog));
                 if (newBinlog != null) {
                     long offset = persistence.write(newBinlog.toBytes());
                     index.delete(primaryOldValue);
@@ -117,7 +117,7 @@ public class InnerFileReducer {
                     index.delete(primaryOldValue);
                 }
             } else {
-                long offset = persistence.write(binlog.toBytes());
+                long offset = persistence.write(((Binlog)binlog).toBytes());
                 index.insert(primaryValue, offset);
             }
 

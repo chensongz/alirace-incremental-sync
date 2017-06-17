@@ -19,9 +19,8 @@ public class FinalReducer {
     }
 
     public void compute(long start, long end, Pool<String> sendPool) {
-        Set<Long> appendKeySet = appendIndex.getIndexHashMap().keySet();
 
-        for (Long appendPrimaryValue : appendKeySet) {
+        for (long appendPrimaryValue : appendIndex.getIndexHashMap().keys()) {
             long appendOffset = appendIndex.getOffset(appendPrimaryValue);
             String appendBinlogLine = new String(appendPersistence.read(appendOffset));
             Binlog appendBinlog = BinlogFactory.parse(appendBinlogLine);

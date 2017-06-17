@@ -63,8 +63,8 @@ public class ReadDataWorker3 implements Runnable {
     }
 
     private void clearBinlogReducer() {
-        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
-            binlogPool.put(binlog);
+        for (Object binlog : binlogReducer.getBinlogHashMap().values()) {
+            binlogPool.put(((Binlog)binlog));
         }
         binlogReducer.clearBinlogHashMap();
     }

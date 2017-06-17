@@ -1,13 +1,12 @@
 package com.zbz;
 
-import java.util.HashMap;
-import java.util.Map;
+import gnu.trove.map.hash.TLongLongHashMap;
 
 /**
  * Created by Victor on 2017/6/10.
  */
 public class HashIndex extends Index {
-    private Map<Long, Long> indexHashMap = new HashMap<>();
+    private TLongLongHashMap indexHashMap = new TLongLongHashMap();
 
     public void insert(Long key, long offset) {
         indexHashMap.put(key, offset);
@@ -18,11 +17,10 @@ public class HashIndex extends Index {
     }
 
     public long getOffset(Long key) {
-        Long offset = indexHashMap.get(key);
-        return offset == null ? Long.MIN_VALUE : offset;
+        return indexHashMap.get(key);
     }
 
-    public Map<Long, Long> getIndexHashMap() {
+    public TLongLongHashMap getIndexHashMap() {
         return indexHashMap;
     }
 

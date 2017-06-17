@@ -1,6 +1,6 @@
 package com.zbz;
 
-import java.util.Map;
+import gnu.trove.map.hash.TLongLongHashMap;
 
 /**
  * Created by Victor on 2017/6/10.
@@ -12,7 +12,7 @@ abstract public class Index {
 
     abstract public long getOffset(Long key);
 
-    abstract public Map<Long, Long> getIndexHashMap();
+    abstract public TLongLongHashMap getIndexHashMap();
 
     abstract public void release();
 }

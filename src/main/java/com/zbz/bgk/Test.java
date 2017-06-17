@@ -1,6 +1,7 @@
 package com.zbz.bgk;
 
 import com.carrotsearch.hppc.LongObjectHashMap;
+import com.google.common.io.Files;
 import com.zbz.Binlog;
 import com.zbz.BinlogFactory;
 import com.zbz.BinlogReducer;
@@ -9,13 +10,15 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
  * Created by bgk on 6/11/17.
  */
 public class Test {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 //        String str = "a|bnc|23|NULL|";
 //        String[] strings = str.split("\\|");
 //        System.out.println(strings.length);
@@ -90,27 +93,49 @@ public class Test {
 //        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
 //            System.out.println(binlog);
 //        }
-//        TLongObjectHashMap<Binlog> tLongObjectHashMap = new TLongObjectHashMap<>();
+        TLongObjectHashMap<Binlog> tLongObjectHashMap = new TLongObjectHashMap<>();
 //        LongObjectHashMap<Binlog> longObjectHashMap = new LongObjectHashMap<>();
 //        Long2ObjectOpenHashMap<Binlog> long2ObjectArrayMap = new Long2ObjectOpenHashMap<>();
 //        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
 //        long t1 = System.currentTimeMillis();
-//        Map<Long, Binlog> hashMap = new TreeMap<>();
+////        Map<Long, Binlog> hashMap = new TreeMap<>();
 //        for (long i = 0; i < 10000000; i++) {
-//            long2ObjectArrayMap.put(i, binlog1);
+//            tLongObjectHashMap.put(i, binlog1);
 //        }
 //        long t2 = System.currentTimeMillis();
 //        System.out.println("use time:" + (t2-t1));
 //        for (long i = 0; i < 10000000; i++) {
-//            long2ObjectArrayMap.get(i);
+//            tLongObjectHashMap.get(i);
 //        }
 ////        hashMap = null;
 //        long t3 = System.currentTimeMillis();
-//        System.out.println(tLongObjectHashMap.size());
 //        System.out.println("use time:" + (t3-t2));
+//        for ( int i = 0; i < tLongObjectHashMap.values().length; i++) {
+//            Binlog binlog = (Binlog)tLongObjectHashMap.values()[i];
+//        }
+////        for (long key:tLongObjectHashMap.keys()) {
+////            Binlog binlog = tLongObjectHashMap.get(key);
+////        }
+//        t1 = System.currentTimeMillis();
+//        System.out.println("use time 1:" + (t1-t3));
 
+        long t1,t2;
+        t1 = System.currentTimeMillis();
 
-
+//        try {
+//            try (BufferedReader bufferedReader = new BufferedReader(new FileReader("/home/zwy/work/test/canal.txt"))) {
+//                String line;
+//                while ((line=bufferedReader.readLine()) !=  null) {
+//                    BinlogFactory.createBinlog(line);
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        t2 = System.currentTimeMillis();
+//        System.out.println("use time :" + (t2-t1));
+        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
+        System.out.println(tLongLongHashMap.get(1));
 
     }
 }

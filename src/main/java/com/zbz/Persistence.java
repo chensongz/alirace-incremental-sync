@@ -29,7 +29,7 @@ public class Persistence {
         this.filename = filename;
         try {
             fc = new RandomAccessFile(filename, "rw").getChannel();
-            currentOffset = 0;
+            currentOffset = 1;
             FIXED_WIDTH = width;
         } catch (FileNotFoundException e) {
             e.printStackTrace();

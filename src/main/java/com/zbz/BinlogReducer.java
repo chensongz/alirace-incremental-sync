@@ -1,6 +1,6 @@
 package com.zbz;
 
-import java.util.HashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import java.util.Map;
 
 /**
@@ -9,7 +9,7 @@ import java.util.Map;
 public class BinlogReducer {
     private static final int CAPACITY = 8192;
 
-    private HashMap<Long, Binlog> binlogHashMap;
+    private TLongObjectHashMap<Binlog> binlogHashMap;
     private String schema;
     private String table;
     private int capacity;
@@ -85,7 +85,7 @@ public class BinlogReducer {
         this.table = table;
         this.schema = schema;
         this.capacity = capacity;
-        this.binlogHashMap = new HashMap<>(capacity);
+        this.binlogHashMap = new TLongObjectHashMap<>();
     }
 
     public BinlogReducer(String schema, String table) {
@@ -95,11 +95,11 @@ public class BinlogReducer {
     public void reduce(Binlog newBinlog) {
         Binlog binlog;
         if (newBinlog != null) {
-            Long primaryValue = newBinlog.getPrimaryValue();
-            Long primaryOldValue = newBinlog.getPrimaryOldValue();
-            if (binlogHashMap.containsKey(primaryValue)) {
+            long primaryValue = newBinlog.getPrimaryValue();
+            long primaryOldValue = newBinlog.getPrimaryOldValue();
+            Binlog oldBinlog;
+            if ((oldBinlog = binlogHashMap.get(primaryValue)) != null) {
                 // maybe insert record or update fields or delete record
-                Binlog oldBinlog = binlogHashMap.get(primaryValue);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
                 if (binlog != null) {
                     if (primaryValue != binlog.getPrimaryValue()) {
@@ -109,9 +109,8 @@ public class BinlogReducer {
                 } else {
                     binlogHashMap.remove(primaryValue);
                 }
-            } else if (binlogHashMap.containsKey(primaryOldValue)) {
+            } else if ((oldBinlog = binlogHashMap.get(primaryOldValue)) != null) {
                 // maybe update primary key
-                Binlog oldBinlog = binlogHashMap.get(primaryOldValue);
                 binlog = updateOldBinlog(oldBinlog, newBinlog);
                 if (binlog != null) {
                     binlogHashMap.remove(primaryOldValue);
@@ -139,7 +138,7 @@ public class BinlogReducer {
         return binlogHashMap.size() >= capacity;
     }
 
-    public HashMap<Long, Binlog> getBinlogHashMap() {
+    public TLongObjectHashMap<Binlog> getBinlogHashMap() {
         return binlogHashMap;
     }
 

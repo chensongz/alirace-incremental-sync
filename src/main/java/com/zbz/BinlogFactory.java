@@ -1,5 +1,7 @@
 package com.zbz;
 
+import java.util.Arrays;
+
 /**
  * Created by bgk on 6/9/17.
  */
@@ -8,28 +10,27 @@ public class BinlogFactory {
     public static Binlog createBinlog(String line) {
         Binlog binlog = new Binlog();
 
-        int fieldCnt = 0;
+        int fieldCnt = -1;
         int i;
-        String curr = line;
         int currentIndex = 0;
-        while((i = curr.indexOf("|", currentIndex)) >= 0) {
+        while((i = line.indexOf('|', currentIndex)) >= 0) {
             fieldCnt++;
-            String fieldString = curr.substring(currentIndex, i);
-            if(fieldCnt == 1) {
-                switch (fieldString) {
-                    case "I":
+            if(fieldCnt == 5) {
+                switch (line.charAt(currentIndex)) {
+                    case 'I':
                         binlog.setOperation(Binlog.I);
                         break;
-                    case "U":
+                    case 'U':
                         binlog.setOperation(Binlog.U);
                         break;
-                    case "D":
+                    case 'D':
                         binlog.setOperation(Binlog.D);
                         break;
 
                 }
                 currentIndex = i + 1;
-            } else if(fieldCnt > 1) {
+            } else if(fieldCnt > 5) {
+                String fieldString = line.substring(currentIndex, i);
                 int j;
 
                 j = fieldString.indexOf(':');
@@ -39,13 +40,13 @@ public class BinlogFactory {
                 String isPrimaryKey = fieldString.substring(j + 1);
 
 
-                int idx = curr.indexOf('|', currentIndex);
+                int idx = line.indexOf('|', currentIndex);
                 currentIndex = idx + 1;
-                idx = curr.indexOf('|', currentIndex);
-                String oldValue = curr.substring(currentIndex, idx);
+                idx = line.indexOf('|', currentIndex);
+                String oldValue = line.substring(currentIndex, idx);
                 currentIndex = idx + 1;
-                idx = curr.indexOf('|', currentIndex);
-                String newValue = curr.substring(currentIndex, idx);
+                idx = line.indexOf('|', currentIndex);
+                String newValue = line.substring(currentIndex, idx);
 
                 if (isPrimaryKey.equals("1")) {
                     // if field is primary key
