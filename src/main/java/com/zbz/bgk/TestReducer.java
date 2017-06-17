@@ -73,16 +73,18 @@ public class TestReducer implements Runnable {
         File file = new File(filename);
         BufferedReader reader = new BufferedReader(new FileReader(file));
         logger.info(filename + " size: " + file.length());
-        String line;
+//        String line;
         long t1 = System.currentTimeMillis();
-        while ((line = reader.readLine()) != null) {
-            binlogReducer.reduce(line);
+//        while ((line = reader.readLine()) != null) {
+        while ((reader.readLine()) != null) {
+//            binlogReducer.reduce(line);
         }
         reader.close();
         long t2 = System.currentTimeMillis();
 //        logger.info(filename + " reduce cost time: " + (t2 - t1) + " ms");
-        logger.info(filename + " readline and parse cost time: " + (t2 - t1) + " ms");
-        logger.info(filename + " parse cost time: " + binlogReducer.getParseBinlogTime() + " ms");
+        logger.info(filename + " readline cost time: " + (t2 - t1) + " ms");
+//        logger.info(filename + " readline and parse cost time: " + (t2 - t1) + " ms");
+//        logger.info(filename + " parse cost time: " + binlogReducer.getParseBinlogTime() + " ms");
     }
 
 }
