@@ -54,10 +54,10 @@ public class TestReducer implements Runnable {
         for (long key = start + 1; key < end; key ++) {
             Binlog binlog = binlogTLongObjectHashMap.get(key);
             if (binlog != null) {
-                System.out.println(binlog.toSendString());
                 sendPool.put(binlog.toSendString());
             }
         }
+        sendPool.put("NULL");
     }
 
 
