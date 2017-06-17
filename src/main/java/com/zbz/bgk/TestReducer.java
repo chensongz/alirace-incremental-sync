@@ -14,12 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Created by zwy on 17-6-14.
- */
 public class TestReducer implements Runnable {
 
 
@@ -43,6 +41,7 @@ public class TestReducer implements Runnable {
     public void run() {
         Logger logger = LoggerFactory.getLogger(Server.class);
         logger.info("TestReducer start run");
+        long t1 = System.currentTimeMillis();
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             try {
                 reduceDataFile(Constants.getDataFile(i));
@@ -50,21 +49,28 @@ public class TestReducer implements Runnable {
                 e.printStackTrace();
             }
         }
+        long t2 = System.currentTimeMillis();
+        logger.info("reduce all cost: " + (t2 - t1) + " ms");
         logger.info("insert count: " + binlogReducer.insertCount + " update count: " + binlogReducer.updateCount + " delete count: " + binlogReducer.deleteCount);
         TLongObjectHashMap<Binlog> binlogTLongObjectHashMap = binlogReducer.getBinlogHashMap();
         logger.info("TestReducer start sendPool");
+        int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
             Binlog binlog = binlogTLongObjectHashMap.get(key);
             if (binlog != null) {
                 sendPool.put(binlog.toSendString());
+                sendCount++;
             }
         }
         sendPool.put("NULL");
+        logger.info("send count: " + sendCount);
     }
 
     private void reduceDataFile(String filename) throws IOException {
         Logger logger = LoggerFactory.getLogger(Server.class);
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        File file = new File(filename);
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        logger.info(filename + " size: " + file.length());
         String line;
         long t1 = System.currentTimeMillis();
         while ((line = reader.readLine()) != null) {
