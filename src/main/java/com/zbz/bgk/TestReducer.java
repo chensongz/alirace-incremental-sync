@@ -73,11 +73,11 @@ public class TestReducer implements Runnable {
         File file = new File(filename);
         BufferedReader reader = new BufferedReader(new FileReader(file));
         logger.info(filename + " size: " + file.length());
-//        String line;
+        String line;
         long t1 = System.currentTimeMillis();
-//        while ((line = reader.readLine()) != null) {
-        while ((reader.readLine()) != null) {
-//            binlogReducer.reduce(line);
+        while ((line = reader.readLine()) != null) {
+//        while ((reader.readLine()) != null) {
+            binlogReducer.reduce(line);
         }
         reader.close();
         long t2 = System.currentTimeMillis();

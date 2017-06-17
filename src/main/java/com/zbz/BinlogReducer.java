@@ -135,7 +135,7 @@ public class BinlogReducer {
 
         parseBinlogTime += (t2 - t1);
         if (newBinlog.getOperation() == Binlog.I) insertCount++;
-        if (newBinlog.getOperation() == Binlog.U) updateCount++;
+        if (newBinlog.getOperation() == Binlog.U && newBinlog.getPrimaryValue() != newBinlog.getPrimaryOldValue()) updateCount++;
         if (newBinlog.getOperation() == Binlog.D) deleteCount++;
 //        reduce(newBinlog);
     }
