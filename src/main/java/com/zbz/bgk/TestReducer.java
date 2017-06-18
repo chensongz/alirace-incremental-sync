@@ -74,20 +74,35 @@ public class TestReducer implements Runnable {
 //        logger.info(filename + " size: " + file.length());
 
         FileChannel fc = new RandomAccessFile(filename, "rw").getChannel();
-        long size = fc.size();
+//        long size = fc.size();
+        long size = 1000;
         MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-
         long count = 0;
         long t1 = System.currentTimeMillis();
+        ByteArrayOutputStream bao = new ByteArrayOutputStream(64);
+        buffer.position(buffer.position() + 59);
+        while(true) {
+            if (buffer.get() == '|') break;
+        }
         while (true) {
-            buffer.get();
+            byte b = buffer.get();
+            if (b == '\n') {
+                buffer.position(buffer.position() + 59);
+                while(true) {
+                    if (buffer.get() == '|') break;
+                }
+                System.out.println(bao.toString());
+
+                bao.reset();
+            } else {
+                bao.write(b);
+            }
             count++;
             if (count >= size) break;
         }
         long t2 = System.currentTimeMillis();
         logger.info(filename + " size: " + size);
         logger.info(filename + " MappedByteBuffer read byte cost time: " + (t2 - t1) + " ms");
-
 
 //        String line;
 //        long t1 = System.currentTimeMillis();
