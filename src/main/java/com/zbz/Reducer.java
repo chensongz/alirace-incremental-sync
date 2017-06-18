@@ -40,13 +40,15 @@ public class Reducer implements Runnable {
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             try {
+                logger.info("Reduce " + Constants.getDataFile(i) + " start!");
                 reduceDataFile(Constants.getDataFile(i));
+                logger.info("Reduce " + Constants.getDataFile(i) + " end!");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         long t2 = System.currentTimeMillis();
-        System.out.println("reduce data file cost:" + (t2 - t1));
+        logger.info("reduce data file cost:" + (t2 - t1));
         int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
             byte[][] fields = binlogHashMap.get(key);
@@ -64,6 +66,7 @@ public class Reducer implements Runnable {
 
         FileChannel fc = new RandomAccessFile(filename, "r").getChannel();
         MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+        logger.info("reduceDataFile:" + filename);
         long t1 = System.currentTimeMillis();
         long primaryValue;
         long primaryOldValue;
@@ -79,6 +82,7 @@ public class Reducer implements Runnable {
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     byte fieldName = dataBuf[1];
                     if (!fieldIndex.isInit()) {
+                        logger.info("filename :" + fieldName);
                         fieldIndex.put(fieldName);
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
