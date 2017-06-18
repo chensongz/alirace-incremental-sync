@@ -4,6 +4,10 @@ import com.zbz.Binlog;
 import com.zbz.BinlogFactory;
 import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import net.openhft.koloboke.collect.map.hash.HashByteByteMapFactory;
+import net.openhft.koloboke.collect.map.hash.HashLongObjMap;
+import net.openhft.koloboke.collect.map.hash.HashLongObjMapFactory;
+import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
 import java.io.IOException;
 
@@ -86,23 +90,24 @@ public class Test {
 //        for (Binlog binlog : binlogReducer.getBinlogHashMap().values()) {
 //            System.out.println(binlog);
 //        }
-        TLongObjectHashMap<Binlog> tLongObjectHashMap = new TLongObjectHashMap<>();
+//        HashLongObjMap<Binlog> hashLongObjMap1 = HashLongObjMaps.getDefaultFactory().newMutableMap(500);
+        TLongObjectHashMap<Binlog> hashLongObjMap = new TLongObjectHashMap<>(8388608);
 //        LongObjectHashMap<Binlog> longObjectHashMap = new LongObjectHashMap<>();
 //        Long2ObjectOpenHashMap<Binlog> long2ObjectArrayMap = new Long2ObjectOpenHashMap<>();
 //        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
-//        long t1 = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
 ////        Map<Long, Binlog> hashMap = new TreeMap<>();
-//        for (long i = 0; i < 10000000; i++) {
-//            tLongObjectHashMap.put(i, binlog1);
-//        }
-//        long t2 = System.currentTimeMillis();
-//        System.out.println("use time:" + (t2-t1));
-//        for (long i = 0; i < 10000000; i++) {
-//            tLongObjectHashMap.get(i);
-//        }
+        for (long i = 0; i < 5000000; i++) {
+            hashLongObjMap.put(i, binlog1);
+        }
+        long t2 = System.currentTimeMillis();
+        System.out.println("use time:" + (t2-t1));
+        for (long i = 0; i < 5000000; i++) {
+            hashLongObjMap.get(i);
+        }
 ////        hashMap = null;
-//        long t3 = System.currentTimeMillis();
-//        System.out.println("use time:" + (t3-t2));
+        long t3 = System.currentTimeMillis();
+        System.out.println("use time:" + (t3-t2));
 //        for ( int i = 0; i < tLongObjectHashMap.values().length; i++) {
 //            Binlog binlog = (Binlog)tLongObjectHashMap.values()[i];
 //        }
@@ -112,8 +117,8 @@ public class Test {
 //        t1 = System.currentTimeMillis();
 //        System.out.println("use time 1:" + (t1-t3));
 
-        long t1,t2;
-        t1 = System.currentTimeMillis();
+//        long t1,t2;
+//        t1 = System.currentTimeMillis();
 
 //        try {
 //            try (BufferedReader bufferedReader = new BufferedReader(new FileReader("/home/zwy/work/test/canal.txt"))) {
@@ -127,8 +132,8 @@ public class Test {
 //        }
 //        t2 = System.currentTimeMillis();
 //        System.out.println("use time :" + (t2-t1));
-        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
-        System.out.println(tLongLongHashMap.get(1));
+//        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
+//        System.out.println(tLongLongHashMap.get(1));
 
     }
 }
