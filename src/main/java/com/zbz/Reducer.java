@@ -1,4 +1,4 @@
-package com.zbz.bgk;
+package com.zbz;
 
 /**
  * Created by bgk on 6/17/17.
@@ -6,7 +6,6 @@ package com.zbz.bgk;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
-import com.zbz.*;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +16,18 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class TestReducer implements Runnable {
+public class Reducer implements Runnable {
     private long start;
     private long end;
     private Pool<String> sendPool;
-    private FieldIndex fieldIndex = new FieldIndex();
-    private TLongObjectHashMap<byte[][]> binlogHashMap = new TLongObjectHashMap<>(8388608);
-    private byte[] dataBuf = new byte[64];
-    private int count = 0;
 
-    public TestReducer(long start, long end, Pool<String> sendPool) {
+    private FieldIndex fieldIndex = new FieldIndex();
+    private TLongObjectHashMap<byte[][]> binlogHashMap = new TLongObjectHashMap<>(DataConstans.HASHMAP_CAPACITY);
+
+    private byte[] dataBuf = new byte[DataConstans.DATABUF_CAPACITY];
+    private int position = 0;
+
+    public Reducer(long start, long end, Pool<String> sendPool) {
         this.start = start;
         this.end = end;
         this.sendPool = sendPool;
@@ -35,7 +36,7 @@ public class TestReducer implements Runnable {
     @Override
     public void run() {
         Logger logger = LoggerFactory.getLogger(Server.class);
-        logger.info("TestReducer run start");
+        logger.info("Reducer run start");
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             try {
@@ -72,7 +73,7 @@ public class TestReducer implements Runnable {
             if (operation == 'I') {
                 skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, count);
+                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // until '\n'
                 byte[][] fields = new byte[DataConstans.FIELD_COUNT][];
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
@@ -94,10 +95,10 @@ public class TestReducer implements Runnable {
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, count);
+                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // read primary value
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, count);
+                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 byte[][] fields = binlogHashMap.get(primaryOldValue);
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     byte fieldName = dataBuf[1];
@@ -117,7 +118,7 @@ public class TestReducer implements Runnable {
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, count);
+                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF);
             } else {
@@ -163,16 +164,16 @@ public class TestReducer implements Runnable {
 
 
     public void reset() {
-        count = 0;
+        position = 0;
     }
 
     public void write(byte b) {
-        dataBuf[count++] = b;
+        dataBuf[position++] = b;
     }
 
     public byte[] toByteArray() {
-        byte[] bytes = new byte[count];
-        System.arraycopy(dataBuf, 0, bytes, 0, count);
+        byte[] bytes = new byte[position];
+        System.arraycopy(dataBuf, 0, bytes, 0, position);
         return bytes;
     }
 

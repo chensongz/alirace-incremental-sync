@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.zbz.*;
-import com.zbz.bgk.TestReducer;
+import com.zbz.Reducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class Server {
             e.printStackTrace();
         }
 
-        Thread reduceWorker = new Thread(new TestReducer(schema, table, start, end, sendPool));
+        Thread reduceWorker = new Thread(new Reducer(start, end, sendPool));
         reduceWorker.start();
 
         server.startServer(Constants.SERVER_PORT);

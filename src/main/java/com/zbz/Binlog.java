@@ -1,5 +1,8 @@
 package com.zbz;
 
+import gnu.trove.list.array.TByteArrayList;
+import gnu.trove.map.hash.TByteObjectHashMap;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -7,102 +10,36 @@ import java.util.LinkedHashMap;
  * Created by bgk on 6/7/17.
  */
 public class Binlog {
-    // 1 represent I, 2 represent U, 3 represent D
-    public static final byte ID = 0;
-    public static final byte I = 1;
-    public static final byte U = 2;
-    public static final byte D = 3;
-    public static final byte DI = 4;
-    public static final long MIN = Long.MIN_VALUE + 1;
-
-    private byte operation;
-
-    private String primaryKey = null;
-
-    private long primaryOldValue;
-
     private long primaryValue;
 
-    private LinkedHashMap<String, String> fields = new LinkedHashMap<>();
+    private TByteObjectHashMap<byte[]> fields = new TByteObjectHashMap<>();
 
-    public void setOperation(byte operation) {
-        this.operation = operation;
-    }
-
-    public void setPrimaryKey(String primaryKey) {
-        this.primaryKey = primaryKey;
-    }
-
-    public void setPrimaryOldValue(String primaryOldValue) {
-        if (primaryOldValue.equals("NULL")) {
-            this.primaryOldValue = MIN;
-        } else {
-            this.primaryOldValue = Long.parseLong(primaryOldValue);
-        }
+    public Binlog(long primaryValue) {
+        this.primaryValue = primaryValue;
     }
 
     public void setPrimaryValue(long primaryValue) {
         this.primaryValue = primaryValue;
     }
 
-    public void setPrimaryValue(String primaryValue) {
-        if (primaryValue.equals("NULL")) {
-            this.primaryValue = MIN;
-        } else {
-            this.primaryValue = Long.parseLong(primaryValue);
-        }
-    }
-
-    public byte getOperation() {
-        return operation;
-    }
-
-    public String getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public long getPrimaryOldValue() {
-        return primaryOldValue;
-    }
-
     public long getPrimaryValue() {
         return primaryValue;
     }
 
-    public void addField(String fieldname, String fieldValue) {
-        fields.put(fieldname, fieldValue);
+    public void addField(byte fieldnameIndex, byte[] fieldValue) {
+        fields.put(fieldnameIndex, fieldValue);
     }
 
-    public HashMap<String, String> getFields() {
+    public TByteObjectHashMap<byte[]> getFields() {
         return fields;
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(32);
-        sb.append(operation).append("|");
-        sb.append(primaryKey).append(":")
-                .append(primaryOldValue).append(":")
-                .append(primaryValue).append("|");
-        for (String fieldname : fields.keySet()) {
-            sb.append(fieldname).append(":")
-                    .append(fields.get(fieldname)).append("|");
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    public byte[] toBytes() {
-        return toString().getBytes();
-    }
-
-    public String toSendString() {
-        StringBuilder sb = new StringBuilder(32);
-        sb.append(primaryValue).append("\t");
-        for (String fieldname : fields.keySet()) {
-            sb.append(fields.get(fieldname)).append("\t");
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
+//    public String toSendString() {
+//        StringBuilder sb = new StringBuilder(32);
+//        sb.append(primaryValue).append("\t");
+//        for (String fieldname : fields.keySet()) {
+//            sb.append(fields.get(fieldname)).append("\t");
+//        }
+//        sb.setLength(sb.length() - 1);
+//        return sb.toString();
+//    }
 }

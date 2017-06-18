@@ -1,13 +1,7 @@
 package com.zbz.bgk;
 
 import com.zbz.Binlog;
-import com.zbz.BinlogFactory;
-import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
-import net.openhft.koloboke.collect.map.hash.HashByteByteMapFactory;
-import net.openhft.koloboke.collect.map.hash.HashLongObjMap;
-import net.openhft.koloboke.collect.map.hash.HashLongObjMapFactory;
-import net.openhft.koloboke.collect.map.hash.HashLongObjMaps;
 
 import java.io.IOException;
 
@@ -65,7 +59,7 @@ public class Test {
 
 //        String line1 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|I|id:1:1|NULL|1999996|first_name:2:0|张|高|score:1:0|90|80";
 //        String line2 = "|mysql-bin.000017659728416|1496746079000|middleware3|student|U|id:1:1|1999996|9997|first_name:2:0|高|张|";
-        Binlog binlog1 = BinlogFactory.createBinlog(line1);
+//        Binlog binlog1 = BinlogFactory.createBinlog(line1);
 //        Binlog binlog2 = BinlogFactory.createBinlog(line2);
 //        System.out.println(binlog1);
 //        System.out.println("binlog1 primary key:" + binlog1.getPrimaryKey());
@@ -96,16 +90,17 @@ public class Test {
 //        Long2ObjectOpenHashMap<Binlog> long2ObjectArrayMap = new Long2ObjectOpenHashMap<>();
 //        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
         long t1 = System.currentTimeMillis();
-////        Map<Long, Binlog> hashMap = new TreeMap<>();
-        for (long i = 0; i < 5000000; i++) {
-            hashLongObjMap.put(i, binlog1);
+        Binlog binlog = new Binlog(1);
+//////        Map<Long, Binlog> hashMap = new TreeMap<>();
+        for (long i = 0; i < 10000000; i++) {
+            hashLongObjMap.put(i, binlog);
         }
         long t2 = System.currentTimeMillis();
         System.out.println("use time:" + (t2-t1));
-        for (long i = 0; i < 5000000; i++) {
+        for (long i = 0; i < 10000000; i++) {
             hashLongObjMap.get(i);
         }
-////        hashMap = null;
+//////        hashMap = null;
         long t3 = System.currentTimeMillis();
         System.out.println("use time:" + (t3-t2));
 //        for ( int i = 0; i < tLongObjectHashMap.values().length; i++) {
