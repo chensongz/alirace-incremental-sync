@@ -80,9 +80,10 @@ public class Reducer implements Runnable {
                 // until '\n'
                 byte[][] fields = new byte[DataConstans.FIELD_COUNT][];
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
-                    byte fieldName = (byte)(dataBuf[0] + dataBuf[1]);
+                    byte fieldName = (byte)(dataBuf[0] + dataBuf[1] + dataBuf[2]);
                     if (!fieldIndex.isInit()) {
                         logger.info("filename :" + fieldName);
+                        logger.info("field real name:" + new String(toByteArray()));
                         fieldIndex.put(fieldName);
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
@@ -105,8 +106,7 @@ public class Reducer implements Runnable {
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 byte[][] fields = binlogHashMap.get(primaryOldValue);
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
-                    byte fieldName = (byte)(dataBuf[0] + dataBuf[1]);
-                    logger.info("field real name:" + new String(toByteArray()));
+                    byte fieldName = (byte)(dataBuf[0] + dataBuf[1] + dataBuf[2]);
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
