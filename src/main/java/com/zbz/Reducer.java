@@ -106,6 +106,7 @@ public class Reducer implements Runnable {
                 byte[][] fields = binlogHashMap.get(primaryOldValue);
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     byte fieldName = (byte)(dataBuf[0] + dataBuf[1]);
+                    logger.info("field real name:" + new String(toByteArray()));
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
