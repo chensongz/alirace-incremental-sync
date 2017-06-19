@@ -1,16 +1,11 @@
 package com.alibaba.middleware.race.sync;
 
 import com.zbz.Pool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 处理client端的请求 Created by wanshao on 2017/5/25.
@@ -23,7 +18,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
 
     public ServerDemoInHandler() {
         try {
-            sendPool = Pool.getPoolInstance(String.class, 5000);
+            sendPool = Pool.getPoolInstance(String.class, 8192);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -67,7 +62,7 @@ public class ServerDemoInHandler extends ChannelInboundHandlerAdapter {
             String message = (String) getMessage();
 //            logger.info("send message: " + message);
             if (message != null) {
-                ByteBuf byteBuf = Unpooled.wrappedBuffer((message + "\n").getBytes());
+                ByteBuf byteBuf = Unpooled.wrappedBuffer((message).getBytes());
                 channel.writeAndFlush(byteBuf).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {

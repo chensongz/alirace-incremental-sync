@@ -22,10 +22,12 @@ public class Reducer implements Runnable {
     private Pool<String> sendPool;
 
     private FieldIndex fieldIndex = new FieldIndex();
-    private TLongObjectHashMap<byte[][]> binlogHashMap = new TLongObjectHashMap<>(DataConstans.HASHMAP_CAPACITY);
+    private TLongObjectHashMap<long[]> binlogHashMap = new TLongObjectHashMap<>(DataConstans.HASHMAP_CAPACITY);
 
     private byte[] dataBuf = new byte[DataConstans.DATABUF_CAPACITY];
     private int position = 0;
+
+    private StringBuilder sb = new StringBuilder(64);
 
     public Reducer(long start, long end, Pool<String> sendPool) {
         this.start = start;
@@ -51,9 +53,9 @@ public class Reducer implements Runnable {
         logger.info("reduce data file cost:" + (t2 - t1));
         int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
-            byte[][] fields = binlogHashMap.get(key);
+            long[] fields = binlogHashMap.get(key);
             if (fields != null) {
-                sendPool.put(toSendString(key, fields));
+                sendToPool(key, fields, sendPool);
                 sendCount++;
             }
         }
@@ -78,7 +80,7 @@ public class Reducer implements Runnable {
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // until '\n'
-                byte[][] fields = new byte[DataConstans.FIELD_COUNT][];
+                long[] fields = new long[DataConstans.FIELD_COUNT];
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     int fieldName = sum();
                     if (!fieldIndex.isInit()) {
@@ -88,7 +90,7 @@ public class Reducer implements Runnable {
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                    byte[] fieldValue = toByteArray();
+                    long fieldValue = encode();
                     fields[fieldIndex.get(fieldName)] = fieldValue;
                 }
                 if (!fieldIndex.isInit()) {
@@ -104,13 +106,13 @@ public class Reducer implements Runnable {
                 // read primary value
                 readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
-                byte[][] fields = binlogHashMap.get(primaryOldValue);
+                long[] fields = binlogHashMap.get(primaryOldValue);
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     int fieldName = sum();
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
-                    byte[] fieldValue = toByteArray();
+                    long fieldValue = encode();
                     fields[fieldIndex.get(fieldName)] = fieldValue;
                 }
 
@@ -190,16 +192,38 @@ public class Reducer implements Runnable {
         return sum;
     }
 
-    public String toSendString(long key, byte[][] bytes) {
-        StringBuilder sb = new StringBuilder(32);
+    private long encode() {
+        long result = 0;
+        for (int i = position - 1; i >= 0; i--) {
+            result <<= 8;
+            result |= (dataBuf[i] & 0xff);
+        }
+        return result;
+    }
+
+    private void decode(long src) {
+        // decode long to string
+        byte b;
+        reset();
+        while ((b = (byte) (src & 0xff)) != 0) {
+            write(b);
+            src >>= 8;
+        }
+        sb.append(new String(dataBuf, 0, position));
+    }
+
+    public void sendToPool(long key, long[] fields, Pool<String> pool) {
+        sb.setLength(0);
         sb.append(key).append("\t");
-        for (int i = 0; i < bytes.length; i++) {
-            if (bytes[i] != null) {
-                sb.append(new String(bytes[i])).append("\t");
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i] != 0) {
+                decode(fields[i]);
             }
+            sb.append('\t');
         }
         sb.setLength(sb.length() - 1);
-        return sb.toString();
+        sb.append('\n');
+        pool.put(sb.toString());
     }
 
 }

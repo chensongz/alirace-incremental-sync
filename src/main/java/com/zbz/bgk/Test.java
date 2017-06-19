@@ -1,6 +1,8 @@
 package com.zbz.bgk;
 
 import com.zbz.Binlog;
+import com.zbz.Pool;
+import com.zbz.ReduceUtils;
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 import java.io.IOException;
@@ -85,24 +87,24 @@ public class Test {
 //            System.out.println(binlog);
 //        }
 //        HashLongObjMap<Binlog> hashLongObjMap1 = HashLongObjMaps.getDefaultFactory().newMutableMap(500);
-        TLongObjectHashMap<Binlog> hashLongObjMap = new TLongObjectHashMap<>(8388608);
-//        LongObjectHashMap<Binlog> longObjectHashMap = new LongObjectHashMap<>();
-//        Long2ObjectOpenHashMap<Binlog> long2ObjectArrayMap = new Long2ObjectOpenHashMap<>();
-//        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
-        long t1 = System.currentTimeMillis();
-        Binlog binlog = new Binlog(1);
-//////        Map<Long, Binlog> hashMap = new TreeMap<>();
-        for (long i = 0; i < 10000000; i++) {
-            hashLongObjMap.put(i, binlog);
-        }
-        long t2 = System.currentTimeMillis();
-        System.out.println("use time:" + (t2-t1));
-        for (long i = 0; i < 10000000; i++) {
-            hashLongObjMap.get(i);
-        }
-//////        hashMap = null;
-        long t3 = System.currentTimeMillis();
-        System.out.println("use time:" + (t3-t2));
+//        TLongObjectHashMap<Binlog> hashLongObjMap = new TLongObjectHashMap<>(8388608);
+////        LongObjectHashMap<Binlog> longObjectHashMap = new LongObjectHashMap<>();
+////        Long2ObjectOpenHashMap<Binlog> long2ObjectArrayMap = new Long2ObjectOpenHashMap<>();
+////        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
+//        long t1 = System.currentTimeMillis();
+//        Binlog binlog = new Binlog(1);
+////////        Map<Long, Binlog> hashMap = new TreeMap<>();
+//        for (long i = 0; i < 10000000; i++) {
+//            hashLongObjMap.put(i, binlog);
+//        }
+//        long t2 = System.currentTimeMillis();
+//        System.out.println("use time:" + (t2-t1));
+//        for (long i = 0; i < 10000000; i++) {
+//            hashLongObjMap.get(i);
+//        }
+////////        hashMap = null;
+//        long t3 = System.currentTimeMillis();
+//        System.out.println("use time:" + (t3-t2));
 //        for ( int i = 0; i < tLongObjectHashMap.values().length; i++) {
 //            Binlog binlog = (Binlog)tLongObjectHashMap.values()[i];
 //        }
@@ -129,6 +131,49 @@ public class Test {
 //        System.out.println("use time :" + (t2-t1));
 //        TLongLongHashMap tLongLongHashMap = new TLongLongHashMap();
 //        System.out.println(tLongLongHashMap.get(1));
-
+//        byte[] dataBuf = new byte[]{1,2,3,4,5,6,7,8};
+////        System.out.println(encode(dataBuf, 8));
+//        decode(encode(dataBuf, 8));
+////        System.out.println(((3 & 0xff) << 8));
+//        byte[] a = String.valueOf(8889).getBytes();
+//        for (int i = 0; i < a.length; i++) {
+//            System.out.println(a[i]);
+//        }
+        long t1 = System.currentTimeMillis();
+//        for (long i = 1000000; i < 8000000; i++) {
+////            ReduceUtils.long2Bytes(i);
+//        }
+//        long t2 = System.currentTimeMillis();
+//        System.out.println("use time :" + (t2-t1));
+//
+//        for (long i = 1000000; i < 8000000; i++) {
+//            String.valueOf(i).getBytes();
+//        }
+//
+//        t1 = System.currentTimeMillis();
+//
+//
+//        System.out.println("use time 2 :" + (t1-t2));
+        System.out.println(encode(new byte[]{-1,2,3,4,5,6}, 6));
+        decode(encode(new byte[]{-127,-27,-38,-49,-50,-128}, 6));
+//        System.out.println();
     }
+
+    private static long encode(byte[] dataBuf, int position) {
+        long result = 0;
+        for (int i = position - 1; i >= 0; i--) {
+            result <<= 8;
+            result |= (dataBuf[i] & 0xff);
+        }
+        return result;
+    }
+
+    private static void decode(long src) {
+        byte b;
+        while ((b = (byte)(src & 0xff)) != 0) {
+            src >>= 8;
+            System.out.println("byte: " + b);
+        }
+    }
+
 }
