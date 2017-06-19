@@ -20,16 +20,26 @@ public class Client {
 
     private final static int port = Constants.SERVER_PORT;
     private static String ip;
-//    private EventLoopGroup loop = new NioEventLoopGroup();
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         initProperties();
         Logger logger = LoggerFactory.getLogger(Client.class);
-        logger.info("Welcome to Client");
+        logger.info("Welcome to Client!!");
         ip = args[0];
         Client client = new Client();
-        client.connect(ip, port);
-//        Thread.sleep(4000000);
+        while (true) {
+            try {
+                client.connect(ip, port);
+                break;
+            } catch (Exception e) {
+                try {
+                    logger.error("connect server failed!! retry...");
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -56,10 +66,9 @@ public class Client {
             b.channel(NioSocketChannel.class);
             b.option(ChannelOption.SO_KEEPALIVE, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
-
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new IdleStateHandler(360, 0, 0));
+                    ch.pipeline().addLast(new IdleStateHandler(150, 0, 0));
                     ch.pipeline().addLast(new ClientIdleEventHandler());
                     ch.pipeline().addLast(new ClientDemoInHandler());
                 }
