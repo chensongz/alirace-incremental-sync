@@ -47,7 +47,7 @@ public class Reducer implements Runnable {
             }
         }
         long t2 = System.currentTimeMillis();
-        logger.info("reduce all data file cost: " + (t2 - t1));
+        logger.info("reduce all data file cost: " + (t2 - t1) + " ms");
         int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
             byte[][] fields = binlogHashMap.get(key);
