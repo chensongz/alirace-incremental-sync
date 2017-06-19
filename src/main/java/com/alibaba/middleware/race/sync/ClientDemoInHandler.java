@@ -27,11 +27,11 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
         ByteBuf result = (ByteBuf) msg;
         byte[] result1 = new byte[result.readableBytes()];
         result.readBytes(result1);
-        logger.warn("client receive: " + new String(result1));
+//        logger.warn("client receive: " + new String(result1));
         result.release();
         if (result1[result1.length - 1] == '\r') {
             logger.info("client receive all message success!!");
-            logger.warn("result size: " + fc.size());
+            logger.info("result size: " + fc.size());
             fc.write(ByteBuffer.wrap(result1, 0, result1.length - 1));
             fc.close();
             ctx.close();

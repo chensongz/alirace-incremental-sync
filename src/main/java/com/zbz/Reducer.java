@@ -87,6 +87,9 @@ public class Reducer implements Runnable {
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
                     byte[] fieldValue = toByteArray();
+                    if (fieldValue.length > 8) {
+                        logger.warn("fieldValue length > 8 !! value: " + new String(fieldValue));
+                    }
                     fields[fieldIndex.get(fieldName)] = fieldValue;
                 }
                 if (!fieldIndex.isInit()) {
@@ -109,6 +112,9 @@ public class Reducer implements Runnable {
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
                     readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
                     byte[] fieldValue = toByteArray();
+                    if (fieldValue.length > 8) {
+                        logger.warn("fieldValue length > 8 !! value: " + new String(fieldValue));
+                    }
                     fields[fieldIndex.get(fieldName)] = fieldValue;
                 }
 
@@ -125,7 +131,7 @@ public class Reducer implements Runnable {
                 binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF);
             } else {
-                logger.warn("=== exception character ===");
+                logger.error("=== exception character ===");
             }
         }
         long t2 = System.currentTimeMillis();
