@@ -38,19 +38,18 @@ public class Reducer implements Runnable {
     @Override
     public void run() {
         Logger logger = LoggerFactory.getLogger(Server.class);
-        logger.info("Reducer run start");
+        logger.info("Reducer run start!");
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
             try {
                 logger.info("Reduce " + Constants.getDataFile(i) + " start!");
                 reduceDataFile(Constants.getDataFile(i));
-                logger.info("Reduce " + Constants.getDataFile(i) + " end!");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         long t2 = System.currentTimeMillis();
-        logger.info("reduce data file cost:" + (t2 - t1));
+        logger.info("reduce all data file cost: " + (t2 - t1) + " ms");
         int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
             long[] fields = binlogHashMap.get(key);
@@ -68,7 +67,6 @@ public class Reducer implements Runnable {
 
         FileChannel fc = new RandomAccessFile(filename, "r").getChannel();
         MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
-        logger.info("reduceDataFile:" + filename);
         long t1 = System.currentTimeMillis();
         long primaryValue;
         long primaryOldValue;
@@ -84,8 +82,8 @@ public class Reducer implements Runnable {
                 while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
                     int fieldName = sum();
                     if (!fieldIndex.isInit()) {
-                        logger.info("filename :" + fieldName);
-                        logger.info("field real name:" + new String(toByteArray()));
+                        logger.info("field name sum: " + fieldName);
+                        logger.info("field real name: " + new String(toByteArray()));
                         fieldIndex.put(fieldName);
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
@@ -129,12 +127,12 @@ public class Reducer implements Runnable {
                 binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF);
             } else {
-                logger.warn("exception character");
+                logger.error("=== exception character ===");
             }
         }
         long t2 = System.currentTimeMillis();
         logger.info(filename + " size: " + fc.size());
-        logger.info(filename + " MappedByteBuffer read byte cost time: " + (t2 - t1) + " ms");
+        logger.info(filename + " reduce cost time: " + (t2 - t1) + " ms");
     }
 
 
