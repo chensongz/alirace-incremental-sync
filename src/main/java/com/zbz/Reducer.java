@@ -216,11 +216,11 @@ public class Reducer implements Runnable {
         for (int i = 0; i < fields.length; i++) {
             if (fields[i] != 0) {
                 decode(fields[i]);
+                sb.append("\t");
             }
-            sb.append('\t');
         }
         sb.setLength(sb.length() - 1);
-        sb.append('\n');
+        sb.append("\n");
         pool.put(sb.toString());
     }
 
