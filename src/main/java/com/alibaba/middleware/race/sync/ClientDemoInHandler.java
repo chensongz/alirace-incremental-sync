@@ -23,7 +23,7 @@ public class ClientDemoInHandler extends ChannelInboundHandlerAdapter {
     // 接收server端的消息，并打印出来
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.info("com.alibaba.middleware.race.sync.ClientDemoInHandler.channelRead");
+//        logger.info("com.alibaba.middleware.race.sync.ClientDemoInHandler.channelRead");
         ByteBuf result = (ByteBuf) msg;
         byte[] result1 = new byte[result.readableBytes()];
         result.readBytes(result1);
