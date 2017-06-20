@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -57,9 +58,10 @@ public class Server {
 
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
+        BufferedOutputStream bufferedClientStream = new BufferedOutputStream(clientStream, 8192);
         try {
-            reducer.sendToSocketDirectly(clientStream);
-            clientStream.flush();
+            reducer.sendToSocketDirectly(bufferedClientStream);
+            bufferedClientStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
