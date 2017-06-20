@@ -1,6 +1,5 @@
 package com.alibaba.middleware.race.sync;
 
-import com.zbz.Pool;
 import com.zbz.Reducer;
 import gnu.trove.list.array.TByteArrayList;
 import io.netty.bootstrap.ServerBootstrap;
@@ -52,21 +51,18 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-//        Pool<String> sendPool = null;
-//        try {
-//            sendPool = Pool.getPoolInstance(String.class, 8192);
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InstantiationException e) {
-//            e.printStackTrace();
-//        }
-        TByteArrayList sendPool = new TByteArrayList();
 
-        Thread reduceWorker = new Thread(new Reducer(start, end, sendPool));
-        reduceWorker.start();
+        Reducer reducer = new Reducer(start, end);
+        reducer.run();
 
-//        server.startServer(Constants.SERVER_PORT);
-        server.startServerSocket(Constants.SERVER_PORT, sendPool);
+
+        OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
+        try {
+            reducer.sendToSocketDirectly(clientStream);
+            clientStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -94,7 +90,8 @@ public class Server {
         System.setProperty("app.logging.level", Constants.LOG_LEVEL);
     }
 
-    private void startServerSocket(int port, TByteArrayList sendPool) {
+    private OutputStream startServerSocket(int port) {
+
         ServerSocket serverSocket;
         OutputStream clientStream;
         Socket clientSocket;
@@ -105,28 +102,10 @@ public class Server {
 
             logger.info("Client" + clientAddr + " connected...");
             clientStream = clientSocket.getOutputStream();
-
+            return clientStream;
         } catch (Exception e) {
             e.printStackTrace();
-            return;
-        }
-
-        try {
-            while(true) {
-                if(sendPool.size() == 0) {
-                    Thread.sleep(100);
-                }
-                if(sendPool.size() > 0) {
-                    byte b = sendPool.get(0);
-                    sendPool.remove(0, 1);
-                    clientStream.write(b);
-                    if(b == '\r') {
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
     }
 

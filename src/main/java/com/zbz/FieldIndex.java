@@ -19,6 +19,10 @@ public class FieldIndex {
         return tByteByteHashMap.get(field);
     }
 
+    public byte getIndex() {
+        return index;
+    }
+
     public void setInit(boolean isInit) {
         this.isInit = isInit;
     }

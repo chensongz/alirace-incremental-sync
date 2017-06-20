@@ -12,16 +12,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 public class Reducer implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
     private long start;
     private long end;
-//    private Pool<String> sendPool;
-    private TByteArrayList sendPool;
 
     private FieldIndex fieldIndex = new FieldIndex();
     private TLongObjectHashMap<long[]> binlogHashMap = new TLongObjectHashMap<>(DataConstans.HASHMAP_CAPACITY);
@@ -31,15 +31,13 @@ public class Reducer implements Runnable {
 
     private StringBuilder sb = new StringBuilder(64);
 
-    public Reducer(long start, long end, TByteArrayList sendPool) {
+    public Reducer(long start, long end) {
         this.start = start;
         this.end = end;
-        this.sendPool = sendPool;
     }
 
     @Override
     public void run() {
-        Logger logger = LoggerFactory.getLogger(Server.class);
         logger.info("Reducer run start!");
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < Constants.DATA_FILE_NUM; i++) {
@@ -52,15 +50,18 @@ public class Reducer implements Runnable {
         }
         long t2 = System.currentTimeMillis();
         logger.info("reduce all data file cost: " + (t2 - t1) + " ms");
+    }
+
+    public void sendToSocketDirectly(OutputStream sockStream) throws IOException {
         int sendCount = 0;
         for (long key = start + 1; key < end; key++) {
             long[] fields = binlogHashMap.get(key);
             if (fields != null) {
-                sendToPool(key, fields, sendPool);
+                sendToPool(key, fields, sockStream);
                 sendCount++;
             }
         }
-        sendPool.add((byte)'\r');
+        sockStream.write((byte)'\r');
         logger.info("send binlog count: " + sendCount);
     }
 
@@ -212,45 +213,36 @@ public class Reducer implements Runnable {
         sb.append(new String(dataBuf, 0, position));
     }
 
-    private void decode(long src, TByteArrayList pool) {
-        // decode long to string
+    private void decode(long src, OutputStream sockStream) throws IOException {
         byte b;
         reset();
         while ((b = (byte) (src & 0xff)) != 0) {
             write(b);
             src >>= 8;
         }
-        pool.add(dataBuf, 0, position);
+        sockStream.write(dataBuf, 0, position);
     }
 
-    public void sendToPool(long key, long[] fields, Pool<String> pool) {
-        sb.setLength(0);
-        sb.append(key).append("\t");
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i] != 0) {
-                decode(fields[i]);
-                sb.append("\t");
-            }
-        }
-        sb.setLength(sb.length() - 1);
-        sb.append("\n");
-        pool.put(sb.toString());
-    }
+    public void sendToPool(long key, long[] fields, OutputStream sockStream) throws IOException{
+        long2Bytes(key, sockStream);
+        sockStream.write((byte)'\t');
 
-    public void sendToPool(long key, long[] fields, TByteArrayList pool) {
-        long2Bytes(key);
-        pool.add((byte)'\t');
+        int idxCount = fieldIndex.getIndex();
+        int cnt = 0;
         for(int i = 0; i < fields.length; i++) {
             if(fields[i] != 0) {
-                decode(fields[i], pool);
-                pool.add((byte)'\t');
+                decode(fields[i], sockStream);
+                if(cnt < idxCount - 1) {
+                    sockStream.write((byte)'\t');
+                }
+                cnt++;
             }
         }
-        pool.remove(0,1);
-        pool.add((byte)'\n');
+
+        sockStream.write((byte)'\n');
     }
 
-    public void long2Bytes(long src) {
+    public void long2Bytes(long src, OutputStream sockStream) throws IOException{
         byte b;
         long x = src;
         long p;
@@ -264,7 +256,7 @@ public class Reducer implements Runnable {
             b = (byte)(src/p);
             src -= b * p;
             b += (byte)'0';
-            sendPool.add(b);
+            sockStream.write(b);
         }
     }
 
