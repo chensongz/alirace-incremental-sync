@@ -11,9 +11,9 @@ import java.io.IOException;
 public class ParseTest {
     public static void main(String[] args) throws IOException {
         long t1 = System.currentTimeMillis();
-        System.out.println("starat ---");
-        Reducer testReducer = new Reducer(600, 700, new Pool<String>(1048576));
-        testReducer.run();
+//        System.out.println("starat ---");
+//        Reducer testReducer = new Reducer(600, 700, new Pool<String>(1048576));
+//        testReducer.run();
         long t2 = System.currentTimeMillis();
         System.out.println("use time " + (t2-t1));
     }

@@ -6,6 +6,7 @@ package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
+import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.map.hash.TLongObjectHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,8 @@ import java.nio.channels.FileChannel;
 public class Reducer implements Runnable {
     private long start;
     private long end;
-    private Pool<String> sendPool;
+//    private Pool<String> sendPool;
+    private TByteArrayList sendPool;
 
     private FieldIndex fieldIndex = new FieldIndex();
     private TLongObjectHashMap<long[]> binlogHashMap = new TLongObjectHashMap<>(DataConstans.HASHMAP_CAPACITY);
@@ -29,7 +31,7 @@ public class Reducer implements Runnable {
 
     private StringBuilder sb = new StringBuilder(64);
 
-    public Reducer(long start, long end, Pool<String> sendPool) {
+    public Reducer(long start, long end, TByteArrayList sendPool) {
         this.start = start;
         this.end = end;
         this.sendPool = sendPool;
@@ -58,7 +60,7 @@ public class Reducer implements Runnable {
                 sendCount++;
             }
         }
-        sendPool.put("NULL");
+        sendPool.add((byte)'\r');
         logger.info("send binlog count: " + sendCount);
     }
 
@@ -210,6 +212,17 @@ public class Reducer implements Runnable {
         sb.append(new String(dataBuf, 0, position));
     }
 
+    private void decode(long src, TByteArrayList pool) {
+        // decode long to string
+        byte b;
+        reset();
+        while ((b = (byte) (src & 0xff)) != 0) {
+            write(b);
+            src >>= 8;
+        }
+        pool.add(dataBuf, 0, position);
+    }
+
     public void sendToPool(long key, long[] fields, Pool<String> pool) {
         sb.setLength(0);
         sb.append(key).append("\t");
@@ -224,5 +237,43 @@ public class Reducer implements Runnable {
         pool.put(sb.toString());
     }
 
+    public void sendToPool(long key, long[] fields, TByteArrayList pool) {
+        long2Bytes(key);
+        pool.add((byte)'\t');
+        for(int i = 0; i < fields.length; i++) {
+            if(fields[i] != 0) {
+                decode(fields[i], pool);
+                pool.add((byte)'\t');
+            }
+        }
+        pool.remove(0,1);
+        pool.add((byte)'\n');
+    }
+
+    public void long2Bytes(long src) {
+        byte b;
+        long x = src;
+        long p;
+        int len = 0;
+        while (x > 0) {
+            x /= 10;
+            len++;
+        }
+        for (int i = len - 1; i >= 0; i--) {
+            p = power(i);
+            b = (byte)(src/p);
+            src -= b * p;
+            b += (byte)'0';
+            sendPool.add(b);
+        }
+    }
+
+    public long power(int num) {
+        long ret = 1;
+        while (num-- > 0) {
+            ret *= 10;
+        }
+        return ret;
+    }
 }
 

@@ -23,6 +23,6 @@ public class MyConstants {
     public static final String RESULT_FILE_NAME = "Result.rs";
     // 拼接数据文件名
     public static String getDataFile(int i) {
-        return DATA_HOME + "/x0" + i;
+        return DATA_HOME + "/canal_data/x0" + i;
     }
 }

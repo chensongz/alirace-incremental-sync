@@ -13,12 +13,21 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
 /**
  * Created by wanshao on 2017/5/25.
  */
 public class Client {
 
     private final static int port = Constants.SERVER_PORT;
+    private final static int BUF_CAPACITY = 1024 * 64;
     private static String ip;
 
     public static void main(String[] args) {
@@ -26,20 +35,22 @@ public class Client {
         Logger logger = LoggerFactory.getLogger(Client.class);
         logger.info("Welcome to Client!!");
         ip = args[0];
+
         Client client = new Client();
-        while (true) {
-            try {
-                client.connect(ip, port);
-                break;
-            } catch (Exception e) {
-                try {
-                    logger.error("connect server failed!! retry...");
-                    Thread.sleep(100);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
+        client.startClientSocket(ip, port);
+//        while (true) {
+//            try {
+//                client.connect(ip, port);
+//                break;
+//            } catch (Exception e) {
+//                try {
+//                    logger.error("connect server failed!! retry...");
+//                    Thread.sleep(100);
+//                } catch (InterruptedException e1) {
+//                    e1.printStackTrace();
+//                }
+//            }
+//        }
     }
 
     /**
@@ -79,6 +90,57 @@ public class Client {
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
+        }
+    }
+
+    public void startClientSocket(String host, int port) {
+        Socket clientSocket = null;
+        InetSocketAddress addr = new InetSocketAddress(host, port);
+        boolean retry = true;
+
+        while(retry) {
+            try {
+                clientSocket = new Socket();
+                clientSocket.setKeepAlive(true);
+                clientSocket.connect(addr);
+
+                System.out.println(addr.toString());
+                retry = false;
+            } catch (IOException e) {
+//                e.printStackTrace();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        System.out.println("here");
+
+        byte[] buf = new byte[BUF_CAPACITY];
+        int n;
+        try {
+            InputStream sockStream = clientSocket.getInputStream();
+            FileChannel fc = new RandomAccessFile(Constants.RESULT_HOME + "/"
+                    + Constants.RESULT_FILE_NAME, "rw").getChannel();
+
+            while(true) {
+                System.out.println("receiving...");
+                n = sockStream.read(buf);
+                System.out.println("Client received: " + n);
+                if(buf[n - 1] == '\r') {
+                    System.out.println("oops");
+                    fc.write(ByteBuffer.wrap(buf, 0, n - 1));
+                    fc.close();
+                    sockStream.close();
+                    clientSocket.close();
+                    break;
+                } else {
+                    fc.write(ByteBuffer.wrap(buf, 0, n));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -2,14 +2,20 @@ package com.alibaba.middleware.race.sync;
 
 import com.zbz.Pool;
 import com.zbz.Reducer;
+import gnu.trove.list.array.TByteArrayList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Server {
 
+    private static Logger logger = LoggerFactory.getLogger(Server.class);
     // 保存channel
     private static Map<String, Channel> map = new ConcurrentHashMap<String, Channel>();
     // 接收评测程序的三个参数
@@ -45,19 +52,21 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-        Pool<String> sendPool = null;
-        try {
-            sendPool = Pool.getPoolInstance(String.class, 8192);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
+//        Pool<String> sendPool = null;
+//        try {
+//            sendPool = Pool.getPoolInstance(String.class, 8192);
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        } catch (InstantiationException e) {
+//            e.printStackTrace();
+//        }
+        TByteArrayList sendPool = new TByteArrayList();
 
         Thread reduceWorker = new Thread(new Reducer(start, end, sendPool));
         reduceWorker.start();
 
-        server.startServer(Constants.SERVER_PORT);
+//        server.startServer(Constants.SERVER_PORT);
+        server.startServerSocket(Constants.SERVER_PORT, sendPool);
     }
 
     /**
@@ -85,6 +94,41 @@ public class Server {
         System.setProperty("app.logging.level", Constants.LOG_LEVEL);
     }
 
+    private void startServerSocket(int port, TByteArrayList sendPool) {
+        ServerSocket serverSocket;
+        OutputStream clientStream;
+        Socket clientSocket;
+        try {
+            serverSocket = new ServerSocket(port);
+            clientSocket = serverSocket.accept();
+            InetAddress clientAddr = clientSocket.getInetAddress();
+
+            logger.info("Client" + clientAddr + " connected...");
+            clientStream = clientSocket.getOutputStream();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            while(true) {
+                if(sendPool.size() == 0) {
+                    Thread.sleep(100);
+                }
+                if(sendPool.size() > 0) {
+                    byte b = sendPool.get(0);
+                    sendPool.remove(0, 1);
+                    clientStream.write(b);
+                    if(b == '\r') {
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void startServer(int port) throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
