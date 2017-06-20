@@ -31,8 +31,6 @@ public class Reducer implements Runnable {
     private byte[] dataBuf = new byte[DataConstans.DATABUF_CAPACITY];
     private int position = 0;
 
-    private StringBuilder sb = new StringBuilder(64);
-
     public Reducer(long start, long end) {
         this.start = start;
         this.end = end;
@@ -80,11 +78,11 @@ public class Reducer implements Runnable {
             byte operation = buffer.get();
             if (operation == 'I') {
                 skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
-                readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // until '\n'
                 binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
-                while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
+                while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
                     int fieldName = sum();
                     if (!fieldIndex.isInit()) {
                         logger.info("field name sum: " + fieldName);
@@ -92,7 +90,7 @@ public class Reducer implements Runnable {
                         fieldIndex.put(fieldName);
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
-                    readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
                     long fieldValue = encode();
                     putField(fieldValue);
                 }
@@ -103,17 +101,17 @@ public class Reducer implements Runnable {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR);
                 primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // read primary value
-                readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
-                while (readUntilCharacter(buffer, dataBuf, DataConstans.INNER_SEPARATOR)) {
+                while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
                     int fieldName = sum();
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
-                    readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
                     long fieldValue = encode();
                     updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
                 }
@@ -126,7 +124,7 @@ public class Reducer implements Runnable {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, dataBuf, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR);
                 primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF);
@@ -156,7 +154,7 @@ public class Reducer implements Runnable {
         }
     }
 
-    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte[] bao, byte skipCharacter) {
+    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter) {
         reset();
         byte b;
         while (byteBuffer.hasRemaining()) {
@@ -201,17 +199,6 @@ public class Reducer implements Runnable {
             result |= (dataBuf[i] & 0xff);
         }
         return result;
-    }
-
-    private void decode(long src) {
-        // decode long to string
-        byte b;
-        reset();
-        while ((b = (byte) (src & 0xff)) != 0) {
-            write(b);
-            src >>= 8;
-        }
-        sb.append(new String(dataBuf, 0, position));
     }
 
     private void decode(long src, OutputStream sockStream) throws IOException {

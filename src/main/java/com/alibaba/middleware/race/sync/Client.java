@@ -104,7 +104,6 @@ public class Client {
                 clientSocket.setKeepAlive(true);
                 clientSocket.connect(addr);
 
-                System.out.println(addr.toString());
                 retry = false;
             } catch (IOException e) {
 //                e.printStackTrace();
@@ -115,7 +114,6 @@ public class Client {
                 }
             }
         }
-        System.out.println("here");
 
         byte[] buf = new byte[BUF_CAPACITY];
         int n;
@@ -125,11 +123,11 @@ public class Client {
                     + Constants.RESULT_FILE_NAME, "rw").getChannel();
 
             while(true) {
-                System.out.println("receiving...");
+//                System.out.println("receiving...");
                 n = sockStream.read(buf);
-                System.out.println("Client received: " + n);
+//                System.out.println("Client received: " + n);
                 if(buf[n - 1] == '\r') {
-                    System.out.println("oops");
+//                    System.out.println("oops");
                     fc.write(ByteBuffer.wrap(buf, 0, n - 1));
                     fc.close();
                     sockStream.close();
