@@ -58,7 +58,7 @@ public class Server {
 
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
-        BufferedOutputStream bufferedClientStream = new BufferedOutputStream(clientStream, 1024);
+        BufferedOutputStream bufferedClientStream = new BufferedOutputStream(clientStream, 2048);
         try {
             reducer.sendToSocketDirectly(bufferedClientStream);
             bufferedClientStream.flush();
