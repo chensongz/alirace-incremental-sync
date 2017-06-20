@@ -15,10 +15,12 @@ public class DataConstans {
     public static final byte FIELD_TYPE_SIZE = 4; // 2:0|
 
 
-    public static final byte FIELD_COUNT = 6;
+    public static final byte FIELD_COUNT = 5;
 
     public static final byte DATABUF_CAPACITY = 64;
 
     public static final int HASHMAP_CAPACITY = 8388608;
+
+    public static final int INSERT_CAPACITY = 8388608;
 
 }
