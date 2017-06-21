@@ -22,7 +22,7 @@ public class Reducer implements Runnable {
     private long start;
     private long end;
 
-    private FieldIndex fieldIndex = new FieldIndex();
+//    private FieldIndex fieldIndex = new FieldIndex();
     private TLongIntHashMap binlogHashMap = new TLongIntHashMap(DataConstans.HASHMAP_CAPACITY);
 
     private long[] fieldArray = new long[DataConstans.INSERT_CAPACITY * DataConstans.FIELD_COUNT];
@@ -30,6 +30,10 @@ public class Reducer implements Runnable {
 
     private byte[] dataBuf = new byte[DataConstans.DATABUF_CAPACITY];
     private int position = 0;
+
+    private byte[] fieldIdx = new byte[11];
+    private byte fieldPosition = 0;
+    private boolean isInit = false;
 
     public Reducer(long start, long end) {
         this.start = start;
@@ -75,6 +79,9 @@ public class Reducer implements Runnable {
         long t1 = System.currentTimeMillis();
         long primaryValue;
         long primaryOldValue;
+
+        boolean isInit = this.isInit;
+
         while (buffer.position() < size) {
             skipLineUseless(buffer, size);
             byte operation = buffer.get();
@@ -89,30 +96,21 @@ public class Reducer implements Runnable {
                 while(true) {
                     int fieldName = sum(buffer, size);
                     if(fieldName == 0) break;
-                    if (!fieldIndex.isInit()) {
-                        logger.info("field name sum: " + fieldName);
-                        logger.info("field real name: " + new String(toByteArray()));
-                        fieldIndex.put(fieldName);
-                    }
-                    skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
-                    readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                    long fieldValue = encode();
-                    putField(fieldValue);
-                }
-//                while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
-//                    int fieldName = sum();
-//                    if (!fieldIndex.isInit()) {
+                    if (!isInit) {
 //                        logger.info("field name sum: " + fieldName);
 //                        logger.info("field real name: " + new String(toByteArray()));
 //                        fieldIndex.put(fieldName);
-//                    }
-//                    skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
-//                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
-//                    long fieldValue = encode();
-//                    putField(fieldValue);
-//                }
-                if (!fieldIndex.isInit()) {
-                    fieldIndex.setInit(true);
+                        this.fieldIdx[fieldName] = fieldPosition++;
+                    }
+                    skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
+                    long fieldValue = encode(buffer, size);
+                    if (fieldValue == 0) break;
+                    putField(fieldValue);
+                }
+                if (!isInit) {
+//                    fieldIndex.setInit(true);
+                    this.isInit = true;
+                    isInit = true;
                 }
             } else if (operation == 'U') {
                 // skip |id:1:1|
@@ -130,19 +128,11 @@ public class Reducer implements Runnable {
                     if(fieldName == 0) break;
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                    readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                    long fieldValue = encode();
-                    updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
+                    long fieldValue = encode(buffer, size);
+                    if (fieldValue == 0) break;
+                    updateField(fieldHeaderIndex, fieldIdx[fieldName], fieldValue);
                 }
 
-//                while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
-//                    int fieldName = sum();
-//                    skip(buffer, DataConstans.FIELD_TYPE_SIZE);
-//                    skipUntilCharacter(buffer, DataConstans.SEPARATOR);
-//                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
-//                    long fieldValue = encode();
-//                    updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
-//                }
 
                 if (primaryOldValue != primaryValue) {
                     binlogHashMap.remove(primaryOldValue);
@@ -189,7 +179,7 @@ public class Reducer implements Runnable {
             b = byteBuffer.get();
             if (b == DataConstans.LF) return 0;
             if (b != DataConstans.INNER_SEPARATOR) {
-                sum += b;
+                sum++;
             } else {
                 break;
             }
@@ -227,38 +217,43 @@ public class Reducer implements Runnable {
         return bytes;
     }
 
-    private int sum() {
-        int sum = 0;
-        for (int i = 0; i < position; i++) {
-            sum += dataBuf[i];
-        }
-        return sum;
-    }
 
-    private long encode() {
+    public long encode(ByteBuffer byteBuffer, int size) {
         long result = 0;
-        for (int i = position - 1; i >= 0; i--) {
-            result <<= 8;
-            result |= (dataBuf[i] & 0xff);
+        byte b;
+        while (byteBuffer.position() < size) {
+            b = byteBuffer.get();
+            if (b == DataConstans.LF) return 0;
+            if (b != DataConstans.SEPARATOR) {
+                result <<= 8;
+                result |= (b & 0xff);
+            } else {
+                break;
+            }
         }
         return result;
     }
+
 
     private void decode(long src, OutputStream sockStream) throws IOException {
         byte b;
         reset();
         while ((b = (byte) (src & 0xff)) != 0) {
             src >>= 8;
-            sockStream.write(b);
+            write(b);
         }
-        sockStream.write(dataBuf, 0, position);
+
+        for (int i = position - 1; i >= 0; i--) {
+            sockStream.write(dataBuf[i]);
+        }
     }
+
 
     public void sendToPool(long key, int fieldHeaderIndex, OutputStream sockStream) throws IOException{
         long2Bytes(key, sockStream);
         sockStream.write((byte)'\t');
 
-        int idxCount = fieldIndex.getIndex();
+        int idxCount = fieldPosition;
         for (int i = 0; i < idxCount; i++) {
             decode(getField(fieldHeaderIndex, (byte)i), sockStream);
             if (i < idxCount - 1) {
