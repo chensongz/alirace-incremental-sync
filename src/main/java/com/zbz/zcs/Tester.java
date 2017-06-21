@@ -1,7 +1,7 @@
 package com.zbz.zcs;
 
 import com.alibaba.middleware.race.sync.Constants;
-import com.zbz.DataConstans;
+import com.zbz.DataConstants;
 import com.zbz.ReduceUtils;
 import gnu.trove.map.hash.TIntByteHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
@@ -121,10 +121,10 @@ public class Tester {
 
     private static void testHashMap() {
 
-        TLongIntHashMap hashMap = new TLongIntHashMap(DataConstans.HASHMAP_CAPACITY);
+        TLongIntHashMap hashMap = new TLongIntHashMap(DataConstants.HASHMAP_CAPACITY);
 
         long t1 = System.currentTimeMillis();
-        for (int i = 0; i < DataConstans.HASHMAP_CAPACITY; i++) {
+        for (int i = 0; i < DataConstants.HASHMAP_CAPACITY; i++) {
             hashMap.put((long) (i + 123456789), i);
         }
         long t2 = System.currentTimeMillis();
@@ -132,7 +132,7 @@ public class Tester {
 
         t1 = System.currentTimeMillis();
         for (int j = 0; j < 10; j++) {
-            for (int i = 0; i < DataConstans.HASHMAP_CAPACITY; i++) {
+            for (int i = 0; i < DataConstants.HASHMAP_CAPACITY; i++) {
                 hashMap.get((long) (i + 123456789));
             }
         }

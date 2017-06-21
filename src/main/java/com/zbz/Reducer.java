@@ -23,17 +23,19 @@ public class Reducer implements Runnable {
     private int end;
 
     //    private FieldIndex fieldIndex = new FieldIndex();
-    private TIntIntHashMap binlogHashMap = new TIntIntHashMap(DataConstans.HASHMAP_CAPACITY);
+    private TIntIntHashMap binlogHashMap = new TIntIntHashMap(DataConstants.HASHMAP_CAPACITY);
 
-    private long[] fieldArray = new long[DataConstans.INSERT_CAPACITY * DataConstans.FIELD_COUNT];
+    private long[] fieldArray = new long[DataConstants.INSERT_CAPACITY * DataConstants.FIELD_COUNT];
     private int fieldArrayPosition = 0;
 
-    private byte[] dataBuf = new byte[DataConstans.DATABUF_CAPACITY];
+    private byte[] dataBuf = new byte[DataConstants.DATABUF_CAPACITY];
     private int position = 0;
 
     private byte[] fieldIdx = new byte[11];
     private byte fieldPosition = 0;
     private boolean isInit = false;
+
+    private int[] powers = new int[]{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
 
     public Reducer(int start, int end) {
         this.start = start;
@@ -86,9 +88,8 @@ public class Reducer implements Runnable {
             skipLineUseless(buffer, size);
             byte operation = buffer.get();
             if (operation == 'I') {
-                skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
-                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryValue = ReduceUtils.bytes2Int(dataBuf, position);
+                skip(buffer, DataConstants.ID_SIZE + DataConstants.NULL_SIZE);
+                primaryValue = bytes2Int(buffer);
                 // until '\n'
                 binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
 
@@ -102,7 +103,7 @@ public class Reducer implements Runnable {
 //                        fieldIndex.put(fieldName);
                         this.fieldIdx[fieldName] = fieldPosition++;
                     }
-                    skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
+                    skip(buffer, DataConstants.FIELD_TYPE_SIZE + DataConstants.NULL_SIZE);
                     long fieldValue = encode(buffer, size);
                     if (fieldValue == 0) break;
                     putField(fieldValue);
@@ -114,20 +115,18 @@ public class Reducer implements Runnable {
                 }
             } else if (operation == 'U') {
                 // skip |id:1:1|
-                skip(buffer, DataConstans.ID_SIZE);
+                skip(buffer, DataConstants.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryOldValue = ReduceUtils.bytes2Int(dataBuf, position);
+                primaryOldValue = bytes2Int(buffer);
                 // read primary value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryValue = ReduceUtils.bytes2Int(dataBuf, position);
+                primaryValue = bytes2Int(buffer);
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
 
                 while (true) {
                     int fieldName = sum(buffer, size);
                     if (fieldName == 0) break;
-                    skip(buffer, DataConstans.FIELD_TYPE_SIZE);
-                    skipUntilCharacter(buffer, DataConstans.SEPARATOR, size);
+                    skip(buffer, DataConstants.FIELD_TYPE_SIZE);
+                    skipUntilCharacter(buffer, DataConstants.SEPARATOR, size);
                     long fieldValue = encode(buffer, size);
                     if (fieldValue == 0) break;
                     updateField(fieldHeaderIndex, fieldIdx[fieldName], fieldValue);
@@ -140,12 +139,11 @@ public class Reducer implements Runnable {
                 }
             } else if (operation == 'D') {
                 // skip |id:1:1|
-                skip(buffer, DataConstans.ID_SIZE);
+                skip(buffer, DataConstants.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryOldValue = ReduceUtils.bytes2Int(dataBuf, position);
+                primaryOldValue = bytes2Int(buffer);
                 binlogHashMap.remove(primaryOldValue);
-                skipUntilCharacter(buffer, DataConstans.LF, size);
+                skipUntilCharacter(buffer, DataConstants.LF, size);
             } else {
                 logger.error("=== exception character ===");
             }
@@ -158,9 +156,9 @@ public class Reducer implements Runnable {
 
     public void skipLineUseless(ByteBuffer byteBuffer, int size) {
         // skip |mysql-bin.000017630680234|1496737946000|middleware3|student|
-        skip(byteBuffer, DataConstans.BINARY_PRE_SIZE);
-        skipUntilCharacter(byteBuffer, DataConstans.SEPARATOR, size);
-        skip(byteBuffer, DataConstans.OTHER_PRE_SIZE);
+        skip(byteBuffer, DataConstants.BINARY_PRE_SIZE);
+        skipUntilCharacter(byteBuffer, DataConstants.SEPARATOR, size);
+        skip(byteBuffer, DataConstants.OTHER_PRE_SIZE);
     }
 
     public void skip(ByteBuffer byteBuffer, int skipCount) {
@@ -177,8 +175,8 @@ public class Reducer implements Runnable {
         byte b;
         while (byteBuffer.position() < size) {
             b = byteBuffer.get();
-            if (b == DataConstans.LF) return 0;
-            if (b != DataConstans.INNER_SEPARATOR) {
+            if (b == DataConstants.LF) return 0;
+            if (b != DataConstants.INNER_SEPARATOR) {
                 sum++;
             } else {
                 break;
@@ -187,20 +185,29 @@ public class Reducer implements Runnable {
         return sum;
     }
 
-    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter, int size) {
-        reset();
+    public int bytes2Int(ByteBuffer byteBuffer) {
+        int result = 0;
         byte b;
-        while (byteBuffer.position() < size) {
-            b = byteBuffer.get();
-            if (b == DataConstans.LF) return false;
-            if (b != skipCharacter) {
-                write(b);
-            } else {
-                break;
-            }
+        while ((b = byteBuffer.get()) != DataConstants.SEPARATOR) {
+            result = (result << 3) + (result << 1) + (b - '0');
         }
-        return true;
+        return result;
     }
+
+//    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter, int size) {
+//        reset();
+//        byte b;
+//        while (byteBuffer.position() < size) {
+//            b = byteBuffer.get();
+//            if (b == DataConstants.LF) return false;
+//            if (b != skipCharacter) {
+//                write(b);
+//            } else {
+//                break;
+//            }
+//        }
+//        return true;
+//    }
 
 
     public void reset() {
@@ -211,11 +218,11 @@ public class Reducer implements Runnable {
         dataBuf[position++] = b;
     }
 
-    public byte[] toByteArray() {
-        byte[] bytes = new byte[position];
-        System.arraycopy(dataBuf, 0, bytes, 0, position);
-        return bytes;
-    }
+//    public byte[] toByteArray() {
+//        byte[] bytes = new byte[position];
+//        System.arraycopy(dataBuf, 0, bytes, 0, position);
+//        return bytes;
+//    }
 
 
     public long encode(ByteBuffer byteBuffer, int size) {
@@ -223,8 +230,8 @@ public class Reducer implements Runnable {
         byte b;
         while (byteBuffer.position() < size) {
             b = byteBuffer.get();
-            if (b == DataConstans.LF) return 0;
-            if (b != DataConstans.SEPARATOR) {
+            if (b == DataConstants.LF) return 0;
+            if (b != DataConstants.SEPARATOR) {
                 result <<= 8;
                 result |= (b & 0xff);
             } else {
@@ -249,8 +256,8 @@ public class Reducer implements Runnable {
     }
 
 
-    public void sendToPool(long key, int fieldHeaderIndex, OutputStream sockStream) throws IOException {
-        long2Bytes(key, sockStream);
+    public void sendToPool(int key, int fieldHeaderIndex, OutputStream sockStream) throws IOException {
+        int2Bytes(key, sockStream);
         sockStream.write((byte) '\t');
 
         int idxCount = fieldPosition;
@@ -265,30 +272,22 @@ public class Reducer implements Runnable {
     }
 
 
-    public void long2Bytes(long src, OutputStream sockStream) throws IOException {
+    public void int2Bytes(int src, OutputStream sockStream) throws IOException {
         byte b;
-        long x = src;
-        long p;
+        int x = src;
+        int p;
         int len = 0;
         while (x > 0) {
             x /= 10;
             len++;
         }
         for (int i = len - 1; i >= 0; i--) {
-            p = power(i);
+            p = powers[i];
             b = (byte) (src / p);
             src -= b * p;
             b += (byte) '0';
             sockStream.write(b);
         }
-    }
-
-    public long power(int num) {
-        long ret = 1;
-        while (num-- > 0) {
-            ret *= 10;
-        }
-        return ret;
     }
 
     public void putField(long fieldValue) {

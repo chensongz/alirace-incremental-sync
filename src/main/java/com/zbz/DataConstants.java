@@ -3,7 +3,7 @@ package com.zbz;
 /**
  * Created by bgk on 6/18/17.
  */
-public class DataConstans {
+public class DataConstants {
     public static final byte SEPARATOR = '|';
     public static final byte INNER_SEPARATOR = ':';
     public static final byte LF = '\n';
