@@ -3,15 +3,56 @@ package com.zbz.bgk;
 import com.zbz.Binlog;
 import com.zbz.Pool;
 import com.zbz.ReduceUtils;
+import com.zbz.Reducer;
+import gnu.trove.map.hash.TLongLongHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Created by bgk on 6/11/17.
  */
 public class Test {
+
+    public static long f0(long a) {
+        return a * 10;
+    }
+
+    public static long f1(long a) {
+        return (a << 3) + (a << 1);
+    }
+
     public static void main(String[] args) throws IOException {
+        System.out.println(f0(55));
+        System.out.println(f1(55));
+
+        int n = 5240296;
+
+        Reducer r = new Reducer(0,0);
+
+        byte[] bytes = {'1', '2', '3', '4', '5', '6', '7'};
+        OutputStream out = new ByteArrayOutputStream();
+
+        long t1, t2, t3, tt1 = 0, tt2 = 0;
+        TLongLongHashMap map = new TLongLongHashMap();
+        t1 = System.currentTimeMillis();
+        for(int i = 0; i < 5240296; i++) {
+            map.put(i, i);
+        }
+        t2 = System.currentTimeMillis();
+        tt1 += (t2 - t1);
+        t1 = System.currentTimeMillis();
+        for(int i = 0; i < 1979570; i++) {
+            map.remove(i);
+        }
+        t2 = System.currentTimeMillis();
+        tt2 += (t2 - t1);
+
+        System.out.println("tt1: " + tt1);
+        System.out.println("tt2: " + tt2);
+
 //        String str = "a|bnc|23|NULL|";
 //        String[] strings = str.split("\\|");
 //        System.out.println(strings.length);
@@ -139,7 +180,7 @@ public class Test {
 //        for (int i = 0; i < a.length; i++) {
 //            System.out.println(a[i]);
 //        }
-        long t1 = System.currentTimeMillis();
+//        long t1 = System.currentTimeMillis();
 //        for (long i = 1000000; i < 8000000; i++) {
 ////            ReduceUtils.long2Bytes(i);
 //        }
@@ -154,8 +195,8 @@ public class Test {
 //
 //
 //        System.out.println("use time 2 :" + (t1-t2));
-        System.out.println(encode(new byte[]{-1,2,3,4,5,6}, 6));
-        decode(encode(new byte[]{-127,-27,-38,-49,-50,-128}, 6));
+//        System.out.println(encode(new byte[]{-1,2,3,4,5,6}, 6));
+//        decode(encode(new byte[]{-127,-27,-38,-49,-50,-128}, 6));
 //        System.out.println();
     }
 
