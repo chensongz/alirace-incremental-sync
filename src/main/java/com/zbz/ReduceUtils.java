@@ -7,7 +7,7 @@ public class ReduceUtils {
     public static long bytes2Long(byte[] bytes, int len) {
         long result = 0;
         for (int i = 0; i < len; i++) {
-            result = result * 10 + (bytes[i] - '0');
+            result = (result << 3) + (result << 1) + (bytes[i] - '0');
         }
         return result;
     }

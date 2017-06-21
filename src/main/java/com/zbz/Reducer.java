@@ -69,23 +69,25 @@ public class Reducer implements Runnable {
         Logger logger = LoggerFactory.getLogger(Server.class);
 
         FileChannel fc = new RandomAccessFile(filename, "r").getChannel();
-        MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+        int size = (int)fc.size();
+        MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, size);
+
         long t1 = System.currentTimeMillis();
         long primaryValue;
         long primaryOldValue;
-        while (buffer.hasRemaining()) {
-            skipLineUseless(buffer);
+        while (buffer.position() < size) {
+            skipLineUseless(buffer, size);
             byte operation = buffer.get();
             if (operation == 'I') {
                 skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
-                readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // until '\n'
                 binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
 
 
                 while(true) {
-                    int fieldName = sum(buffer);
+                    int fieldName = sum(buffer, size);
                     if(fieldName == 0) break;
                     if (!fieldIndex.isInit()) {
                         logger.info("field name sum: " + fieldName);
@@ -93,7 +95,7 @@ public class Reducer implements Runnable {
                         fieldIndex.put(fieldName);
                     }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
-                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                    readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                     long fieldValue = encode();
                     putField(fieldValue);
                 }
@@ -116,19 +118,19 @@ public class Reducer implements Runnable {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                 primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // read primary value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                 primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
 
                 while(true) {
-                    int fieldName = sum(buffer);
+                    int fieldName = sum(buffer, size);
                     if(fieldName == 0) break;
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
-                    skipUntilCharacter(buffer, DataConstans.SEPARATOR);
-                    readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                    skipUntilCharacter(buffer, DataConstans.SEPARATOR, size);
+                    readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                     long fieldValue = encode();
                     updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
                 }
@@ -150,10 +152,10 @@ public class Reducer implements Runnable {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
-                readUntilCharacter(buffer, DataConstans.SEPARATOR);
+                readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
                 primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 binlogHashMap.remove(primaryOldValue);
-                skipUntilCharacter(buffer, DataConstans.LF);
+                skipUntilCharacter(buffer, DataConstans.LF, size);
             } else {
                 logger.error("=== exception character ===");
             }
@@ -164,10 +166,10 @@ public class Reducer implements Runnable {
     }
 
 
-    public void skipLineUseless(ByteBuffer byteBuffer) {
+    public void skipLineUseless(ByteBuffer byteBuffer, int size) {
         // skip |mysql-bin.000017630680234|1496737946000|middleware3|student|
         skip(byteBuffer, DataConstans.BINARY_PRE_SIZE);
-        skipUntilCharacter(byteBuffer, DataConstans.SEPARATOR);
+        skipUntilCharacter(byteBuffer, DataConstans.SEPARATOR, size);
         skip(byteBuffer, DataConstans.OTHER_PRE_SIZE);
     }
 
@@ -175,15 +177,15 @@ public class Reducer implements Runnable {
         byteBuffer.position(byteBuffer.position() + skipCount);
     }
 
-    public void skipUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter) {
-        while (byteBuffer.hasRemaining() && byteBuffer.get() != skipCharacter) {
+    public void skipUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter, int size) {
+        while (byteBuffer.position() < size && byteBuffer.get() != skipCharacter) {
         }
     }
 
-    public int sum(ByteBuffer byteBuffer) {
+    public int sum(ByteBuffer byteBuffer, int size) {
         int sum = 0;
         byte b;
-        while (byteBuffer.hasRemaining()) {
+        while (byteBuffer.position() < size) {
             b = byteBuffer.get();
             if (b == DataConstans.LF) return 0;
             if (b != DataConstans.INNER_SEPARATOR) {
@@ -195,10 +197,10 @@ public class Reducer implements Runnable {
         return sum;
     }
 
-    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter) {
+    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter, int size) {
         reset();
         byte b;
-        while (byteBuffer.hasRemaining()) {
+        while (byteBuffer.position() < size) {
             b = byteBuffer.get();
             if (b == DataConstans.LF) return false;
             if (b != skipCharacter) {
@@ -254,7 +256,6 @@ public class Reducer implements Runnable {
 
     public void sendToPool(long key, int fieldHeaderIndex, OutputStream sockStream) throws IOException{
         long2Bytes(key, sockStream);
-        System.out.println(key);
         sockStream.write((byte)'\t');
 
         int idxCount = fieldIndex.getIndex();
