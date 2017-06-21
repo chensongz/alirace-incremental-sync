@@ -52,7 +52,7 @@ public class Server {
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
 
-        Reducer reducer = new Reducer((int)start, (int)end);
+        Reducer reducer = new Reducer((int) start, (int) end);
         reducer.run();
 
 
