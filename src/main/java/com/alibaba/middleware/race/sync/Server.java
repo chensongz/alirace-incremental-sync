@@ -1,11 +1,10 @@
 package com.alibaba.middleware.race.sync;
 
 import com.zbz.Reducer;
-import gnu.trove.list.array.TByteArrayList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ public class Server {
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
 
-        Reducer reducer = new Reducer(start, end);
+        Reducer reducer = new Reducer((int)start, (int)end);
         reducer.run();
 
 

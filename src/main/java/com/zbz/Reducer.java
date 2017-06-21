@@ -6,7 +6,7 @@ package com.zbz;
 
 import com.alibaba.middleware.race.sync.Constants;
 import com.alibaba.middleware.race.sync.Server;
-import gnu.trove.map.hash.TLongIntHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +19,11 @@ import java.nio.channels.FileChannel;
 
 public class Reducer implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private long start;
-    private long end;
+    private int start;
+    private int end;
 
 //    private FieldIndex fieldIndex = new FieldIndex();
-    private TLongIntHashMap binlogHashMap = new TLongIntHashMap(DataConstans.HASHMAP_CAPACITY);
+    private TIntIntHashMap binlogHashMap = new TIntIntHashMap(DataConstans.HASHMAP_CAPACITY);
 
     private long[] fieldArray = new long[DataConstans.INSERT_CAPACITY * DataConstans.FIELD_COUNT];
     private int fieldArrayPosition = 0;
@@ -35,7 +35,7 @@ public class Reducer implements Runnable {
     private byte fieldPosition = 0;
     private boolean isInit = false;
 
-    public Reducer(long start, long end) {
+    public Reducer(int start, int end) {
         this.start = start;
         this.end = end;
     }
@@ -58,7 +58,7 @@ public class Reducer implements Runnable {
 
     public void sendToSocketDirectly(OutputStream sockStream) throws IOException {
         int sendCount = 0;
-        for (long key = start + 1; key < end; key++) {
+        for (int key = start + 1; key < end; key++) {
             int fieldHeadIndex = binlogHashMap.get(key) - 1;
             if (fieldHeadIndex >= 0) {
                 sendToPool(key, fieldHeadIndex, sockStream);
@@ -77,8 +77,8 @@ public class Reducer implements Runnable {
         MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, size);
 
         long t1 = System.currentTimeMillis();
-        long primaryValue;
-        long primaryOldValue;
+        int primaryValue;
+        int primaryOldValue;
 
         boolean isInit = this.isInit;
 
@@ -88,7 +88,7 @@ public class Reducer implements Runnable {
             if (operation == 'I') {
                 skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
                 readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
+                primaryValue = ReduceUtils.bytes2Int(dataBuf, position);
                 // until '\n'
                 binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
 
@@ -117,10 +117,10 @@ public class Reducer implements Runnable {
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
+                primaryOldValue = ReduceUtils.bytes2Int(dataBuf, position);
                 // read primary value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
+                primaryValue = ReduceUtils.bytes2Int(dataBuf, position);
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
 
                 while(true) {
@@ -143,7 +143,7 @@ public class Reducer implements Runnable {
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR, size);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
+                primaryOldValue = ReduceUtils.bytes2Int(dataBuf, position);
                 binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF, size);
             } else {
