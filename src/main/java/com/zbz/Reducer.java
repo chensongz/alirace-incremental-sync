@@ -79,54 +79,54 @@ public class Reducer implements Runnable {
             if (operation == 'I') {
                 skip(buffer, DataConstans.ID_SIZE + DataConstans.NULL_SIZE);
                 readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
+//                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // until '\n'
-                binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
+//                binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
                 while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
-                    int fieldName = sum();
-                    if (!fieldIndex.isInit()) {
-                        logger.info("field name sum: " + fieldName);
-                        logger.info("field real name: " + new String(toByteArray()));
-                        fieldIndex.put(fieldName);
-                    }
+//                    int fieldName = sum();
+//                    if (!fieldIndex.isInit()) {
+//                        logger.info("field name sum: " + fieldName);
+//                        logger.info("field real name: " + new String(toByteArray()));
+//                        fieldIndex.put(fieldName);
+//                    }
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE + DataConstans.NULL_SIZE);
                     readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                    long fieldValue = encode();
-                    putField(fieldValue);
+//                    long fieldValue = encode();
+//                    putField(fieldValue);
                 }
-                if (!fieldIndex.isInit()) {
-                    fieldIndex.setInit(true);
-                }
+//                if (!fieldIndex.isInit()) {
+//                    fieldIndex.setInit(true);
+//                }
             } else if (operation == 'U') {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
+//                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
                 // read primary value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
-                int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
+//                primaryValue = ReduceUtils.bytes2Long(dataBuf, position);
+//                int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
                 while (readUntilCharacter(buffer, DataConstans.INNER_SEPARATOR)) {
-                    int fieldName = sum();
+//                    int fieldName = sum();
                     skip(buffer, DataConstans.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstans.SEPARATOR);
                     readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                    long fieldValue = encode();
-                    updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
+//                    long fieldValue = encode();
+//                    updateField(fieldHeaderIndex, fieldIndex.get(fieldName), fieldValue);
                 }
 
-                if (primaryOldValue != primaryValue) {
-                    binlogHashMap.remove(primaryOldValue);
-                    binlogHashMap.put(primaryValue, fieldHeaderIndex + 1);
-                }
+//                if (primaryOldValue != primaryValue) {
+//                    binlogHashMap.remove(primaryOldValue);
+//                    binlogHashMap.put(primaryValue, fieldHeaderIndex + 1);
+//                }
             } else if (operation == 'D') {
                 // skip |id:1:1|
                 skip(buffer, DataConstans.ID_SIZE);
                 // read primary old value
                 readUntilCharacter(buffer, DataConstans.SEPARATOR);
-                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
-                binlogHashMap.remove(primaryOldValue);
+//                primaryOldValue = ReduceUtils.bytes2Long(dataBuf, position);
+//                binlogHashMap.remove(primaryOldValue);
                 skipUntilCharacter(buffer, DataConstans.LF);
             } else {
                 logger.error("=== exception character ===");
