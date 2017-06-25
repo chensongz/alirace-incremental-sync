@@ -105,10 +105,8 @@ public class Reducer implements Runnable {
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
 
                 while (true) {
-                    byte fieldName = sum(buffer, size);
+                    byte fieldName = sum2(buffer, size);
                     if (fieldName == -1) break;
-                    skip(buffer, DataConstants.FIELD_TYPE_SIZE);
-                    skipUntilCharacter(buffer, DataConstants.SEPARATOR, size);
                     long fieldValue = encode(buffer, size);
                     updateField(fieldHeaderIndex, fieldName, fieldValue);
                 }
@@ -123,6 +121,8 @@ public class Reducer implements Runnable {
                 // read primary old value
                 primaryOldValue = bytes2Int(buffer);
                 binlogHashMap.remove(primaryOldValue);
+//                skip(buffer, 106);
+                skip(buffer, 87);
                 skipUntilCharacter(buffer, DataConstants.LF, size);
             } else {
                 logger.error("=== exception character ===");
@@ -170,6 +170,37 @@ public class Reducer implements Runnable {
                     return 3;
                 } else {
                     skip(byteBuffer, 1);
+                    return 4;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public byte sum2(ByteBuffer byteBuffer, int size) {
+        byte b = byteBuffer.get();
+        if (b == '\n') return -1;
+        if (b == 'f') {
+            skip(byteBuffer, 18);
+            return 0;
+        } else if (b == 'l') {
+            skip(byteBuffer, 17);
+            skipUntilCharacter(byteBuffer, (byte)'|', size);
+            return 1;
+        } else if (b == 's') {
+            b = byteBuffer.get();
+            if (b == 'e') {
+                skip(byteBuffer, 10);
+                return 2;
+            } else {
+                skip(byteBuffer, 3);
+                if (byteBuffer.get() == ':') {
+                    skip(byteBuffer, 6);
+                    skipUntilCharacter(byteBuffer, (byte)'|', size);
+                    return 3;
+                } else {
+                    skip(byteBuffer, 7);
+                    skipUntilCharacter(byteBuffer, (byte)'|', size);
                     return 4;
                 }
             }
