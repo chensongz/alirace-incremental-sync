@@ -121,8 +121,8 @@ public class Reducer implements Runnable {
                 // read primary old value
                 primaryOldValue = bytes2Int(buffer);
                 binlogHashMap.remove(primaryOldValue);
-//                skip(buffer, 106);
-                skip(buffer, 87);
+                skip(buffer, 106);
+//                skip(buffer, 87);
                 skipUntilCharacter(buffer, DataConstants.LF, size);
             } else {
                 logger.error("=== exception character ===");
