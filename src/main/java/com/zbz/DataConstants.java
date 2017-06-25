@@ -8,7 +8,7 @@ public class DataConstants {
     public static final byte INNER_SEPARATOR = ':';
     public static final byte LF = '\n';
 
-    public static final byte BINARY_PRE_SIZE = 19; // |mysql-bin.0000
+    public static final byte BINARY_PRE_SIZE = 20; // |mysql-bin.0000
     public static final byte OTHER_PRE_SIZE = 34; // 1496737946000|middleware3|student|
     public static final byte ID_SIZE = 8; // |id:1:1|
     public static final byte NULL_SIZE = 5; // NULL|

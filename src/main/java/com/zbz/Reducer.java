@@ -22,7 +22,6 @@ public class Reducer implements Runnable {
     private int start;
     private int end;
 
-    //    private FieldIndex fieldIndex = new FieldIndex();
     private TIntIntHashMap binlogHashMap = new TIntIntHashMap(DataConstants.HASHMAP_CAPACITY);
 
     private long[] fieldArray = new long[DataConstants.INSERT_CAPACITY * DataConstants.FIELD_COUNT];
@@ -30,10 +29,6 @@ public class Reducer implements Runnable {
 
     private byte[] dataBuf = new byte[DataConstants.DATABUF_CAPACITY];
     private int position = 0;
-
-    private byte[] fieldIdx = new byte[11];
-    private byte fieldPosition = 0;
-    private boolean isInit = false;
 
     private int[] powers = new int[]{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
 
@@ -82,8 +77,6 @@ public class Reducer implements Runnable {
         int primaryValue;
         int primaryOldValue;
 
-        boolean isInit = this.isInit;
-
         while (buffer.position() < size) {
             skipLineUseless(buffer, size);
             byte operation = buffer.get();
@@ -93,26 +86,15 @@ public class Reducer implements Runnable {
                 // until '\n'
                 binlogHashMap.put(primaryValue, fieldArrayPosition + 1);
 
-
                 while (true) {
-                    int fieldName = sum(buffer, size);
-                    if (fieldName == 0) break;
-                    if (!isInit) {
-//                        logger.info("field name sum: " + fieldName);
-//                        logger.info("field real name: " + new String(toByteArray()));
-//                        fieldIndex.put(fieldName);
-                        this.fieldIdx[fieldName] = fieldPosition++;
-                    }
+                    byte fieldName = sum(buffer, size);
+                    if (fieldName == -1) break;
+
                     skip(buffer, DataConstants.FIELD_TYPE_SIZE + DataConstants.NULL_SIZE);
                     long fieldValue = encode(buffer, size);
-                    if (fieldValue == 0) break;
                     putField(fieldValue);
                 }
-                if (!isInit) {
-//                    fieldIndex.setInit(true);
-                    this.isInit = true;
-                    isInit = true;
-                }
+
             } else if (operation == 'U') {
                 // skip |id:1:1|
                 skip(buffer, DataConstants.ID_SIZE);
@@ -123,15 +105,13 @@ public class Reducer implements Runnable {
                 int fieldHeaderIndex = binlogHashMap.get(primaryOldValue) - 1;
 
                 while (true) {
-                    int fieldName = sum(buffer, size);
-                    if (fieldName == 0) break;
+                    byte fieldName = sum(buffer, size);
+                    if (fieldName == -1) break;
                     skip(buffer, DataConstants.FIELD_TYPE_SIZE);
                     skipUntilCharacter(buffer, DataConstants.SEPARATOR, size);
                     long fieldValue = encode(buffer, size);
-                    if (fieldValue == 0) break;
-                    updateField(fieldHeaderIndex, fieldIdx[fieldName], fieldValue);
+                    updateField(fieldHeaderIndex, fieldName, fieldValue);
                 }
-
 
                 if (primaryOldValue != primaryValue) {
                     binlogHashMap.remove(primaryOldValue);
@@ -170,19 +150,31 @@ public class Reducer implements Runnable {
         }
     }
 
-    public int sum(ByteBuffer byteBuffer, int size) {
-        int sum = 0;
-        byte b;
-        while (byteBuffer.position() < size) {
+    public byte sum(ByteBuffer byteBuffer, int size) {
+        byte b = byteBuffer.get();
+        if (b == '\n') return -1;
+        if (b == 'f') {
+            skip(byteBuffer, 10);
+            return 0;
+        } else if (b == 'l') {
+            skip(byteBuffer, 9);
+            return 1;
+        } else if (b == 's') {
             b = byteBuffer.get();
-            if (b == DataConstants.LF) return 0;
-            if (b != DataConstants.INNER_SEPARATOR) {
-                sum++;
+            if (b == 'e') {
+                skip(byteBuffer, 2);
+                return 2;
             } else {
-                break;
+                skip(byteBuffer, 3);
+                if (byteBuffer.get() == ':') {
+                    return 3;
+                } else {
+                    skip(byteBuffer, 1);
+                    return 4;
+                }
             }
         }
-        return sum;
+        return -1;
     }
 
     public int bytes2Int(ByteBuffer byteBuffer) {
@@ -194,22 +186,6 @@ public class Reducer implements Runnable {
         return result;
     }
 
-//    public boolean readUntilCharacter(ByteBuffer byteBuffer, byte skipCharacter, int size) {
-//        reset();
-//        byte b;
-//        while (byteBuffer.position() < size) {
-//            b = byteBuffer.get();
-//            if (b == DataConstants.LF) return false;
-//            if (b != skipCharacter) {
-//                write(b);
-//            } else {
-//                break;
-//            }
-//        }
-//        return true;
-//    }
-
-
     public void reset() {
         position = 0;
     }
@@ -218,19 +194,12 @@ public class Reducer implements Runnable {
         dataBuf[position++] = b;
     }
 
-//    public byte[] toByteArray() {
-//        byte[] bytes = new byte[position];
-//        System.arraycopy(dataBuf, 0, bytes, 0, position);
-//        return bytes;
-//    }
-
 
     public long encode(ByteBuffer byteBuffer, int size) {
         long result = 0;
         byte b;
-        while (byteBuffer.position() < size) {
+        while (true) {
             b = byteBuffer.get();
-            if (b == DataConstants.LF) return 0;
             if (b != DataConstants.SEPARATOR) {
                 result <<= 8;
                 result |= (b & 0xff);
@@ -260,7 +229,7 @@ public class Reducer implements Runnable {
         int2Bytes(key, sockStream);
         sockStream.write((byte) '\t');
 
-        int idxCount = fieldPosition;
+        int idxCount = DataConstants.FIELD_COUNT;
         for (int i = 0; i < idxCount; i++) {
             decode(getField(fieldHeaderIndex, (byte) i), sockStream);
             if (i < idxCount - 1) {
