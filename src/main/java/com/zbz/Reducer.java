@@ -184,7 +184,7 @@ public class Reducer implements Runnable {
             skip(byteBuffer, 18);
             return 0;
         } else if (b == 'l') {
-            skip(byteBuffer, 17);
+            skip(byteBuffer, 16);
             skipUntilCharacter(byteBuffer, (byte)'|', size);
             return 1;
         } else if (b == 's') {
