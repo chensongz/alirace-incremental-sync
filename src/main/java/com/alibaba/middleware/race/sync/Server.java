@@ -1,6 +1,10 @@
 package com.alibaba.middleware.race.sync;
 
+import com.zbz.DataConstants;
 import com.zbz.Reducer;
+import com.zbz.bgk.Parser;
+import com.zbz.bgk.Reader;
+import com.zbz.bgk.RingBuffer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -52,14 +56,25 @@ public class Server {
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
 
-        Reducer reducer = new Reducer((int) start, (int) end);
-        reducer.run();
-
+//        Reducer reducer = new Reducer((int) start, (int) end);
+//        reducer.run();
+        RingBuffer<byte[]>[] ringBuffers = new RingBuffer[DataConstants.PARSER_COUNT];
+        Parser[] parsers = new Parser[DataConstants.PARSER_COUNT];
+        Thread[] parserThreads = new Thread[DataConstants.PARSER_COUNT];
+        for (int i = 0; i < DataConstants.PARSER_COUNT; i++) {
+            byte[][] buff = new byte[DataConstants.RINGBUFFER_CAPACITY][];
+            ringBuffers[i] = new RingBuffer<>(buff);
+            parsers[i] = new Parser(ringBuffers[i]);
+            parserThreads[i] = new Thread(parsers[i]);
+            parserThreads[i].start();
+        }
+        Reader reader = new Reader(ringBuffers);
+        reader.run();
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
         BufferedOutputStream bufferedClientStream = new BufferedOutputStream(clientStream, 8192);
         try {
-            reducer.sendToSocketDirectly(bufferedClientStream);
+//            reducer.sendToSocketDirectly(bufferedClientStream);
             bufferedClientStream.flush();
         } catch (IOException e) {
             e.printStackTrace();

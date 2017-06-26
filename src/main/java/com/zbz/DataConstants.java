@@ -23,4 +23,8 @@ public class DataConstants {
 
     public static final int INSERT_CAPACITY = 8388608;
 
+    public static final int RINGBUFFER_CAPACITY = 1 << 18;
+
+    public static final int PARSER_COUNT = 4;
+
 }
