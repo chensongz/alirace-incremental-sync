@@ -38,19 +38,6 @@ public class Client {
 
         Client client = new Client();
         client.startClientSocket(ip, port);
-//        while (true) {
-//            try {
-//                client.connect(ip, port);
-//                break;
-//            } catch (Exception e) {
-//                try {
-//                    logger.error("connect server failed!! retry...");
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e1) {
-//                    e1.printStackTrace();
-//                }
-//            }
-//        }
     }
 
     /**
@@ -123,11 +110,11 @@ public class Client {
                     + Constants.RESULT_FILE_NAME, "rw").getChannel();
 
             while(true) {
-//                System.out.println("receiving...");
+                System.out.println("receiving...");
                 n = sockStream.read(buf);
-//                System.out.println("Client received: " + n);
+                System.out.println("Client received: " + n);
                 if(buf[n - 1] == '\r') {
-//                    System.out.println("oops");
+                    System.out.println("Client receive end");
                     fc.write(ByteBuffer.wrap(buf, 0, n - 1));
                     fc.close();
                     sockStream.close();

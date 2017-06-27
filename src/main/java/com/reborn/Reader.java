@@ -40,8 +40,9 @@ public class Reader implements Runnable {
         }
         //end flag
         setLength(readBuffer, 0);
-        while (!ringBuffers[(ringBufferIndex++) % DataConstants.PARSER_COUNT].put(readBuffer, 4)) {
+        while (!ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT].put(readBuffer, 4)) {
         }
+        ringBufferIndex++;
         long t2 = System.currentTimeMillis();
         logger.info("read all data file cost: " + (t2 - t1) + " ms");
     }
@@ -62,7 +63,7 @@ public class Reader implements Runnable {
             if (buffer.remaining() >= DataConstants.READ_BUFFER_SIZE) {
                 length = DataConstants.READ_BUFFER_SIZE + 4;
                 buffer.get(readBuffer, 4, DataConstants.READ_BUFFER_SIZE);
-                if (readBuffer[length] != '\n') {
+                if (readBuffer[length - 1] != '\n') {
                     while (true) {
                         b = buffer.get();
                         readBuffer[length++] = b;
@@ -80,8 +81,9 @@ public class Reader implements Runnable {
 
                 readFlag = false;
             }
-            while (!ringBuffers[(ringBufferIndex++) % DataConstants.PARSER_COUNT].put(readBuffer, length)) {
+            while (!ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT].put(readBuffer, length)) {
             }
+            ringBufferIndex++;
         }
 
         long t2 = System.currentTimeMillis();

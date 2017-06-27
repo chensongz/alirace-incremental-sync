@@ -45,17 +45,18 @@ public class Server {
 
     public static void main(String[] args) throws InterruptedException {
 
-        String schema = args[0];
-        String table = args[1];
-        long start = Long.parseLong(args[2]);
-        long end = Long.parseLong(args[3]);
+//        String schema = args[0];
+//        String table = args[1];
+//        long start = Long.parseLong(args[2]);
+//        long end = Long.parseLong(args[3]);
+        long start = 600;
+        long end = 700;
 
         initProperties();
-        printInput(args);
+//        printInput(args);
         Logger logger = LoggerFactory.getLogger(Server.class);
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
-
         Reducer reducer = new Reducer(server, (int) start, (int) end);
         RingBuffer[] ringBuffers = new RingBuffer[DataConstants.PARSER_COUNT];
 

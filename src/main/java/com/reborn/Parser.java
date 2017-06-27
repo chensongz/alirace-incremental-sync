@@ -47,6 +47,7 @@ public class Parser implements Runnable {
             if (dataLength == 0) {
                 while (!reducer.doReduce(null, 0, threadNumber)) {
                 }
+                System.out.println("last message");
             } else {
                 while (ringBuffer.get(parseBuffer, dataLength) == null) {
                 }
@@ -64,6 +65,7 @@ public class Parser implements Runnable {
         // reduce
         while (!reducer.doReduce(binlogs, row, threadNumber)) {
         }
+//        System.out.println("after!");
     }
 
     public void resetParseBuffer() {
@@ -112,11 +114,11 @@ public class Parser implements Runnable {
             binlog.operation = operation;
             binlog.primaryOldValue = primaryOldValue;
             binlog.reset();
-            skip(106);
-//          skip(buffer, 87);  // local test
+//            skip(106);
+          skip(87);  // local test
             skipUntilCharacter((byte) '\n');
         } else {
-            logger.info("wrong operation !!");
+            logger.info("wrong operation !! " + (char)operation);
         }
     }
 

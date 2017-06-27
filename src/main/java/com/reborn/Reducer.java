@@ -41,6 +41,7 @@ public class Reducer {
         }
         if (row == 0) {
             //end
+            System.out.println("end!");
             try {
                 sendToClient();
             } catch (IOException e) {
