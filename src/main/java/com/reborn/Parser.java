@@ -27,6 +27,13 @@ public class Parser implements Runnable {
         this.parseBuffer = new byte[DataConstants.READ_BUFFER_SIZE + DataConstants.MAX_MESSAGE_SIZE];
         this.position = 0;
         this.lengthBuffer = new byte[4];
+        init();
+    }
+
+    public void init() {
+        for (int i = 0; i < DataConstants.MAX_MESSAGE_COUNT; i++) {
+            binlogs[i] = new Binlog();
+        }
     }
 
     @Override
