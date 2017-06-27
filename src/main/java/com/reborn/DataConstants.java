@@ -25,6 +25,8 @@ public class DataConstants {
     public static final byte ID_SIZE = 8; // |id:1:1|
     public static final byte NULL_SIZE = 5; // NULL|
     public static final byte FIELD_TYPE_SIZE = 4; // 2:0|
+    public static final byte DELETE_SKIP_COUNT = 106; //
+//    public static final byte DELETE_SKIP_COUNT = 87; // for local test
 
 
 }

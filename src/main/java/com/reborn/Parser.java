@@ -112,8 +112,7 @@ public class Parser implements Runnable {
             binlog.operation = operation;
             binlog.primaryOldValue = primaryOldValue;
             binlog.reset();
-//            skip(106);
-          skip(87);  // local test
+            skip(DataConstants.DELETE_SKIP_COUNT);
             skipUntilCharacter((byte) '\n');
         } else {
             logger.info("wrong operation !! " + (char)operation);
