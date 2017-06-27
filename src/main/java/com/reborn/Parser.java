@@ -4,6 +4,8 @@ import com.alibaba.middleware.race.sync.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by bgk on 6/27/17.
  */
@@ -36,7 +38,7 @@ public class Parser implements Runnable{
             while(ringBuffer.get(lengthBuffer, 4) == null) {}
             dataLength = bytes2Int(lengthBuffer);
             while(ringBuffer.get(parseBuffer, dataLength) == null) {}
-
+            parse();
         }
     }
 
@@ -49,8 +51,9 @@ public class Parser implements Runnable{
 
     public void parse() {
         reset();
+        int row = 0;
         while(position < dataLength) {
-
+            parseRow(row++);
         }
     }
 
@@ -58,7 +61,8 @@ public class Parser implements Runnable{
         position = 0;
     }
 
-    public void parseRow() {
+    public void parseRow(int row) {
+        Binlog binlog = binlogs[row];
         int primaryValue;
         int primaryOldValue;
         skipLineUseless();
@@ -66,8 +70,16 @@ public class Parser implements Runnable{
         if(operation == 'I') {
             skip(DataConstants.ID_SIZE + DataConstants.NULL_SIZE);
             primaryValue = bytes2Int();
+            binlog.operation = operation;
+            binlog.primaryValue = primaryValue;
+
+            binlog.reset();
             while(true) {
-                //todo parse fields
+                byte fieldName = sum();
+                if (fieldName == -1) break;
+                skip(DataConstants.FIELD_TYPE_SIZE + DataConstants.NULL_SIZE);
+                long fieldValue = encode();
+                binlog.put(fieldName, fieldValue);
             }
             //todo merge
         } else if (operation == 'U') {
@@ -75,9 +87,15 @@ public class Parser implements Runnable{
             skip(DataConstants.ID_SIZE);
             primaryOldValue = bytes2Int();
             primaryValue = bytes2Int();
-
+            binlog.operation = operation;
+            binlog.primaryOldValue = primaryOldValue;
+            binlog.primaryValue = primaryValue;
+            binlog.reset();
             while(true) {
-                //todo parse fields
+                byte fieldName = sum2();
+                if (fieldName == -1) break;
+                long fieldValue = encode();
+                binlog.put(fieldName, fieldValue);
             }
             //todo merge
 
@@ -85,6 +103,13 @@ public class Parser implements Runnable{
             // skip |id:1:1|
             skip(DataConstants.ID_SIZE);
             primaryOldValue = bytes2Int();
+            binlog.operation = operation;
+            binlog.primaryOldValue = primaryOldValue;
+            binlog.reset();
+            skip(106);
+//                skip(buffer, 87);  // local test
+            skipUntilCharacter((byte)'\n');
+
             //todo merge
         } else {
             logger.info("wrong operation !!");
@@ -112,6 +137,79 @@ public class Parser implements Runnable{
         byte b;
         while ((b = parseBuffer[position++]) != DataConstants.SEPARATOR) {
             result = (result << 3) + (result << 1) + (b - '0');
+        }
+        return result;
+    }
+
+    public byte sum() {
+        byte b = parseBuffer[position++];
+        if (b == '\n') return -1;
+        if (b == 'f') {
+            skip(10);
+            return 0;
+        } else if (b == 'l') {
+            skip(9);
+            return 1;
+        } else if (b == 's') {
+            b = parseBuffer[position++];
+            if (b == 'e') {
+                skip(2);
+                return 2;
+            } else {
+                skip(3);
+                if (parseBuffer[position++] == ':') {
+                    return 3;
+                } else {
+                    skip(1);
+                    return 4;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public byte sum2() {
+        byte b = parseBuffer[position++];
+        if (b == '\n') return -1;
+        if (b == 'f') {
+            skip(18);
+            return 0;
+        } else if (b == 'l') {
+            skip(16);
+            skipUntilCharacter(DataConstants.SEPARATOR);
+            return 1;
+        } else if (b == 's') {
+            b = parseBuffer[position++];
+            if (b == 'e') {
+                skip(10);
+                return 2;
+            } else {
+                skip(3);
+                if (parseBuffer[position++] == ':') {
+                    skip(6);
+                    skipUntilCharacter(DataConstants.SEPARATOR);
+                    return 3;
+                } else {
+                    skip(7);
+                    skipUntilCharacter(DataConstants.SEPARATOR);
+                    return 4;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public long encode() {
+        long result = 0;
+        byte b;
+        while (true) {
+            b = parseBuffer[position++];
+            if (b != DataConstants.SEPARATOR) {
+                result <<= 8;
+                result |= (b & 0xff);
+            } else {
+                break;
+            }
         }
         return result;
     }

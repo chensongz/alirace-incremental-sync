@@ -65,13 +65,11 @@ public class Reader implements Runnable{
                         }
                     }
                 }
-                readBuffer[length++] = -1;
                 setLength(readBuffer, length - 4);
             } else {
                 int remaining = buffer.remaining();
                 length = remaining + 4;
                 buffer.get(readBuffer, 4, remaining);
-                readBuffer[length++] = -1;
                 setLength(readBuffer, length - 4);
 
                 readFlag = false;
