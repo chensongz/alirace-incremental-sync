@@ -14,7 +14,7 @@ public class DataConstants {
 
     public static final int RINGBUFFER_SIZE = 1 << 25; //must larger than READ_BUFFER_SIZE
 
-    public static final int PARSER_COUNT = 2;
+    public static final int PARSER_COUNT = 8;
 
     public static final byte BINARY_PRE_SIZE = 20; // |mysql-bin.0000
     public static final byte OTHER_PRE_SIZE = 34; // 1496737946000|middleware3|student|
