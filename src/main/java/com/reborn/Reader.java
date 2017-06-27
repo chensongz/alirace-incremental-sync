@@ -13,11 +13,13 @@ import java.nio.channels.FileChannel;
 /**
  * Created by bgk on 6/27/17.
  */
-public class Reader implements Runnable{
+public class Reader implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private byte[] readBuffer;
     private RingBuffer[] ringBuffers;
+
+    private int ringBufferIndex = 0;
 
     public Reader(RingBuffer[] ringBuffers) {
         this.ringBuffers = ringBuffers;
@@ -36,6 +38,10 @@ public class Reader implements Runnable{
                 e.printStackTrace();
             }
         }
+        //end flag
+        setLength(readBuffer, 0);
+        while (!ringBuffers[(ringBufferIndex++) % DataConstants.PARSER_COUNT].put(readBuffer, 4)) {
+        }
         long t2 = System.currentTimeMillis();
         logger.info("read all data file cost: " + (t2 - t1) + " ms");
     }
@@ -51,16 +57,16 @@ public class Reader implements Runnable{
         byte b;
         int length = 0;
         boolean readFlag = true;
-        int ringBufferIndex = 0;
-        while(readFlag) {
-            if(buffer.remaining() >= DataConstants.READ_BUFFER_SIZE) {
+        ringBufferIndex = 0;
+        while (readFlag) {
+            if (buffer.remaining() >= DataConstants.READ_BUFFER_SIZE) {
                 length = DataConstants.READ_BUFFER_SIZE + 4;
                 buffer.get(readBuffer, 4, DataConstants.READ_BUFFER_SIZE);
-                if(readBuffer[length] != '\n') {
-                    while(true) {
+                if (readBuffer[length] != '\n') {
+                    while (true) {
                         b = buffer.get();
                         readBuffer[length++] = b;
-                        if(b == '\n') {
+                        if (b == '\n') {
                             break;
                         }
                     }
@@ -74,7 +80,8 @@ public class Reader implements Runnable{
 
                 readFlag = false;
             }
-            while(!ringBuffers[(ringBufferIndex++) % DataConstants.PARSER_COUNT].put(readBuffer, length)){}
+            while (!ringBuffers[(ringBufferIndex++) % DataConstants.PARSER_COUNT].put(readBuffer, length)) {
+            }
         }
 
         long t2 = System.currentTimeMillis();
@@ -83,8 +90,8 @@ public class Reader implements Runnable{
     }
 
     public void setLength(byte[] readBuffer, int length) {
-        for(int i=0;i<4;i++) {
-            readBuffer[3-i] = (byte)(length>>(i << 3)& 0xFF);
+        for (int i = 0; i < 4; i++) {
+            readBuffer[3 - i] = (byte) (length >> (i << 3) & 0xFF);
         }
     }
 }

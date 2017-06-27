@@ -34,6 +34,7 @@ public class Server {
 
 
     private BufferedOutputStream bufferedClientStream = null;
+
     public BufferedOutputStream getBufferedClientStream() {
         return bufferedClientStream;
     }
@@ -55,7 +56,7 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
-        Reducer reducer = new Reducer(server, (int)start, (int)end);
+        Reducer reducer = new Reducer(server, (int) start, (int) end);
         RingBuffer[] ringBuffers = new RingBuffer[DataConstants.PARSER_COUNT];
 
         ExecutorService executorService = Executors.newFixedThreadPool(DataConstants.PARSER_COUNT + 1);

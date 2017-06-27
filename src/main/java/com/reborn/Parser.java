@@ -4,12 +4,10 @@ import com.alibaba.middleware.race.sync.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by bgk on 6/27/17.
  */
-public class Parser implements Runnable{
+public class Parser implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
     private int threadNumber;
     private RingBuffer ringBuffer;
@@ -34,30 +32,34 @@ public class Parser implements Runnable{
     @Override
     public void run() {
         dataLength = 0;
-        while(true) {
-            while(ringBuffer.get(lengthBuffer, 4) == null) {}
+        while (true) {
+            while (ringBuffer.get(lengthBuffer, 4) == null) {
+            }
             dataLength = bytes2Int(lengthBuffer);
-            while(ringBuffer.get(parseBuffer, dataLength) == null) {}
-            parse();
-        }
-    }
 
-    public int bytes2Int(byte[] bytes) {
-        return   bytes[3] & 0xFF |
-                (bytes[2] & 0xFF) << 8 |
-                (bytes[1] & 0xFF) << 16 |
-                (bytes[0] & 0xFF) << 24;
+            if (dataLength == 0) {
+                while (!reducer.doReduce(null, 0, threadNumber)) {
+                }
+            } else {
+                while (ringBuffer.get(parseBuffer, dataLength) == null) {
+                }
+                parse();
+            }
+        }
     }
 
     public void parse() {
-        reset();
+        resetParseBuffer();
         int row = 0;
-        while(position < dataLength) {
+        while (position < dataLength) {
             parseRow(row++);
+        }
+        // reduce
+        while (!reducer.doReduce(binlogs, row, threadNumber)) {
         }
     }
 
-    public void reset() {
+    public void resetParseBuffer() {
         position = 0;
     }
 
@@ -67,50 +69,45 @@ public class Parser implements Runnable{
         int primaryOldValue;
         skipLineUseless();
         byte operation = parseBuffer[position++];
-        if(operation == 'I') {
+        if (operation == 'I') {
             skip(DataConstants.ID_SIZE + DataConstants.NULL_SIZE);
-            primaryValue = bytes2Int();
+            primaryValue = parsePrimaryValue();
             binlog.operation = operation;
             binlog.primaryValue = primaryValue;
 
             binlog.reset();
-            while(true) {
-                byte fieldName = sum();
+            while (true) {
+                byte fieldName = parseInsertFieldIndex();
                 if (fieldName == -1) break;
                 skip(DataConstants.FIELD_TYPE_SIZE + DataConstants.NULL_SIZE);
                 long fieldValue = encode();
                 binlog.put(fieldName, fieldValue);
             }
-            //todo merge
         } else if (operation == 'U') {
             // skip |id:1:1|
             skip(DataConstants.ID_SIZE);
-            primaryOldValue = bytes2Int();
-            primaryValue = bytes2Int();
+            primaryOldValue = parsePrimaryValue();
+            primaryValue = parsePrimaryValue();
             binlog.operation = operation;
             binlog.primaryOldValue = primaryOldValue;
             binlog.primaryValue = primaryValue;
             binlog.reset();
-            while(true) {
-                byte fieldName = sum2();
+            while (true) {
+                byte fieldName = parseUpdateFieldIndex();
                 if (fieldName == -1) break;
                 long fieldValue = encode();
                 binlog.put(fieldName, fieldValue);
             }
-            //todo merge
-
         } else if (operation == 'D') {
             // skip |id:1:1|
             skip(DataConstants.ID_SIZE);
-            primaryOldValue = bytes2Int();
+            primaryOldValue = parsePrimaryValue();
             binlog.operation = operation;
             binlog.primaryOldValue = primaryOldValue;
             binlog.reset();
             skip(106);
-//                skip(buffer, 87);  // local test
-            skipUntilCharacter((byte)'\n');
-
-            //todo merge
+//          skip(buffer, 87);  // local test
+            skipUntilCharacter((byte) '\n');
         } else {
             logger.info("wrong operation !!");
         }
@@ -132,7 +129,7 @@ public class Parser implements Runnable{
         }
     }
 
-    public int bytes2Int() {
+    public int parsePrimaryValue() {
         int result = 0;
         byte b;
         while ((b = parseBuffer[position++]) != DataConstants.SEPARATOR) {
@@ -141,7 +138,7 @@ public class Parser implements Runnable{
         return result;
     }
 
-    public byte sum() {
+    public byte parseInsertFieldIndex() {
         byte b = parseBuffer[position++];
         if (b == '\n') return -1;
         if (b == 'f') {
@@ -168,7 +165,7 @@ public class Parser implements Runnable{
         return -1;
     }
 
-    public byte sum2() {
+    public byte parseUpdateFieldIndex() {
         byte b = parseBuffer[position++];
         if (b == '\n') return -1;
         if (b == 'f') {
@@ -212,5 +209,12 @@ public class Parser implements Runnable{
             }
         }
         return result;
+    }
+
+    public int bytes2Int(byte[] bytes) {
+        return bytes[3] & 0xFF |
+                (bytes[2] & 0xFF) << 8 |
+                (bytes[1] & 0xFF) << 16 |
+                (bytes[0] & 0xFF) << 24;
     }
 }
