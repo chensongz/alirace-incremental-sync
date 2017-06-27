@@ -1,9 +1,6 @@
 package com.alibaba.middleware.race.sync;
 
-import com.reborn.DataConstants;
-import com.reborn.Parser;
-import com.reborn.Reducer;
-import com.reborn.RingBuffer;
+import com.reborn.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -66,7 +63,7 @@ public class Server {
             ringBuffers[i] = new RingBuffer();
             executorService.execute(new Parser(i, ringBuffers[i], reducer));
         }
-
+        executorService.execute(new Reader(ringBuffers));
 
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);

@@ -4,6 +4,8 @@ package com.reborn;
  * Created by bgk on 6/27/17.
  */
 public class DataConstants {
+
+    public static final int FIELD_COUNT = 5;
     public static final int MAX_MESSAGE_SIZE = 256;
     public static final int MIN_MESSAGE_SIZE = 64;
     public static final int READ_MESSAGE_COUNT = 32;
@@ -14,7 +16,13 @@ public class DataConstants {
 
     public static final int PARSER_COUNT = 2;
 
+    public static final byte BINARY_PRE_SIZE = 20; // |mysql-bin.0000
+    public static final byte OTHER_PRE_SIZE = 34; // 1496737946000|middleware3|student|
+    public static final byte ID_SIZE = 8; // |id:1:1|
+    public static final byte NULL_SIZE = 5; // NULL|
+    public static final byte FIELD_TYPE_SIZE = 4; // 2:0|
 
+    public static final byte SEPARATOR = '|';
 
 
 }

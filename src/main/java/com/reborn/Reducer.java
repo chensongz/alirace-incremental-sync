@@ -10,8 +10,14 @@ import java.io.BufferedOutputStream;
 public class Reducer {
 
     private Server server;
+    private int start;
+    private int end;
 
-    public Reducer(Server server) {
+    private volatile int threadIndex = 0;
+
+    public Reducer(Server server, int start, int end) {
         this.server = server;
+        this.start = start;
+        this.end = end;
     }
 }
