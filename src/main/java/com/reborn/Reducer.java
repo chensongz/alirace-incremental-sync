@@ -41,7 +41,7 @@ public class Reducer {
         }
         if (row == 0) {
             //end
-            System.out.println("end!");
+            logger.info("reducer : last message");
             try {
                 sendToClient();
             } catch (IOException e) {
