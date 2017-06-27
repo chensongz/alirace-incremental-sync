@@ -1,10 +1,9 @@
 package com.alibaba.middleware.race.sync;
 
-import com.zbz.DataConstants;
-import com.zbz.Reducer;
-import com.zbz.bgk.Parser;
-import com.zbz.bgk.Reader;
-import com.zbz.bgk.RingBuffer;
+import com.reborn.DataConstants;
+import com.reborn.Parser;
+import com.reborn.Reducer;
+import com.reborn.RingBuffer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,13 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 服务器类，负责push消息到client Created by wanshao on 2017/5/25.
@@ -30,16 +30,19 @@ public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
     // 保存channel
     private static Map<String, Channel> map = new ConcurrentHashMap<String, Channel>();
-    // 接收评测程序的三个参数
-    private static String schema;
-    private static Map tableNamePkMap;
 
     public static Map<String, Channel> getMap() {
         return map;
     }
 
-    public static void setMap(Map<String, Channel> map) {
-        Server.map = map;
+
+    private BufferedOutputStream bufferedClientStream = null;
+    public BufferedOutputStream getBufferedClientStream() {
+        return bufferedClientStream;
+    }
+
+    public void setBufferedClientStream(BufferedOutputStream bufferedClientStream) {
+        this.bufferedClientStream = bufferedClientStream;
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -55,30 +58,19 @@ public class Server {
         Server server = new Server();
         logger.info("com.alibaba.middleware.race.sync.Server is running....");
 
+        Reducer reducer = new Reducer(server);
+        RingBuffer[] ringBuffers = new RingBuffer[DataConstants.PARSER_COUNT];
 
-//        Reducer reducer = new Reducer((int) start, (int) end);
-//        reducer.run();
-        RingBuffer<byte[]>[] ringBuffers = new RingBuffer[DataConstants.PARSER_COUNT];
-        Parser[] parsers = new Parser[DataConstants.PARSER_COUNT];
-        Thread[] parserThreads = new Thread[DataConstants.PARSER_COUNT];
+        ExecutorService executorService = Executors.newFixedThreadPool(DataConstants.PARSER_COUNT + 1);
         for (int i = 0; i < DataConstants.PARSER_COUNT; i++) {
-            byte[][] buff = new byte[DataConstants.RINGBUFFER_CAPACITY][];
-            ringBuffers[i] = new RingBuffer<>(buff);
-            parsers[i] = new Parser(ringBuffers[i]);
-            parserThreads[i] = new Thread(parsers[i]);
-            parserThreads[i].start();
+            ringBuffers[i] = new RingBuffer();
+            executorService.execute(new Parser(i, ringBuffers[i], reducer));
         }
-        Reader reader = new Reader(ringBuffers);
-        reader.run();
+
+
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
-        BufferedOutputStream bufferedClientStream = new BufferedOutputStream(clientStream, 8192);
-        try {
-//            reducer.sendToSocketDirectly(bufferedClientStream);
-            bufferedClientStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        server.setBufferedClientStream(new BufferedOutputStream(clientStream, 8192));
     }
 
     /**
