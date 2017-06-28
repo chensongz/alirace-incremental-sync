@@ -60,7 +60,8 @@ public class Reader implements Runnable {
         boolean readFlag = true;
         ringBufferIndex = 0;
         while (readFlag) {
-            if (buffer.remaining() >= DataConstants.READ_BUFFER_SIZE) {
+            int remaining = size - buffer.position();
+            if (remaining >= DataConstants.READ_BUFFER_SIZE) {
                 length = DataConstants.READ_BUFFER_SIZE + 4;
                 buffer.get(readBuffer, 4, DataConstants.READ_BUFFER_SIZE);
                 if (readBuffer[length - 1] != '\n') {
@@ -74,14 +75,18 @@ public class Reader implements Runnable {
                 }
                 setLength(readBuffer, length - 4);
             } else {
-                int remaining = buffer.remaining();
+                if(remaining == 0) {
+                    break;
+                }
                 length = remaining + 4;
                 buffer.get(readBuffer, 4, remaining);
                 setLength(readBuffer, length - 4);
 
                 readFlag = false;
             }
-            while (!ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT].put(readBuffer, length)) {
+
+            RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
+            while (!currentRingBuffer.put(readBuffer, length)) {
             }
             ringBufferIndex++;
         }
