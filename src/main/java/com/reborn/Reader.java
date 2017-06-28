@@ -41,7 +41,8 @@ public class Reader implements Runnable {
         }
         //end flag
         setLength(readBuffer, 0);
-        while (!ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT].put(readBuffer, 4)) {
+        RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
+        while (!currentRingBuffer.put(readBuffer, 4)) {
         }
         ringBufferIndex++;
         long t2 = System.currentTimeMillis();

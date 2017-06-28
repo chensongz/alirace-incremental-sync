@@ -45,6 +45,7 @@ public class Parser implements Runnable {
             dataLength = bytes2Int(lengthBuffer);
 
             if (dataLength == 0) {
+                logger.info("parser end!!");
                 while (!reducer.doReduce(null, 0, threadNumber)) {
                 }
             } else {
@@ -131,7 +132,7 @@ public class Parser implements Runnable {
     }
 
     public void skipUntilCharacter(byte skipCharacter) {
-        while (position < dataLength && parseBuffer[position++] != skipCharacter) {
+        while (parseBuffer[position++] != skipCharacter) {
         }
     }
 
