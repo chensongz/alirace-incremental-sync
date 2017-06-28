@@ -57,7 +57,7 @@ public class Reader implements Runnable {
         long t1 = System.currentTimeMillis();
 
         boolean readFlag = true;
-        spin = 0;
+//        spin = 0;
         while (readFlag) {
             int remaining = size - offset;
             if (remaining >= DataConstants.MAPSIZE) {
@@ -73,15 +73,15 @@ public class Reader implements Runnable {
             }
             RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
             while (!currentRingBuffer.put(buffer)) {
-                spin++;
+//                spin++;
             }
             ringBufferIndex++;
         }
 
         long t2 = System.currentTimeMillis();
-        logger.info(filename + " size: " + fc.size());
+//        logger.info(filename + " size: " + fc.size());
         logger.info(filename + " read cost time: " + (t2 - t1) + " ms");
-        logger.info(filename + " spin: " + spin);
+//        logger.info(filename + " spin: " + spin);
     }
 
     public int backToLF(MappedByteBuffer mappedByteBuffer) {

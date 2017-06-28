@@ -67,7 +67,7 @@ public class Server {
 
 
         OutputStream clientStream = server.startServerSocket(Constants.SERVER_PORT);
-        server.setBufferedClientStream(new BufferedOutputStream(clientStream, 8192));
+        server.setBufferedClientStream(new BufferedOutputStream(clientStream, 65536));
     }
 
     /**
