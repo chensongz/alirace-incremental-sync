@@ -59,7 +59,6 @@ public class Reader implements Runnable {
         byte b;
         int length = 0;
         boolean readFlag = true;
-        ringBufferIndex = 0;
         spin = 0;
         while (readFlag) {
             int remaining = size - buffer.position();
