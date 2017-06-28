@@ -9,7 +9,7 @@ public class DataConstants {
     public static final int MIN_MESSAGE_SIZE = 64;
 
     public static final int FIELD_COUNT = 5;
-    public static final int PARSER_COUNT = 6;
+    public static final int PARSER_COUNT = 10;
 
     public static final int HASHMAP_CAPACITY = 8388608;
 
@@ -23,8 +23,8 @@ public class DataConstants {
     public static final byte DELETE_SKIP_COUNT = 106; //
 //    public static final byte DELETE_SKIP_COUNT = 87; // for local test
 
-    public static final int MAPSIZE = 1024 * 1024 * 8;
-    public static final int MAPPED_BUFFER_CAPACITY = 32;
+    public static final int MAPSIZE = 1024 * 1024 * 4;
+    public static final int MAPPED_BUFFER_CAPACITY = 16;
     public static final int MAX_MESSAGE_COUNT = MAPSIZE / MIN_MESSAGE_SIZE;
 
 
