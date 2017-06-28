@@ -20,6 +20,7 @@ public class Reader implements Runnable {
     private RingBuffer[] ringBuffers;
 
     private int ringBufferIndex = 0;
+    private long spin;
 
     public Reader(RingBuffer[] ringBuffers) {
         this.ringBuffers = ringBuffers;
@@ -59,6 +60,7 @@ public class Reader implements Runnable {
         int length = 0;
         boolean readFlag = true;
         ringBufferIndex = 0;
+        spin = 0;
         while (readFlag) {
             int remaining = size - buffer.position();
             if (remaining >= DataConstants.READ_BUFFER_SIZE) {
@@ -87,13 +89,15 @@ public class Reader implements Runnable {
 
             RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
             while (!currentRingBuffer.put(readBuffer, length)) {
+                spin++;
             }
             ringBufferIndex++;
         }
 
         long t2 = System.currentTimeMillis();
         logger.info(filename + " size: " + fc.size());
-        logger.info(filename + " reduce cost time: " + (t2 - t1) + " ms");
+        logger.info(filename + " read cost time: " + (t2 - t1) + " ms");
+        logger.info(filename + " spin: " + spin);
     }
 
     public void setLength(byte[] readBuffer, int length) {
