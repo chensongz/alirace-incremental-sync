@@ -1,53 +1,40 @@
 package com.reborn;
 
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+
 /**
  * Created by zhuchensong on 6/27/17.
  */
 public class RingBuffer {
-    private static final int capacity = DataConstants.RINGBUFFER_SIZE;
-    private static final int andIndex = DataConstants.RINGBUFFER_SIZE - 1;
+    private static final int capacity = DataConstants.MAPPED_BUFFER_CAPACITY;
+    private static final int andIndex = DataConstants.MAPPED_BUFFER_CAPACITY - 1;
 
-    private volatile long writeSeq = 0;
-    private volatile long readSeq = 0;
+    private volatile int writeSeq = 0;
+    private volatile int readSeq = 0;
 
-    private byte[] buffer;
+    private ByteBuffer[] buffer;
 
     public RingBuffer() {
-        this.buffer = new byte[capacity];
+        this.buffer = new ByteBuffer[capacity];
     }
 
-    public boolean put(byte[] bytes, int len) {
-        if (writeSeq - readSeq >= capacity - len) {
+    public boolean put(ByteBuffer mappedByteBuffer) {
+        if (writeSeq - readSeq >= capacity) {
             return false;
         }
-        int startIndex = (int) (writeSeq & andIndex);
-        int endIndex = (int) ((writeSeq + len) & andIndex);
-        if (endIndex > startIndex) {
-            System.arraycopy(bytes, 0, buffer, startIndex, len);
-        } else {
-            int firstLen = capacity - startIndex;
-            System.arraycopy(bytes, 0, buffer, startIndex, firstLen);
-            System.arraycopy(bytes, firstLen, buffer, 0, len - firstLen);
-        }
-        writeSeq += len;
+        buffer[writeSeq & andIndex] = mappedByteBuffer;
+        writeSeq++;
         return true;
     }
 
-    public byte[] get(byte[] bytes, int len) {
-        if (writeSeq - readSeq < len) {
+    public ByteBuffer get() {
+        if (writeSeq - readSeq <= 0) {
             return null;
         }
-        int startIndex = (int) (readSeq & andIndex);
-        int endIndex = (int) ((readSeq + len) & andIndex);
-        if (endIndex > startIndex) {
-            System.arraycopy(buffer, startIndex, bytes, 0, len);
-        } else {
-            int firstLen = capacity - startIndex;
-            System.arraycopy(buffer, startIndex, bytes, 0, firstLen);
-            System.arraycopy(buffer, 0, bytes, firstLen, len - firstLen);
-        }
-        readSeq += len;
-        return bytes;
+        ByteBuffer mappedByteBuffer = buffer[readSeq & andIndex];
+        readSeq++;
+        return mappedByteBuffer;
     }
 
 }

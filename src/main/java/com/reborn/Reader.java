@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -16,7 +17,6 @@ import java.nio.channels.FileChannel;
 public class Reader implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    private byte[] readBuffer;
     private RingBuffer[] ringBuffers;
 
     private int ringBufferIndex = 0;
@@ -24,7 +24,6 @@ public class Reader implements Runnable {
 
     public Reader(RingBuffer[] ringBuffers) {
         this.ringBuffers = ringBuffers;
-        readBuffer = new byte[DataConstants.READ_BUFFER_SIZE + DataConstants.MAX_MESSAGE_SIZE];
     }
 
     @Override
@@ -40,9 +39,8 @@ public class Reader implements Runnable {
             }
         }
         //end flag
-        setLength(readBuffer, 0);
         RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
-        while (!currentRingBuffer.put(readBuffer, 4)) {
+        while (!currentRingBuffer.put(ByteBuffer.allocate(0))) {
         }
         ringBufferIndex++;
         long t2 = System.currentTimeMillis();
@@ -53,42 +51,28 @@ public class Reader implements Runnable {
     private void readAndDispatch(String filename) throws IOException {
         FileChannel fc = new RandomAccessFile(filename, "r").getChannel();
         int size = (int) fc.size();
-        MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, size);
+        int offset = 0;
+        MappedByteBuffer buffer = null;
 
         long t1 = System.currentTimeMillis();
 
-        byte b;
-        int length = 0;
         boolean readFlag = true;
         spin = 0;
         while (readFlag) {
-            int remaining = size - buffer.position();
-            if (remaining >= DataConstants.READ_BUFFER_SIZE) {
-                length = DataConstants.READ_BUFFER_SIZE + 4;
-                buffer.get(readBuffer, 4, DataConstants.READ_BUFFER_SIZE);
-                if (readBuffer[length - 1] != '\n') {
-                    while (true) {
-                        b = buffer.get();
-                        readBuffer[length++] = b;
-                        if (b == '\n') {
-                            break;
-                        }
-                    }
-                }
-                setLength(readBuffer, length - 4);
+            int remaining = size - offset;
+            if (remaining >= DataConstants.MAPSIZE) {
+                buffer = fc.map(FileChannel.MapMode.READ_ONLY, offset, DataConstants.MAPSIZE);
+                offset += backToLF(buffer);
             } else {
-                if(remaining == 0) {
+                if (remaining == 0) {
                     break;
+                } else {
+                    buffer = fc.map(FileChannel.MapMode.READ_ONLY, offset, remaining);
+                    readFlag = false;
                 }
-                length = remaining + 4;
-                buffer.get(readBuffer, 4, remaining);
-                setLength(readBuffer, length - 4);
-
-                readFlag = false;
             }
-
             RingBuffer currentRingBuffer = ringBuffers[ringBufferIndex % DataConstants.PARSER_COUNT];
-            while (!currentRingBuffer.put(readBuffer, length)) {
+            while (!currentRingBuffer.put(buffer)) {
                 spin++;
             }
             ringBufferIndex++;
@@ -100,9 +84,14 @@ public class Reader implements Runnable {
         logger.info(filename + " spin: " + spin);
     }
 
-    public void setLength(byte[] readBuffer, int length) {
-        for (int i = 0; i < 4; i++) {
-            readBuffer[3 - i] = (byte) (length >> (i << 3) & 0xFF);
+    public int backToLF(MappedByteBuffer mappedByteBuffer) {
+        int mmbSize = mappedByteBuffer.limit();
+        mappedByteBuffer.position(mmbSize - DataConstants.MAX_MESSAGE_SIZE);
+        while (mappedByteBuffer.get() != '\n') {
         }
+        int mmbLimit = mappedByteBuffer.position();
+        mappedByteBuffer.position(0);
+        mappedByteBuffer.limit(mmbLimit);
+        return mmbLimit;
     }
 }
